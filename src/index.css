@@ -1,0 +1,62 @@
+@font-face {
+  font-family: 'Habbo';
+  src: url('/Habbo.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Typography */
+  --font-pixel: 'Habbo', monospace;
+  --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+
+  /* Colors - AnalogueOS inspired */
+  --color-bg: #000000;
+  --color-surface: #0a0a0a;
+  --color-surface-elevated: #111111;
+  --color-accent: rgb(244, 205, 1);
+  --color-accent-hover: rgb(255, 220, 40);
+  --color-text: #ffffff;
+  --color-text-muted: #888888;
+  --color-text-subtle: #555555;
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #ef4444;
+
+  /* Spacing */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  font-family: var(--font-body);
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+}
