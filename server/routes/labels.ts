@@ -12,7 +12,7 @@ import {
   updateLocalLabel,
   exportLabelsToSD,
   getLabelImageByHex,
-} from '../lib/labels-db.js';
+} from '../lib/labels-db-core.js';
 
 const router = Router();
 

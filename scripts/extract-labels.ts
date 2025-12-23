@@ -1,16 +1,20 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import sharp from 'sharp';
+/**
+ * Extract Labels Script
+ *
+ * Extracts label images from a labels.db file to PNG files.
+ * Uses the labels-db-core library for correct handling.
+ */
+
+import { mkdirSync, writeFileSync, readFileSync } from 'fs';
+import {
+  parseLabelsDb,
+  getImageByIndex,
+  IMAGE_WIDTH,
+  IMAGE_HEIGHT,
+} from '../server/lib/labels-db-core.js';
 
 const LABELS_PATH = './sd-card-example/Library/N64/Images/labels.db';
 const OUTPUT_DIR = './.local/extracted-labels';
-
-// Image parameters
-const IMAGE_WIDTH = 80;
-const IMAGE_HEIGHT = 80;
-const BYTES_PER_PIXEL = 4; // RGBA
-const IMAGE_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT * BYTES_PER_PIXEL; // 25600
-const DATA_START = 0x4100;
-const ID_TABLE_START = 0x100;
 
 // Known cart IDs for verification
 const knownIds: Record<number, string> = {
@@ -23,73 +27,45 @@ const knownIds: Record<number, string> = {
 };
 
 async function main() {
+  console.log(`Image dimensions: ${IMAGE_WIDTH}x${IMAGE_HEIGHT}`);
+
   // Read labels.db
   const labelsData = readFileSync(LABELS_PATH);
+  const db = parseLabelsDb(labelsData);
 
-  // Parse cartridge ID table
-  const idTable: number[] = [];
-  for (let i = 0; i < 901; i++) {
-    const offset = ID_TABLE_START + i * 4;
-    const cartId = labelsData.readUInt32LE(offset);
-    idTable.push(cartId);
-  }
-
-  console.log(`Found ${idTable.length} cartridge IDs in table`);
+  console.log(`Found ${db.entryCount} cartridge entries`);
 
   // Create output directory
   mkdirSync(OUTPUT_DIR, { recursive: true });
 
   // Extract images for known cart IDs
-  console.log('\nExtracting label images...');
+  console.log('\nExtracting label images for known games...');
 
   for (const [cartIdStr, name] of Object.entries(knownIds)) {
     const cartId = parseInt(cartIdStr);
-    const index = idTable.indexOf(cartId);
+    const index = db.idToIndex.get(cartId);
 
-    if (index === -1) {
+    if (index === undefined) {
       console.log(`  ${name}: Cart ID 0x${cartId.toString(16)} not found`);
       continue;
     }
 
-    const imageOffset = DATA_START + index * IMAGE_SIZE;
-    const rawData = labelsData.subarray(imageOffset, imageOffset + IMAGE_SIZE);
-
-    // Convert RGBA raw data to PNG using sharp
-    const pngBuffer = await sharp(rawData, {
-      raw: {
-        width: IMAGE_WIDTH,
-        height: IMAGE_HEIGHT,
-        channels: 4,
-      },
-    })
-      .png()
-      .toBuffer();
-
+    const image = await getImageByIndex(labelsData, index);
     const outputPath = `${OUTPUT_DIR}/${name}.png`;
-    writeFileSync(outputPath, pngBuffer);
-    console.log(`  Saved: ${name}.png (index ${index}, offset 0x${imageOffset.toString(16)})`);
+    writeFileSync(outputPath, image.png);
+    console.log(`  Saved: ${name}.png (index ${index})`);
   }
 
   // Also extract first 10 images to verify format
   console.log('\nExtracting first 10 images...');
-  for (let i = 0; i < 10; i++) {
-    const cartId = idTable[i];
-    const imageOffset = DATA_START + i * IMAGE_SIZE;
-    const rawData = labelsData.subarray(imageOffset, imageOffset + IMAGE_SIZE);
+  const extractCount = Math.min(10, db.entryCount);
 
-    const pngBuffer = await sharp(rawData, {
-      raw: {
-        width: IMAGE_WIDTH,
-        height: IMAGE_HEIGHT,
-        channels: 4,
-      },
-    })
-      .png()
-      .toBuffer();
-
-    const outputPath = `${OUTPUT_DIR}/label_${i.toString().padStart(3, '0')}_${cartId.toString(16)}.png`;
-    writeFileSync(outputPath, pngBuffer);
-    console.log(`  Saved: label_${i.toString().padStart(3, '0')}_${cartId.toString(16)}.png`);
+  for (let i = 0; i < extractCount; i++) {
+    const entry = db.entries[i];
+    const image = await getImageByIndex(labelsData, i);
+    const outputPath = `${OUTPUT_DIR}/label_${i.toString().padStart(3, '0')}_${entry.cartIdHex}.png`;
+    writeFileSync(outputPath, image.png);
+    console.log(`  Saved: label_${i.toString().padStart(3, '0')}_${entry.cartIdHex}.png`);
   }
 
   console.log(`\nDone! Check ${OUTPUT_DIR}/ for extracted images.`);

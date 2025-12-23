@@ -7,9 +7,9 @@ import {
   exportLabelsToSD,
   getLocalIndex,
   hasLocalLabels,
-  parseLabelsDb,
+  parseLabelsDbFile,
   getLocalLabelsList,
-} from '../lib/labels-db.js';
+} from '../lib/labels-db-core.js';
 
 const router = Router();
 
@@ -269,7 +269,7 @@ router.get('/full/preview', async (req, res) => {
       labelsDbExists = true;
 
       // Check for local labels that aren't in labels.db
-      const db = await parseLabelsDb(labelsPath);
+      const db = await parseLabelsDbFile(labelsPath);
       const localLabelFiles = await getLocalLabelsList();
 
       for (const cartIdHex of localLabelFiles) {
