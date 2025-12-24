@@ -10,7 +10,7 @@
  * 3. Replace existing ad-hoc implementations
  */
 
-import { readFile, writeFile, copyFile, mkdir, access, constants, readdir } from 'fs/promises';
+import { readFile, writeFile, copyFile, mkdir, access, constants } from 'fs/promises';
 import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import sharp from 'sharp';
@@ -639,48 +639,45 @@ export async function getAllEntries(labelsPath: string): Promise<LabelEntry[]> {
   return db.entries;
 }
 
+// =============================================================================
+// Export to SD Card
+// =============================================================================
+
 /**
- * Create a backup of labels.db
+ * Export local labels.db to SD card by copying the file
  */
-export async function backupLabelsDb(labelsPath: string): Promise<string> {
-  const backupPath = labelsPath + '.bak';
-  await copyFile(labelsPath, backupPath);
-  return backupPath;
+export async function exportLabelsToSD(sdLabelsPath: string): Promise<{ entryCount: number }> {
+  // Check if local labels.db exists
+  const hasLocal = await hasLocalLabelsDb();
+  if (!hasLocal) {
+    throw new Error('No local labels.db found. Import labels first.');
+  }
+
+  // Read local labels.db
+  const data = await readFile(LOCAL_LABELS_DB_PATH);
+  const db = parseLabelsDb(data);
+
+  // Ensure target directory exists
+  await mkdir(path.dirname(sdLabelsPath), { recursive: true });
+
+  // Copy to SD card
+  await copyFile(LOCAL_LABELS_DB_PATH, sdLabelsPath);
+
+  return { entryCount: db.entryCount };
 }
 
 // =============================================================================
-// Local Labels Storage
+// Direct labels.db Storage (Experimental v2 API)
 // =============================================================================
 
-const LOCAL_LABELS_DIR = path.join(process.cwd(), '.local', 'Library', 'N64', 'Labels');
-const LOCAL_INDEX_PATH = path.join(LOCAL_LABELS_DIR, 'index.json');
-
-export interface LocalLabelsIndex {
-  sourceLabelsDb: string;
-  importedAt: string;
-  entries: Array<{ cartId: string; index: number }>;
-}
+const LOCAL_LABELS_DB_PATH = path.join(process.cwd(), '.local', 'labels.db');
 
 /**
- * Ensure local labels directory exists
+ * Check if a local labels.db file exists
  */
-export async function ensureLocalLabelsDir(): Promise<void> {
-  await mkdir(LOCAL_LABELS_DIR, { recursive: true });
-}
-
-/**
- * Get path to local label PNG
- */
-export function getLocalLabelPath(cartIdHex: string): string {
-  return path.join(LOCAL_LABELS_DIR, `${cartIdHex}.png`);
-}
-
-/**
- * Check if a local label exists
- */
-export async function hasLocalLabel(cartIdHex: string): Promise<boolean> {
+export async function hasLocalLabelsDb(): Promise<boolean> {
   try {
-    await access(getLocalLabelPath(cartIdHex), constants.R_OK);
+    await access(LOCAL_LABELS_DB_PATH, constants.R_OK);
     return true;
   } catch {
     return false;
@@ -688,219 +685,414 @@ export async function hasLocalLabel(cartIdHex: string): Promise<boolean> {
 }
 
 /**
- * Read local label as PNG buffer
+ * Get the path to the local labels.db file
  */
-export async function getLocalLabel(cartIdHex: string): Promise<Buffer | null> {
-  try {
-    const labelPath = getLocalLabelPath(cartIdHex);
-    return await readFile(labelPath);
-  } catch {
-    return null;
-  }
+export function getLocalLabelsDbPath(): string {
+  return LOCAL_LABELS_DB_PATH;
 }
 
 /**
- * Save label to local storage
+ * Import a labels.db file by copying it to local storage
+ * Returns metadata about the imported file
  */
-export async function saveLocalLabel(cartIdHex: string, pngBuffer: Buffer): Promise<void> {
-  await ensureLocalLabelsDir();
-  const labelPath = getLocalLabelPath(cartIdHex);
-  await writeFile(labelPath, pngBuffer);
-}
+export async function importLabelsDbFile(sourcePath: string): Promise<{
+  success: boolean;
+  entryCount: number;
+  fileSize: number;
+  importedAt: string;
+}> {
+  // Ensure parent directory exists
+  await mkdir(path.dirname(LOCAL_LABELS_DB_PATH), { recursive: true });
 
-/**
- * Get local labels index
- */
-export async function getLocalIndex(): Promise<LocalLabelsIndex | null> {
-  try {
-    const data = await readFile(LOCAL_INDEX_PATH, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return null;
-  }
-}
+  // Copy the file
+  await copyFile(sourcePath, LOCAL_LABELS_DB_PATH);
 
-/**
- * Save local labels index
- */
-export async function saveLocalIndex(index: LocalLabelsIndex): Promise<void> {
-  await ensureLocalLabelsDir();
-  await writeFile(LOCAL_INDEX_PATH, JSON.stringify(index, null, 2));
-}
-
-/**
- * Import a single label from SD card labels.db to local storage
- */
-export async function importSingleLabel(
-  labelsPath: string,
-  cartIdHex: string
-): Promise<{ success: boolean; message: string }> {
-  const cartId = parseInt(cartIdHex, 16);
-  const pngBuffer = await getLabelImage(labelsPath, cartId);
-
-  if (!pngBuffer) {
-    return { success: false, message: `Cart ID ${cartIdHex} not found in labels.db` };
-  }
-
-  await saveLocalLabel(cartIdHex, pngBuffer);
-  return { success: true, message: `Imported label for ${cartIdHex}` };
-}
-
-/**
- * Import all labels from SD card labels.db to local PNG files
- */
-export async function importAllLabels(
-  labelsPath: string,
-  onProgress?: (current: number, total: number, cartId: string) => void
-): Promise<{ imported: number; total: number }> {
-  await ensureLocalLabelsDir();
-
-  const data = await readFile(labelsPath);
+  // Parse to get entry count
+  const data = await readFile(LOCAL_LABELS_DB_PATH);
   const db = parseLabelsDb(data);
 
-  let imported = 0;
-  const total = db.entries.length;
-
-  for (const entry of db.entries) {
-    const rawBgra = extractRawImage(data, entry.index);
-    const rgba = bgraToRgba(rawBgra);
-
-    const pngBuffer = await sharp(rgba, {
-      raw: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT, channels: 4 },
-    })
-      .png()
-      .toBuffer();
-
-    await saveLocalLabel(entry.cartIdHex, pngBuffer);
-
-    imported++;
-    if (onProgress) {
-      onProgress(imported, total, entry.cartIdHex);
-    }
-  }
-
-  // Save index
-  const index: LocalLabelsIndex = {
-    sourceLabelsDb: labelsPath,
+  return {
+    success: true,
+    entryCount: db.entryCount,
+    fileSize: data.length,
     importedAt: new Date().toISOString(),
-    entries: db.entries.map(e => ({ cartId: e.cartIdHex, index: e.index })),
   };
-  await saveLocalIndex(index);
-
-  return { imported, total };
 }
 
 /**
- * Update a label in local storage
+ * Import a labels.db file from a buffer (for file uploads)
+ * Returns metadata about the imported file
  */
-export async function updateLocalLabel(
-  cartIdHex: string,
-  imageBuffer: Buffer
-): Promise<void> {
-  const pngBuffer = await sharp(imageBuffer)
-    .resize(IMAGE_WIDTH, IMAGE_HEIGHT, {
-      fit: 'cover',
-      position: 'center',
-    })
+export async function importLabelsDbFileFromBuffer(buffer: Buffer): Promise<{
+  success: boolean;
+  entryCount: number;
+  fileSize: number;
+  importedAt: string;
+}> {
+  // Verify header before saving
+  const headerCheck = verifyHeader(buffer);
+  if (!headerCheck.valid) {
+    throw new Error(`Invalid labels.db file: ${headerCheck.error}`);
+  }
+
+  // Ensure parent directory exists
+  await mkdir(path.dirname(LOCAL_LABELS_DB_PATH), { recursive: true });
+
+  // Write the buffer to disk
+  await writeFile(LOCAL_LABELS_DB_PATH, buffer);
+
+  // Parse to get entry count
+  const db = parseLabelsDb(buffer);
+
+  return {
+    success: true,
+    entryCount: db.entryCount,
+    fileSize: buffer.length,
+    importedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Get labels.db status - entry count and metadata without loading all entries
+ */
+export async function getLabelsDbStatus(): Promise<{
+  exists: boolean;
+  entryCount: number;
+  fileSize: number;
+} | null> {
+  try {
+    const data = await readFile(LOCAL_LABELS_DB_PATH);
+    const db = parseLabelsDb(data);
+    return {
+      exists: true,
+      entryCount: db.entryCount,
+      fileSize: data.length,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Read and parse the local labels.db file
+ */
+async function readLocalLabelsDb(): Promise<{ data: Buffer; db: LabelsDatabase } | null> {
+  try {
+    const data = await readFile(LOCAL_LABELS_DB_PATH);
+    const db = parseLabelsDb(data);
+    return { data, db };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get all entries from local labels.db (metadata only, no images)
+ */
+export async function getAllLocalLabelsDbEntries(): Promise<Array<{ cartId: string; index: number }> | null> {
+  const result = await readLocalLabelsDb();
+  if (!result) return null;
+
+  return result.db.entries.map(e => ({
+    cartId: e.cartIdHex,
+    index: e.index,
+  }));
+}
+
+/**
+ * Get paginated entries from labels.db (metadata only, no images)
+ */
+export async function getLabelsDbPage(
+  page: number,
+  pageSize: number
+): Promise<{
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  totalEntries: number;
+  entries: Array<{ cartId: string; index: number }>;
+} | null> {
+  const result = await readLocalLabelsDb();
+  if (!result) return null;
+
+  const { db } = result;
+  const start = page * pageSize;
+  const end = Math.min(start + pageSize, db.entryCount);
+
+  const entries = db.entries.slice(start, end).map(e => ({
+    cartId: e.cartIdHex,
+    index: e.index,
+  }));
+
+  return {
+    page,
+    pageSize,
+    totalPages: Math.ceil(db.entryCount / pageSize),
+    totalEntries: db.entryCount,
+    entries,
+  };
+}
+
+/**
+ * Get a label image directly from local labels.db by cart ID hex
+ */
+export async function getLabelsDbImage(cartIdHex: string): Promise<Buffer | null> {
+  const result = await readLocalLabelsDb();
+  if (!result) return null;
+
+  const { data, db } = result;
+  const cartId = parseInt(cartIdHex, 16);
+  const index = db.idToIndex.get(cartId);
+
+  if (index === undefined) return null;
+
+  // Extract raw BGRA data
+  const offset = DATA_START + index * IMAGE_SLOT_SIZE;
+  const rawBgra = data.subarray(offset, offset + IMAGE_DATA_SIZE);
+
+  // Convert BGRA to RGBA
+  const rgba = bgraToRgba(rawBgra);
+
+  // Encode as PNG
+  const png = await sharp(rgba, {
+    raw: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT, channels: 4 },
+  })
     .png()
     .toBuffer();
 
-  await saveLocalLabel(cartIdHex, pngBuffer);
+  return png;
 }
 
 /**
- * Get list of all local label files
+ * Search entries in labels.db by cart ID
  */
-export async function getLocalLabelsList(): Promise<string[]> {
+export async function searchLabelsDb(
+  query: string,
+  limit: number = 50
+): Promise<Array<{ cartId: string; index: number }>> {
+  const result = await readLocalLabelsDb();
+  if (!result) return [];
+
+  const { db } = result;
+  const queryLower = query.toLowerCase();
+  const matches: Array<{ cartId: string; index: number }> = [];
+
+  for (const entry of db.entries) {
+    if (entry.cartIdHex.includes(queryLower)) {
+      matches.push({ cartId: entry.cartIdHex, index: entry.index });
+      if (matches.length >= limit) break;
+    }
+  }
+
+  return matches;
+}
+
+/**
+ * Add a new entry to the local labels.db file
+ * Creates an empty labels.db if one doesn't exist yet
+ */
+export async function addEntryToLabelsDb(
+  cartId: number,
+  imageBuffer: Buffer
+): Promise<void> {
+  // Ensure parent directory exists
+  await mkdir(path.dirname(LOCAL_LABELS_DB_PATH), { recursive: true });
+
+  let data: Buffer;
+
+  // Check if labels.db exists
   try {
-    const files = await readdir(LOCAL_LABELS_DIR);
-    return files
-      .filter(f => f.endsWith('.png'))
-      .map(f => f.replace('.png', ''));
+    await access(LOCAL_LABELS_DB_PATH, constants.R_OK);
+    data = await readFile(LOCAL_LABELS_DB_PATH);
   } catch {
-    return [];
+    // Create empty labels.db
+    data = createEmptyLabelsDb();
   }
+
+  // Add the entry
+  const updatedData = await addEntry(data, cartId, imageBuffer);
+
+  // Write back to disk
+  await writeFile(LOCAL_LABELS_DB_PATH, updatedData);
 }
 
 /**
- * Check if local labels are imported
+ * Delete an entry from the local labels.db file
  */
-export async function hasLocalLabels(): Promise<boolean> {
-  const index = await getLocalIndex();
-  return index !== null && index.entries.length > 0;
+export async function deleteEntryFromLabelsDb(cartId: number): Promise<void> {
+  // Read existing labels.db
+  const data = await readFile(LOCAL_LABELS_DB_PATH);
+
+  // Delete the entry
+  const updatedData = deleteEntry(data, cartId);
+
+  // Write back to disk
+  await writeFile(LOCAL_LABELS_DB_PATH, updatedData);
 }
 
 /**
- * Export local labels back to SD card labels.db
+ * Update an existing entry in the local labels.db file
  */
-export async function exportLabelsToSD(
-  labelsPath: string,
-  onProgress?: (current: number, total: number, cartId: string) => void
-): Promise<{ exported: number; added: number; total: number }> {
-  const index = await getLocalIndex();
-  if (!index) {
-    throw new Error('No local labels index found. Import labels first.');
+export async function updateEntryInLabelsDb(
+  cartId: number,
+  imageBuffer: Buffer
+): Promise<void> {
+  // Read existing labels.db
+  const data = await readFile(LOCAL_LABELS_DB_PATH);
+
+  // Update the entry
+  const updatedData = await updateEntry(data, cartId, imageBuffer);
+
+  // Write back to disk
+  await writeFile(LOCAL_LABELS_DB_PATH, updatedData);
+}
+
+/**
+ * Merge an imported labels.db with the existing local one
+ * @param buffer - The incoming labels.db buffer to merge
+ * @param mode - 'merge-overwrite' to update existing entries, 'merge-skip' to only add new
+ */
+export async function mergeLabelsDbFromBuffer(
+  buffer: Buffer,
+  mode: 'merge-overwrite' | 'merge-skip'
+): Promise<{
+  success: boolean;
+  entryCount: number;
+  fileSize: number;
+  importedAt: string;
+  added: number;
+  updated: number;
+  skipped: number;
+}> {
+  // Verify incoming file is valid
+  const headerCheck = verifyHeader(buffer);
+  if (!headerCheck.valid) {
+    throw new Error(`Invalid labels.db file: ${headerCheck.error}`);
   }
 
-  // Create backup before modifying
-  await backupLabelsDb(labelsPath);
+  // Parse the incoming database
+  const incomingDb = parseLabelsDb(buffer);
 
-  // Read labels.db
-  let data = await readFile(labelsPath);
-  let db = parseLabelsDb(data);
+  // Check if local labels.db exists
+  let localData: Buffer;
+  let localDb: LabelsDatabase;
 
-  // Find local labels that need to be added (not in labels.db)
-  const localLabelFiles = await getLocalLabelsList();
+  try {
+    await access(LOCAL_LABELS_DB_PATH, constants.R_OK);
+    localData = await readFile(LOCAL_LABELS_DB_PATH);
+    localDb = parseLabelsDb(localData);
+  } catch {
+    // No existing labels.db - just do a straight import
+    await mkdir(path.dirname(LOCAL_LABELS_DB_PATH), { recursive: true });
+    await writeFile(LOCAL_LABELS_DB_PATH, buffer);
+    return {
+      success: true,
+      entryCount: incomingDb.entryCount,
+      fileSize: buffer.length,
+      importedAt: new Date().toISOString(),
+      added: incomingDb.entryCount,
+      updated: 0,
+      skipped: 0,
+    };
+  }
+
+  // Merge the databases
+  let resultData = localData;
   let added = 0;
+  let updated = 0;
+  let skipped = 0;
 
-  for (const cartIdHex of localLabelFiles) {
-    const cartId = parseInt(cartIdHex, 16);
-    if (!db.idToIndex.has(cartId)) {
-      const localPng = await getLocalLabel(cartIdHex);
-      if (localPng) {
-        try {
-          data = await addEntry(data, cartId, localPng);
-          added++;
-          console.log(`Added new cart ${cartIdHex} to labels.db`);
-        } catch (err) {
-          console.warn(`Could not add cart ${cartIdHex}: ${err}`);
-        }
+  for (const entry of incomingDb.entries) {
+    const existsInLocal = localDb.idToIndex.has(entry.cartId);
+
+    if (existsInLocal) {
+      if (mode === 'merge-overwrite') {
+        // Extract raw image from incoming buffer and update
+        const rawBgra = extractRawImage(buffer, entry.index);
+        const slot = createImageSlot(rawBgra);
+
+        // Find the index in local and update
+        const localIndex = localDb.idToIndex.get(entry.cartId)!;
+        slot.copy(resultData, DATA_START + localIndex * IMAGE_SLOT_SIZE);
+        updated++;
+      } else {
+        // merge-skip: don't update existing
+        skipped++;
       }
+    } else {
+      // Entry doesn't exist - add it
+      const rawBgra = extractRawImage(buffer, entry.index);
+      // Need to convert to a format addEntry can use - addEntry expects an image buffer
+      // Create a minimal image buffer from the raw BGRA
+      const slot = createImageSlot(rawBgra);
+
+      // We need to add this entry to the result
+      // Unfortunately addEntry expects a PNG/image buffer, not raw BGRA
+      // Let's work directly with the buffer instead
+
+      // Re-parse current state
+      const currentDb = parseLabelsDb(resultData);
+
+      // Find insertion point
+      let insertIndex = 0;
+      for (let i = 0; i < currentDb.entries.length; i++) {
+        if (currentDb.entries[i].cartId > entry.cartId) {
+          break;
+        }
+        insertIndex = i + 1;
+      }
+
+      // Allocate new buffer
+      const newSize = resultData.length + IMAGE_SLOT_SIZE;
+      const newData = Buffer.alloc(newSize, PADDING_FILL);
+
+      // Copy header
+      resultData.copy(newData, 0, 0, HEADER_SIZE);
+
+      // Write ID table with new entry inserted
+      for (let i = 0; i < insertIndex; i++) {
+        newData.writeUInt32LE(currentDb.entries[i].cartId, ID_TABLE_START + i * 4);
+      }
+      newData.writeUInt32LE(entry.cartId, ID_TABLE_START + insertIndex * 4);
+      for (let i = insertIndex; i < currentDb.entries.length; i++) {
+        newData.writeUInt32LE(currentDb.entries[i].cartId, ID_TABLE_START + (i + 1) * 4);
+      }
+
+      // Copy image data with new image inserted
+      for (let i = 0; i < insertIndex; i++) {
+        const srcOffset = DATA_START + i * IMAGE_SLOT_SIZE;
+        const dstOffset = DATA_START + i * IMAGE_SLOT_SIZE;
+        resultData.copy(newData, dstOffset, srcOffset, srcOffset + IMAGE_SLOT_SIZE);
+      }
+
+      // Insert new image
+      slot.copy(newData, DATA_START + insertIndex * IMAGE_SLOT_SIZE);
+
+      // Copy remaining images
+      for (let i = insertIndex; i < currentDb.entries.length; i++) {
+        const srcOffset = DATA_START + i * IMAGE_SLOT_SIZE;
+        const dstOffset = DATA_START + (i + 1) * IMAGE_SLOT_SIZE;
+        resultData.copy(newData, dstOffset, srcOffset, srcOffset + IMAGE_SLOT_SIZE);
+      }
+
+      resultData = newData;
+      added++;
     }
   }
 
-  // Re-parse after adding new carts
-  if (added > 0) {
-    db = parseLabelsDb(data);
-  }
+  // Write result to disk
+  await mkdir(path.dirname(LOCAL_LABELS_DB_PATH), { recursive: true });
+  await writeFile(LOCAL_LABELS_DB_PATH, resultData);
 
-  // Update existing entries
-  let exported = 0;
-  const total = index.entries.length;
+  const finalDb = parseLabelsDb(resultData);
 
-  for (const entry of index.entries) {
-    const localPng = await getLocalLabel(entry.cartId);
-    if (!localPng) continue;
-
-    const cartId = parseInt(entry.cartId, 16);
-    const idx = db.idToIndex.get(cartId);
-    if (idx === undefined) continue;
-
-    // Prepare image data
-    const bgraData = await prepareImageForStorage(localPng);
-    const slot = createImageSlot(bgraData);
-
-    // Update in buffer
-    slot.copy(data, DATA_START + idx * IMAGE_SLOT_SIZE);
-
-    exported++;
-    if (onProgress) {
-      onProgress(exported, total, entry.cartId);
-    }
-  }
-
-  // Write back
-  await writeFile(labelsPath, data);
-
-  return { exported, added, total };
+  return {
+    success: true,
+    entryCount: finalDb.entryCount,
+    fileSize: resultData.length,
+    importedAt: new Date().toISOString(),
+    added,
+    updated,
+    skipped,
+  };
 }

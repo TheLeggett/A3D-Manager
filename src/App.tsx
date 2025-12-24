@@ -2,8 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { LabelsBrowser } from './components/LabelsBrowser';
 import { LabelEditor } from './components/LabelEditor';
-import { SettingsPage } from './components/SettingsPage';
 import { SyncPage } from './components/SyncPage';
+import { HelpPage } from './components/HelpPage';
 import type { SDCard } from './types';
 import './App.css';
 
@@ -62,6 +62,16 @@ function SDCardProvider({ children }: { children: React.ReactNode }) {
 function Header() {
   const location = useLocation();
   const { selectedSDCard, sdCards, setSelectedSDCard, detectSDCards, loading } = useSDCard();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await detectSDCards();
+    // Keep the refreshing state for a moment to ensure smooth transition
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 300);
+  };
 
   return (
     <header className="app-header">
@@ -80,36 +90,41 @@ function Header() {
           Sync to SD
         </Link>
         <Link
-          to="/settings"
-          className={`nav-tab ${location.pathname === '/settings' ? 'active' : ''}`}
+          to="/help"
+          className={`nav-tab ${location.pathname === '/help' ? 'active' : ''}`}
         >
-          Settings
+          Help
         </Link>
       </nav>
       <div className="header-actions">
         <div className="sd-card-selector">
-          <select
-            value={selectedSDCard?.path || ''}
-            onChange={(e) => {
-              const card = sdCards.find(c => c.path === e.target.value);
-              setSelectedSDCard(card || null);
-            }}
-            disabled={loading}
-          >
-            {sdCards.length === 0 ? (
-              <option value="">No SD Card detected</option>
-            ) : (
-              sdCards.map((card) => (
-                <option key={card.path} value={card.path}>
-                  {card.name} ({card.path})
-                </option>
-              ))
-            )}
-          </select>
+          {isRefreshing ? (
+            <div className="sd-refreshing-label">Refreshing...</div>
+          ) : (
+            <select
+              value={selectedSDCard?.path || ''}
+              onChange={(e) => {
+                const card = sdCards.find(c => c.path === e.target.value);
+                setSelectedSDCard(card || null);
+              }}
+              disabled={loading}
+              className={isRefreshing ? 'fade-out' : 'fade-in'}
+            >
+              {sdCards.length === 0 ? (
+                <option value="">No SD Card detected</option>
+              ) : (
+                sdCards.map((card) => (
+                  <option key={card.path} value={card.path}>
+                    {card.name} ({card.path})
+                  </option>
+                ))
+              )}
+            </select>
+          )}
           <button
             className="btn-icon"
-            onClick={detectSDCards}
-            disabled={loading}
+            onClick={handleRefresh}
+            disabled={loading || isRefreshing}
             title="Refresh SD cards"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -152,6 +167,10 @@ function LabelsPage() {
             setLabelsRefreshKey(k => k + 1);
             setEditingLabel(null);
           }}
+          onDelete={() => {
+            showNotification('Cartridge deleted');
+            setLabelsRefreshKey(k => k + 1);
+          }}
         />
       )}
     </>
@@ -167,7 +186,7 @@ function AppContent() {
           <Route path="/" element={<Navigate to="/labels" replace />} />
           <Route path="/labels" element={<LabelsPage />} />
           <Route path="/sync" element={<SyncPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/help" element={<HelpPage />} />
         </Routes>
       </main>
     </div>

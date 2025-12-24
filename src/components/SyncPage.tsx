@@ -2,22 +2,27 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSDCard } from '../App';
 
 interface SyncPreview {
-  folderRenames: Array<{ from: string; to: string; cartId: string }>;
-  settingsUpdates: Array<{ folder: string; cartId: string; from: string; to: string }>;
   labels: {
     hasLocalLabels: boolean;
     localLabelCount: number;
-    labelsDbExists: boolean;
-    newCartsToAdd: string[];
   };
 }
 
 interface SyncResults {
-  folderRenames: { success: number; failed: number; skipped: number; errors: string[]; details: string[] };
-  labels: { success: boolean; exported: number; added: number; error: string | null };
+  labels: { success: boolean; entryCount: number; error: string | null };
 }
 
 type SyncStep = 'preview' | 'syncing' | 'complete';
+
+interface TransferProgress {
+  percentage: number;
+  fileName: string;
+  bytesWritten: string;
+  totalBytes: string;
+  speed: string;
+  eta: string;
+  status: string;
+}
 
 export function SyncPage() {
   const { selectedSDCard } = useSDCard();
@@ -26,7 +31,16 @@ export function SyncPage() {
   const [results, setResults] = useState<SyncResults | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState({ current: 0, total: 0, status: '' });
+  const [progress, setProgress] = useState<TransferProgress>({
+    percentage: 0,
+    fileName: '',
+    bytesWritten: '',
+    totalBytes: '',
+    speed: '',
+    eta: '',
+    status: 'Connecting...',
+  });
+  const [exporting, setExporting] = useState(false);
 
   const fetchPreview = useCallback(async () => {
     if (!selectedSDCard) {
@@ -69,7 +83,15 @@ export function SyncPage() {
     try {
       setStep('syncing');
       setError(null);
-      setProgress({ current: 0, total: 0, status: 'Connecting...' });
+      setProgress({
+        percentage: 0,
+        fileName: '',
+        bytesWritten: '',
+        totalBytes: '',
+        speed: '',
+        eta: '',
+        status: 'Connecting...',
+      });
 
       // Use Server-Sent Events for real-time progress
       const eventSource = new EventSource(
@@ -82,23 +104,39 @@ export function SyncPage() {
         switch (data.type) {
           case 'start':
             setProgress({
-              current: 0,
-              total: data.total,
-              status: `Starting sync (${data.folderCount} folders, ${data.labelCount} labels)...`,
+              percentage: 0,
+              fileName: '',
+              bytesWritten: '',
+              totalBytes: '',
+              speed: '',
+              eta: '',
+              status: `Starting sync (${data.labelCount} labels)...`,
             });
             break;
 
           case 'progress':
             setProgress({
-              current: data.current,
-              total: data.total,
-              status: data.detail,
+              percentage: data.percentage || 0,
+              fileName: data.fileName || '',
+              bytesWritten: data.bytesWrittenFormatted || '',
+              totalBytes: data.totalBytesFormatted || '',
+              speed: data.speed || '',
+              eta: data.eta || '',
+              status: `Copying ${data.fileName || 'file'}...`,
             });
             break;
 
           case 'complete':
             setResults(data.results);
-            setProgress({ current: data.results ? 100 : 0, total: 100, status: 'Complete!' });
+            setProgress({
+              percentage: 100,
+              fileName: '',
+              bytesWritten: '',
+              totalBytes: '',
+              speed: '',
+              eta: '',
+              status: 'Complete!',
+            });
             setStep('complete');
             eventSource.close();
             break;
@@ -122,18 +160,35 @@ export function SyncPage() {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const response = await fetch('/api/labels/export');
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'labels.db';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Export failed');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const handleReset = () => {
     setStep('preview');
     setResults(null);
     fetchPreview();
   };
 
-  const hasChanges =
-    preview &&
-    (preview.folderRenames.length > 0 ||
-     preview.settingsUpdates?.length > 0 ||
-     preview.labels.hasLocalLabels ||
-     preview.labels.newCartsToAdd?.length > 0);
+  const hasChanges = preview && preview.labels.hasLocalLabels;
 
   if (!selectedSDCard) {
     return (
@@ -145,6 +200,40 @@ export function SyncPage() {
           <p>No SD card selected.</p>
           <p className="hint">Select an SD card from the dropdown in the header to sync your changes.</p>
         </div>
+
+        <div className="sync-manual-section">
+          <h3>Manual Export</h3>
+          <p className="sync-description">
+            If you're unable to connect your SD card directly (e.g., no card reader, or the card
+            isn't being detected), you can export your labels.db file and copy it manually.
+          </p>
+
+          <div className="manual-export-actions">
+            <button
+              className="btn-primary"
+              onClick={handleExport}
+              disabled={exporting}
+            >
+              {exporting ? 'Exporting...' : 'Export labels.db'}
+            </button>
+          </div>
+
+          <div className="manual-instructions">
+            <h4>Where to place labels.db on your SD card:</h4>
+            <ol>
+              <li>Insert your Analogue 3D SD card into your computer</li>
+              <li>Navigate to the <code>System</code> folder on the SD card</li>
+              <li>Inside <code>System</code>, open the <code>Library</code> folder</li>
+              <li>Inside <code>Library</code>, open the <code>Images</code> folder</li>
+              <li>Copy <code>labels.db</code> into the <code>Images</code> folder</li>
+            </ol>
+            <p className="path-example">
+              Full path: <code>/System/Library/Images/labels.db</code>
+            </p>
+          </div>
+        </div>
+
+        {error && <div className="error-message">{error}</div>}
       </div>
     );
   }
@@ -178,82 +267,18 @@ export function SyncPage() {
             <div className="sync-no-changes">
               <p>No changes to sync.</p>
               <p className="hint">
-                Name some unknown cartridges or modify label artwork first.
+                Add or modify label artwork first.
               </p>
             </div>
           ) : (
             <>
-              {/* Folder Renames */}
-              <div className="sync-section">
-                <h3>Game Folder Renames</h3>
-                {preview.folderRenames.length === 0 ? (
-                  <p className="sync-none">No folder renames needed</p>
-                ) : (
-                  <>
-                    <p className="sync-count">
-                      {preview.folderRenames.length} folder(s) will be renamed
-                    </p>
-                    <ul className="sync-list">
-                      {preview.folderRenames.map((rename) => (
-                        <li key={rename.cartId} className="sync-rename-item">
-                          <span className="rename-from">{rename.from}</span>
-                          <span className="rename-arrow">-&gt;</span>
-                          <span className="rename-to">{rename.to}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-              </div>
-
-              {/* Settings.json Updates */}
-              {preview.settingsUpdates?.length > 0 && (
-                <div className="sync-section">
-                  <h3>Settings.json Title Updates</h3>
-                  <p className="sync-count">
-                    {preview.settingsUpdates.length} game(s) need title updates
-                  </p>
-                  <ul className="sync-list">
-                    {preview.settingsUpdates.map((update) => (
-                      <li key={update.cartId} className="sync-rename-item">
-                        <span className="rename-from">"{update.from}"</span>
-                        <span className="rename-arrow">-&gt;</span>
-                        <span className="rename-to">"{update.to}"</span>
-                        <span className="rename-folder">({update.folder})</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
               {/* Labels Export */}
               <div className="sync-section">
                 <h3>Label Artwork</h3>
-                {!preview.labels.hasLocalLabels && preview.labels.newCartsToAdd?.length === 0 ? (
-                  <p className="sync-none">No local labels to export</p>
-                ) : (
-                  <>
-                    {preview.labels.hasLocalLabels && (
-                      <p className="sync-count">
-                        {preview.labels.localLabelCount} label(s) will be written
-                        to labels.db
-                        {preview.labels.labelsDbExists && (
-                          <span className="sync-warning">
-                            {' '}
-                            (existing file will be backed up)
-                          </span>
-                        )}
-                      </p>
-                    )}
-                    {preview.labels.newCartsToAdd?.length > 0 && (
-                      <p className="sync-count" style={{ marginTop: '0.5rem' }}>
-                        {preview.labels.newCartsToAdd.length} new cart(s) will be
-                        added to labels.db:{' '}
-                        <code>{preview.labels.newCartsToAdd.join(', ')}</code>
-                      </p>
-                    )}
-                  </>
-                )}
+                <p className="sync-count">
+                  labels.db with {preview.labels.localLabelCount} label(s) will be
+                  copied to SD card
+                </p>
               </div>
 
               <div className="sync-actions">
@@ -267,24 +292,65 @@ export function SyncPage() {
               </div>
             </>
           )}
+
+          <div className="sync-manual-section">
+            <h3>Manual Export</h3>
+            <p className="sync-description">
+              Prefer to copy the file manually? Export your labels.db and place it at:
+            </p>
+            <p className="path-example">
+              <code>{selectedSDCard.path}/System/Library/Images/labels.db</code>
+            </p>
+            <div className="manual-export-actions">
+              <button
+                className="btn-secondary"
+                onClick={handleExport}
+                disabled={exporting}
+              >
+                {exporting ? 'Exporting...' : 'Export labels.db'}
+              </button>
+            </div>
+          </div>
         </div>
       ) : step === 'syncing' ? (
         <div className="sync-progress">
           <div className="progress-bar">
             <div
-              className={`progress-fill ${progress.total === 0 ? 'indeterminate' : ''}`}
-              style={progress.total > 0 ? { width: `${Math.round((progress.current / progress.total) * 100)}%` } : undefined}
+              className={`progress-fill ${progress.percentage === 0 && !progress.bytesWritten ? 'indeterminate' : ''}`}
+              style={progress.percentage > 0 ? { width: `${progress.percentage}%` } : undefined}
             />
           </div>
-          {progress.total > 0 && (
-            <p className="progress-percent">
-              {progress.current} / {progress.total} ({Math.round((progress.current / progress.total) * 100)}%)
-            </p>
+
+          {/* Percentage and file name */}
+          <div className="progress-header">
+            <span className="progress-percent">{progress.percentage}%</span>
+            {progress.fileName && (
+              <span className="progress-filename">{progress.fileName}</span>
+            )}
+          </div>
+
+          {/* Transfer details */}
+          {progress.bytesWritten && (
+            <div className="progress-details">
+              <span className="progress-bytes">
+                {progress.bytesWritten} / {progress.totalBytes}
+              </span>
+              {progress.speed && (
+                <>
+                  <span className="progress-separator">•</span>
+                  <span className="progress-speed">{progress.speed}</span>
+                </>
+              )}
+              {progress.eta && progress.eta !== '0ms' && (
+                <>
+                  <span className="progress-separator">•</span>
+                  <span className="progress-eta">~{progress.eta} remaining</span>
+                </>
+              )}
+            </div>
           )}
+
           <p className="progress-status">{progress.status}</p>
-          <p className="progress-hint">
-            Writing to SD card...
-          </p>
         </div>
       ) : step === 'complete' && results ? (
         <div className="sync-complete">
@@ -292,55 +358,13 @@ export function SyncPage() {
           <h3>Sync Complete!</h3>
 
           <div className="sync-results">
-            {results.folderRenames.success > 0 && (
-              <p className="result-success">
-                Renamed {results.folderRenames.success} game folder(s) and updated settings.json
-              </p>
-            )}
-            {results.folderRenames.skipped > 0 && (
-              <p className="result-info">
-                Skipped {results.folderRenames.skipped} unknown cartridge(s) without names
-              </p>
-            )}
-            {results.folderRenames.failed > 0 && (
-              <p className="result-error">
-                Failed to rename {results.folderRenames.failed} folder(s)
-              </p>
-            )}
             {results.labels.success && (
               <p className="result-success">
-                Exported {results.labels.exported} labels to SD card
-                {results.labels.added > 0 && (
-                  <> (added {results.labels.added} new cart entries)</>
-                )}
+                Copied labels.db with {results.labels.entryCount} labels to SD card
               </p>
             )}
             {results.labels.error && (
               <p className="result-error">{results.labels.error}</p>
-            )}
-
-            {/* Show details */}
-            {results.folderRenames.details.length > 0 && (
-              <div className="sync-details">
-                <h4>Details:</h4>
-                <ul>
-                  {results.folderRenames.details.map((detail, i) => (
-                    <li key={i}>{detail}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Show errors */}
-            {results.folderRenames.errors.length > 0 && (
-              <div className="sync-errors">
-                <h4>Errors:</h4>
-                <ul>
-                  {results.folderRenames.errors.map((err, i) => (
-                    <li key={i}>{err}</li>
-                  ))}
-                </ul>
-              </div>
             )}
           </div>
 

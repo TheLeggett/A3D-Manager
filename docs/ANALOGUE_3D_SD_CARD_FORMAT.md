@@ -14,8 +14,7 @@ This document describes the file structure and formats used by the Analogue 3D (
 │       │       └── settings.json         # Per-game settings
 │       ├── Images/
 │       │   └── labels.db                 # Master label/artwork database (22MB)
-│       ├── library.db                    # Game library database
-│       └── library.db.bak                # Backup of library.db
+│       └── library.db                    # Game library database
 └── Settings/
     └── Global/                           # Global settings (may be empty)
 ```
@@ -35,15 +34,34 @@ Examples:
 - `Super Mario 64 b393776d`
 - `Unknown Cartridge 1c414340`
 
-**Important**: The game title displayed by the Analogue 3D comes directly from the folder name. To rename a cartridge, simply rename its folder (keeping the hex ID suffix intact).
+**Important**: The game title displayed by the Analogue 3D is determined internally by the console's firmware, NOT from the folder name. Renaming the folder or updating `settings.json` has no effect on the displayed title. The Analogue 3D uses its own internal database to identify games by their cartridge ID.
 
-### Hex ID
+### Hex ID (Cartridge Identification)
 
-The 8-character hex ID is a unique identifier for each physical cartridge. This appears to be derived from the cartridge's ROM data (possibly a CRC32 or similar checksum).
+The 8-character hex ID is a unique identifier for each physical cartridge. **The Analogue 3D computes this ID by calculating a CRC32 checksum of the first 8 KiB (8,192 bytes) of the ROM data.**
 
-- Known games have recognizable IDs that Analogue's database knows about
-- Unknown cartridges (flash carts, homebrew, etc.) get assigned unique IDs
-- The special ID `fffffffe` appears to be a placeholder for unidentified cartridges
+For complete technical details, see **[CART_ID_ALGORITHM.md](./CART_ID_ALGORITHM.md)**.
+
+#### Quick Reference
+
+| Property | Value |
+|----------|-------|
+| Algorithm | CRC32 (IEEE 802.3) |
+| Input | First 8,192 bytes of ROM (Z64 format) |
+| Output | 8 lowercase hex characters |
+
+#### Calculating Cart IDs
+
+```bash
+npx tsx scripts/compute-a3d-id.ts "game.z64"
+npx tsx scripts/compute-a3d-id.ts /path/to/roms --batch
+```
+
+#### ID Characteristics
+
+- Known games have IDs recognized by Analogue's internal database
+- Unknown cartridges (flash carts, homebrew) get unique IDs based on ROM content
+- The special ID `fffffffe` is a placeholder for unidentified cartridges
 
 ## File Formats
 
@@ -145,97 +163,52 @@ The cartridge IDs at offset 0x100 are stored in **little-endian** format. For ex
 ### labels.db (Master Label/Artwork Database)
 
 **Format**: Proprietary Analogue binary format
-**Size**: ~22MB (contains 901 label images)
-**Purpose**: Pre-loaded label artwork for all known N64 games displayed in the carousel UI
+**Size**: Variable (depends on number of entries)
+**Purpose**: Label artwork for N64 games displayed in the carousel UI
 
 This is the primary source of game artwork. When a cartridge is inserted, the system looks up its ID in this database to display the appropriate label image.
 
-#### Structure
+| Property | Value |
+|----------|-------|
+| Location | `/Library/N64/Images/labels.db` |
+| Image Dimensions | 74 × 86 pixels |
+| Color Format | BGRA (Blue, Green, Red, Alpha) |
+| Bytes Per Image Slot | 25,600 |
 
-```
-Offset      Size        Description
-0x00        1           Magic byte (0x07)
-0x01        31          Identifier "Analogue-Co" (null-padded to 32 bytes)
-0x20        32          File type "Analogue-3D.labels" (null-padded)
-0x40        4           Version (0x00020000 = v2.0)
-0x44-0xFF               Reserved (zeros)
-0x100       901×4       Cartridge ID table (sorted, little-endian 32-bit)
-0xF14-0x40FF            Padding (0xFF bytes)
-0x4100      901×25600   Image data (sequential, 25,600 bytes per image)
-```
+For complete technical specification, see **[LABELS_DB_SPECIFICATION.md](./LABELS_DB_SPECIFICATION.md)**.
 
-#### Cartridge ID Table (0x100 - 0xF14)
-
-The table contains 901 cartridge IDs as 32-bit little-endian values, **sorted numerically**. The position in this sorted list determines the image index.
-
-#### Image Data Format
-
-- **Dimensions**: 80 × 80 pixels
-- **Format**: Raw RGBA (4 bytes per pixel, 32-bit color)
-- **Size**: 25,600 bytes per image (80 × 80 × 4)
-- **Total images**: 901
-- **Order**: Images are stored sequentially in the same order as the cartridge ID table
-
-#### Lookup Process
-
-To find artwork for a cartridge:
-1. Binary search the cartridge ID table (0x100) for the hex ID
-2. Get the index position in the sorted table
-3. Calculate image offset: `0x4100 + (index × 25600)`
-4. Read 25,600 bytes of raw RGBA pixel data
-
-#### Example
-
-For Mario Kart 64 (cart ID `0x03cc04ee`):
-- Found at index 10 in the sorted ID table
-- Image offset: `0x4100 + (10 × 25600) = 0x42900`
-- Read 25,600 bytes from offset 0x42900
-
-**Note**: Unknown cartridges not in this database will show as "Unknown" with no artwork.
+**Note**: This file is user-generated. The Analogue 3D does not ship with a pre-populated labels.db. Community resources like [retrogamecorps/Analogue-3D-Images](https://github.com/retrogamecorps/Analogue-3D-Images) provide stock artwork.
 
 ## Cartridge Recognition Flow
 
 When a cartridge is inserted:
 
 1. The Analogue 3D reads the cartridge and computes its unique hex ID
-2. It looks up this ID in `library.db` to check if it's a known game
-3. If found, it reads the game folder matching that ID
-4. The display title comes from the folder name (before the hex ID)
-5. Artwork is loaded from `labels.db` using the cartridge ID as a lookup key
+2. It looks up this ID in its internal firmware database to determine the game title
+3. The game folder in `/Library/N64/Games/` is created/accessed using this ID
+4. Artwork is loaded from `labels.db` using the cartridge ID as a lookup key
+5. Unknown cartridges not in the firmware database display as "Unknown Cartridge"
 6. Unknown cartridges not in `labels.db` display with no artwork
 
 ## Customizing Unknown Cartridges
 
-### Renaming a Cart
+### Game Names (Not Customizable)
 
-To change the displayed name for a flash cart or unknown game:
+Unfortunately, the Analogue 3D does not support renaming games through the SD card. The console uses an internal firmware database to determine game titles based on cartridge ID. Modifications to folder names or `settings.json` files have no effect on the displayed title.
 
-1. Find the folder in `/Library/N64/Games/` (e.g., `Unknown Cartridge 1c414340`)
-2. Rename it to `YourPreferredName hex_id` (e.g., `SummerCart 64 1c414340`)
-3. The hex ID suffix must remain unchanged
+Unknown cartridges (flash carts, homebrew, etc.) will always display as "Unknown Cartridge" regardless of what the folder is named on the SD card.
 
 ### Adding Custom Artwork
 
-Custom artwork for unknown cartridges requires modifying `labels.db`. This is a complex binary format - see the labels.db documentation above. A utility tool would be needed to:
-1. Add a new entry to the offset table
-2. Append the raw image data to the file
-3. Update any internal indexes
+Custom artwork can be added to `labels.db` to display label images for any cartridge, including unknown ones. The A3D Manager tool can:
+1. Add new entries to the labels database
+2. Update existing label artwork
+3. Export the modified database back to your SD card
 
-## Known Cartridge IDs
-
-| Hex ID     | Game Title |
-|------------|------------|
-| ac631da0   | GoldenEye 007 |
-| e5240d18   | The Legend of Zelda: Ocarina of Time |
-| 03cc04ee   | Mario Kart 64 |
-| b04b4109   | Star Fox 64 |
-| b393776d   | Super Mario 64 |
-| 04079b93   | Super Smash Bros. |
-| fffffffe   | Unknown (placeholder) |
+See **[LABELS_DB_SPECIFICATION.md](./LABELS_DB_SPECIFICATION.md)** for technical details.
 
 ## Notes
 
 - All files use `rwx------` (700) permissions
 - macOS may create `._` metadata files (e.g., `._labels.db`) - these are safe to ignore
-- `library.db.bak` is an automatic backup of `library.db`
 - The `Settings/Global/` directory may be empty or contain global device settings

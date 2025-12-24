@@ -1,0 +1,4216 @@
+[
+  {
+    "id": "2a1c8d54",
+    "gameCode": "NO7P",
+    "name": "007 - The World Is Not Enough (Europe) (En,Fr,De)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7f3a3558",
+    "gameCode": "NO7E",
+    "name": "007 - The World Is Not Enough (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e0a11622",
+    "gameCode": "NM4E",
+    "name": "007 - The World Is Not Enough (USA) (v2) (Beta)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "beta",
+    "revision": null
+  },
+  {
+    "id": "17c5222c",
+    "gameCode": "NTEA",
+    "name": "1080 Snowboarding (Japan, USA) (En,Ja)",
+    "region": "Japan",
+    "languages": [
+      "English",
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "45ac86d2",
+    "gameCode": "NTWJ",
+    "name": "64 de Hakken!! Tamagotchi - Minna de Tamagotchi World (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "cf72f441",
+    "gameCode": "NERE",
+    "name": "AeroFighters Assault (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c05ac90f",
+    "gameCode": "NAGE",
+    "name": "AeroGauge (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "2e74de9c",
+    "gameCode": "NAYE",
+    "name": "Aidyn Chronicles - The First Mage (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "04f16f48",
+    "gameCode": "NABP",
+    "name": "Airboarder 64 (Europe)",
+    "region": "Europe",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b1ee945c",
+    "gameCode": "NTNE",
+    "name": "All Star Tennis 99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "940f1395",
+    "gameCode": "NBEE",
+    "name": "All-Star Baseball 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7b1917c7",
+    "gameCode": "NASE",
+    "name": "All-Star Baseball 2001 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "cbf9dd35",
+    "gameCode": "NBSE",
+    "name": "All-Star Baseball 99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c240e949",
+    "gameCode": "NARE",
+    "name": "Armorines - Project S.W.A.R.M. (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "77a7e487",
+    "gameCode": "NACE",
+    "name": "Army Men - Air Combat (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "cbdb20e0",
+    "gameCode": "NAME",
+    "name": "Army Men - Sarge's Heroes (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "be1523cd",
+    "gameCode": "N32E",
+    "name": "Army Men - Sarge's Heroes 2 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a222b3a3",
+    "gameCode": "NAHE",
+    "name": "Asteroids Hyper 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "31eb0049",
+    "gameCode": "NLCE",
+    "name": "Automobili Lamborghini (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c3f6f568",
+    "gameCode": "NBKE",
+    "name": "Banjo-Kazooie (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "4f9832d9",
+    "gameCode": "NB7E",
+    "name": "Banjo-Tooie (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ee9ca2eb",
+    "gameCode": "NB4E",
+    "name": "Bassmasters 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "123d4d7a",
+    "gameCode": "NJQE",
+    "name": "Batman Beyond - Return of the Joker (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "09708fb9",
+    "gameCode": "NBQE",
+    "name": "BattleTanx - Global Assault (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ae4b8b9f",
+    "gameCode": "NBXE",
+    "name": "BattleTanx (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6dae3abb",
+    "gameCode": "NZOE",
+    "name": "Battlezone - Rise of the Black Dogs (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "229dd6a9",
+    "gameCode": "NNSE",
+    "name": "Beetle Adventure Racing! (USA) (En,Fr,De)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "111200bd",
+    "gameCode": "NMUE",
+    "name": "Big Mountain 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a73f869f",
+    "gameCode": "NBFE",
+    "name": "Bio F.R.E.A.K.S. (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b86ab3ba",
+    "gameCode": "NBCE",
+    "name": "Blast Corps (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ff995a57",
+    "gameCode": "NBCJ",
+    "name": "Blastdozer (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b862b7f6",
+    "gameCode": "NBPE",
+    "name": "Blues Brothers 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "0ac7ff30",
+    "gameCode": "NBHE",
+    "name": "Body Harvest (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "3897882c",
+    "gameCode": "NBVE",
+    "name": "Bomberman 64 - The Second Attack! (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "89eefc64",
+    "gameCode": "NBME",
+    "name": "Bomberman 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "8a11842c",
+    "gameCode": "NBDE",
+    "name": "Bomberman Hero (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a1a099a3",
+    "gameCode": "NBOE",
+    "name": "Bottom of the 9th (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "14a38e4f",
+    "gameCode": "NOWE",
+    "name": "Brunswick Circuit Pro Bowling (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d827b5d2",
+    "gameCode": "NBLE",
+    "name": "Buck Bumble (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a146e44d",
+    "gameCode": "NBYE",
+    "name": "Bug's Life, A (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9677be48",
+    "gameCode": "NB3E",
+    "name": "Bust-A-Move '99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "11860e27",
+    "gameCode": "NBUE",
+    "name": "Bust-A-Move 2 - Arcade Edition (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9edbd4a3",
+    "gameCode": "NB3P",
+    "name": "Bust-A-Move 3 DX (Europe)",
+    "region": "Europe",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9a776b7c",
+    "gameCode": "NCLE",
+    "name": "California Speed (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "71b58e1b",
+    "gameCode": "NCDE",
+    "name": "Carmageddon 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "96080d48",
+    "gameCode": "ND4P",
+    "name": "Castlevania - Legacy of Darkness (Europe) (En,Fr,De)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "571f4aa3",
+    "gameCode": "ND4E",
+    "name": "Castlevania - Legacy of Darkness (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "829d3617",
+    "gameCode": "ND3E",
+    "name": "Castlevania (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e0304516",
+    "gameCode": "NCTE",
+    "name": "Chameleon Twist (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6e74e8e6",
+    "gameCode": "N2VE",
+    "name": "Chameleon Twist 2 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "87607bb7",
+    "gameCode": "NCBE",
+    "name": "Charlie Blast's Territory (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c538030c",
+    "gameCode": "NCHE",
+    "name": "Chopper Attack (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7b8f200d",
+    "gameCode": "NC2E",
+    "name": "Clay Fighter - Sculptor's Cut (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "1c6de8f2",
+    "gameCode": "NCFE",
+    "name": "Clay Fighter 63 1-3 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "df587110",
+    "gameCode": "NCCE",
+    "name": "Command & Conquer (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "20b8e93f",
+    "gameCode": "NFUE",
+    "name": "Conker's Bad Fur Day (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "2c00e5f4",
+    "gameCode": "NXOE",
+    "name": "Cruis'n Exotica (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ba0a217e",
+    "gameCode": "NCUE",
+    "name": "Cruis'n USA (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "290e8150",
+    "gameCode": "NCWE",
+    "name": "Cruis'n World (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "39a56f04",
+    "gameCode": "NT4E",
+    "name": "CyberTiger (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e729b093",
+    "gameCode": "NDUP",
+    "name": "Daffy Duck Starring as Duck Dodgers (Europe) (En,Fr,De,Es,It,Nl)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian",
+      "Dutch"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "70ee4483",
+    "gameCode": "NDFJ",
+    "name": "Dance Dance Revolution - Disney Dancing Museum (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9ad34ab6",
+    "gameCode": "NDKE",
+    "name": "Dark Rift (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7721bb23",
+    "gameCode": "NGAE",
+    "name": "Deadly Arts (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a4398603",
+    "gameCode": "NDAJ",
+    "name": "Derby Stallion 64 (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "f3ff6662",
+    "gameCode": "NDEE",
+    "name": "Destruction Derby 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "40de0109",
+    "gameCode": "NDYE",
+    "name": "Diddy Kong Racing (USA) (En,Fr)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ad688513",
+    "gameCode": "NDQE",
+    "name": "Donald Duck - Goin' Quackers (USA) (En,Fr,De,Es,It)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "1088ed54",
+    "gameCode": "NDQP",
+    "name": "Donald Duck - Quack Attack (Europe) (En,Fr,De,Es,It)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6f90dfcb",
+    "gameCode": "NDOJ",
+    "name": "Donkey Kong 64 (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "89239b0e",
+    "gameCode": "NDOE",
+    "name": "Donkey Kong 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a2a5229d",
+    "gameCode": "NDME",
+    "name": "Doom 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "3b356814",
+    "gameCode": "NN6E",
+    "name": "Dr. Mario 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "1935aa23",
+    "gameCode": "NDHE",
+    "name": "Dual Heroes (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6352a50d",
+    "gameCode": "NDUE",
+    "name": "Duck Dodgers Starring Daffy Duck (USA) (En,Fr,Es)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "Spanish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "4a45416e",
+    "gameCode": "NDZE",
+    "name": "Duke Nukem - Zero Hour (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e2bbf74f",
+    "gameCode": "NDNE",
+    "name": "Duke Nukem 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7093d06a",
+    "gameCode": "NWIE",
+    "name": "ECW Hardcore Revolution (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d0fb7472",
+    "gameCode": "NMXE",
+    "name": "Excitebike 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7c59b2a4",
+    "gameCode": "NEGE",
+    "name": "Extreme-G (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "3fbc42af",
+    "gameCode": "NG2E",
+    "name": "Extreme-G XG2 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "eaec4252",
+    "gameCode": "NFWE",
+    "name": "F-1 World Grand Prix (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "1069f712",
+    "gameCode": "NF2P",
+    "name": "F-1 World Grand Prix II (Europe) (En,Fr,De,Es)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7a9cfa1e",
+    "gameCode": "CFZE",
+    "name": "F-Zero X (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e0ea96b2",
+    "gameCode": "NHGE",
+    "name": "F1 Pole Position 64 (USA) (En,Fr,De)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c485c444",
+    "gameCode": "NFRP",
+    "name": "F1 Racing Championship (Europe) (En,Fr,De,Es,It)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "887a8fe3",
+    "gameCode": "N8IE",
+    "name": "FIFA - Road to World Cup 98 (USA) (En,Fr,De,Es,It,Nl,Sv)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian",
+      "Dutch",
+      "Swedish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "bad023df",
+    "gameCode": "N9FE",
+    "name": "FIFA 99 (USA) (En,Fr,De,Es,It,Nl,Pt,Sv)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian",
+      "Dutch",
+      "Portuguese",
+      "Swedish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c3da78e3",
+    "gameCode": "N7IE",
+    "name": "FIFA Soccer 64 (USA) (En,Fr,De)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "5218eb6c",
+    "gameCode": "NFGE",
+    "name": "Fighter Destiny 2 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b5ce1a05",
+    "gameCode": "NKAE",
+    "name": "Fighters Destiny (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6101e995",
+    "gameCode": "NFFE",
+    "name": "Fighting Force 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "5b7cafac",
+    "gameCode": "NFDE",
+    "name": "Flying Dragon (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e2207801",
+    "gameCode": "NFOE",
+    "name": "Forsaken 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "48283c1b",
+    "gameCode": "NF9E",
+    "name": "Fox Sports College Hoops '99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b9f1cb91",
+    "gameCode": "NGVE",
+    "name": "Frogger 2 (USA) (Proto 2)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "28125ff4",
+    "gameCode": "NGAP",
+    "name": "G.A.S.P!! Fighters' NEXTream (Europe)",
+    "region": "Europe",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "f43db086",
+    "gameCode": "NGXE",
+    "name": "Gauntlet Legends (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "adf6fa75",
+    "gameCode": "NX3E",
+    "name": "Gex 3 - Deep Cover Gecko (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "bb2a1db7",
+    "gameCode": "NX2E",
+    "name": "Gex 64 - Enter the Gecko (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "17e9b6a1",
+    "gameCode": "NGME",
+    "name": "Goemon's Great Adventure (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "f0e918ff",
+    "gameCode": "NGNE",
+    "name": "Golden Nugget 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ac631da0",
+    "gameCode": "NGEE",
+    "name": "GoldenEye 007 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "84d0e2e4",
+    "gameCode": "NGCE",
+    "name": "GT 64 - Championship Edition (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9bfffb3f",
+    "gameCode": "NYWE",
+    "name": "Harvest Moon 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "8c6894b8",
+    "gameCode": "NHCE",
+    "name": "Hercules - The Legendary Journeys (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "f61d66e3",
+    "gameCode": "NHXE",
+    "name": "Hexen (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "32cb1b48",
+    "gameCode": "NPGE",
+    "name": "Hey You, Pikachu! (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ba557b6b",
+    "gameCode": "NHWE",
+    "name": "Hot Wheels - Turbo Racing (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "91d646c4",
+    "gameCode": "NHVE",
+    "name": "Hybrid Heaven (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ac5f19fa",
+    "gameCode": "NHTE",
+    "name": "Hydro Thunder (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "8433d173",
+    "gameCode": "NWBE",
+    "name": "Iggy's Reckin' Balls (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "f99983e2",
+    "gameCode": "NFHP",
+    "name": "In-Fisherman - Bass Hunter 64 (Europe)",
+    "region": "Europe",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c2494e54",
+    "gameCode": "NFHE",
+    "name": "In-Fisherman - Bass Hunter 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "474fe11b",
+    "gameCode": "NIJE",
+    "name": "Indiana Jones and the Infernal Machine (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ba67d4e1",
+    "gameCode": "NICE",
+    "name": "Indy Racing 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "f785edb4",
+    "gameCode": "NWSE",
+    "name": "International Superstar Soccer '98 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a63cc09a",
+    "gameCode": "NISE",
+    "name": "International Superstar Soccer 2000 (USA) (En,Es)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "Spanish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "17e4aeb2",
+    "gameCode": "NJPE",
+    "name": "International Superstar Soccer 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "4923d13b",
+    "gameCode": "N3HE",
+    "name": "International Track & Field 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "be433913",
+    "gameCode": "NJOE",
+    "name": "Jeopardy! (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "563b66fa",
+    "gameCode": "NCOE",
+    "name": "Jeremy McGrath Supercross 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "8cad7830",
+    "gameCode": "NJFE",
+    "name": "Jet Force Gemini (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7883f218",
+    "gameCode": "NDWE",
+    "name": "John Romero's Daikatana (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "3884976c",
+    "gameCode": "NKJE",
+    "name": "Ken Griffey Jr.'s Slugfest (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9df2a0fb",
+    "gameCode": "NKIE",
+    "name": "Killer Instinct Gold (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c2c08096",
+    "gameCode": "NSBJ",
+    "name": "King Hill 64 - Extreme Snowboarding (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c2a949f2",
+    "gameCode": "NK4E",
+    "name": "Kirby 64 - The Crystal Shards (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "34c2c4a8",
+    "gameCode": "NKEE",
+    "name": "Knife Edge - Nose Gunner (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "2fa7d906",
+    "gameCode": "NKKE",
+    "name": "Knockout Kings 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "717cb88d",
+    "gameCode": "NNBE",
+    "name": "Kobe Bryant in NBA Courtside (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "0071a6de",
+    "gameCode": "NZSP",
+    "name": "Legend of Zelda, The - Majora's Mask (Europe) (En,Fr,De,Es)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "8e94f2dd",
+    "gameCode": "NZSE",
+    "name": "Legend of Zelda, The - Majora's Mask (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7021064b",
+    "gameCode": "NZLP",
+    "name": "Legend of Zelda, The - Ocarina of Time (Europe) (En,Fr,De)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9ebbf464",
+    "gameCode": "NZLP",
+    "name": "Legend of Zelda, The - Ocarina of Time (Europe) (En,Fr,De)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "fcf7ff34",
+    "gameCode": "CZLE",
+    "name": "Legend of Zelda, The - Ocarina of Time (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "746e6e83",
+    "gameCode": "NLGE",
+    "name": "LEGO Racers (USA) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian",
+      "Dutch",
+      "Swedish",
+      "Norwegian",
+      "Danish",
+      "Finnish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "12e55d5e",
+    "gameCode": "NLRE",
+    "name": "Lode Runner 3-D (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6266a989",
+    "gameCode": "NFXP",
+    "name": "Lylatwars (Europe) (En,Fr,De)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "871bbc72",
+    "gameCode": "NMEE",
+    "name": "Mace - The Dark Age (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7ca344cc",
+    "gameCode": "N8ME",
+    "name": "Madden Football 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ba12a9a9",
+    "gameCode": "NMDE",
+    "name": "Madden NFL 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e009a99c",
+    "gameCode": "NFLE",
+    "name": "Madden NFL 2001 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "636c6ff8",
+    "gameCode": "N2ME",
+    "name": "Madden NFL 2002 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "088ca0db",
+    "gameCode": "N9ME",
+    "name": "Madden NFL 99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "dd780abf",
+    "gameCode": "NMTE",
+    "name": "Magical Tetris Challenge (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "81e83731",
+    "gameCode": "NMJJ",
+    "name": "Mahjong 64 (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "0aa32e3d",
+    "gameCode": "NMMJ",
+    "name": "Mahjong Master (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "04243654",
+    "gameCode": "NKGE",
+    "name": "Major League Baseball Featuring Ken Griffey Jr. (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "646054a7",
+    "gameCode": "NMFE",
+    "name": "Mario Golf (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "36bc864b",
+    "gameCode": "NKTE",
+    "name": "Mario Kart 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "03cc04ee",
+    "gameCode": "NKTE",
+    "name": "Mario Kart 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "5dc78f21",
+    "gameCode": "NMPJ",
+    "name": "Mario no Photopie (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "025b1beb",
+    "gameCode": "CLBE",
+    "name": "Mario Party (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6bb03f80",
+    "gameCode": "NMWE",
+    "name": "Mario Party 2 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9613a218",
+    "gameCode": "NMVE",
+    "name": "Mario Party 3 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a0a2503b",
+    "gameCode": "NMQJ",
+    "name": "Mario Story (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6a8078f5",
+    "gameCode": "NM8E",
+    "name": "Mario Tennis (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "8f1cafc0",
+    "gameCode": "NM8J",
+    "name": "Mario Tennis 64 (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "02e906a1",
+    "gameCode": "NM6E",
+    "name": "Mega Man 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e61e368a",
+    "gameCode": "NHME",
+    "name": "Mia Hamm Soccer 64 (USA) (En,Es)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "Spanish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c0990687",
+    "gameCode": "NWKX",
+    "name": "Michael Owen's WLS 2000 (Europe)",
+    "region": "Europe",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "0546998b",
+    "gameCode": "NMLJ",
+    "name": "Mickey no Racing Challenge USA (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "f0280886",
+    "gameCode": "NMLE",
+    "name": "Mickey's Speedway USA (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "f79f53cf",
+    "gameCode": "NV3E",
+    "name": "Micro Machines 64 Turbo (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "47f55a65",
+    "gameCode": "NAIE",
+    "name": "Midway's Greatest Arcade Hits - Volume 1 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "844e2678",
+    "gameCode": "NMBE",
+    "name": "Mike Piazza's Strike Zone (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "97a533c0",
+    "gameCode": "NBRE",
+    "name": "Milo's Astro Lanes (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "941dbdc7",
+    "gameCode": "NTME",
+    "name": "Mischief Makers (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6499464b",
+    "gameCode": "NMIP",
+    "name": "Mission - Impossible (Europe)",
+    "region": "Europe",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "de05bebd",
+    "gameCode": "NMIE",
+    "name": "Mission - Impossible (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "28112e8a",
+    "gameCode": "NMGP",
+    "name": "Monaco Grand Prix - Racing Simulation 2 (Europe) (En,Fr,Es,It)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "Spanish",
+      "Italian"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d1610042",
+    "gameCode": "NMGE",
+    "name": "Monaco Grand Prix (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b54ec52b",
+    "gameCode": "NMOE",
+    "name": "Monopoly (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6563ade7",
+    "gameCode": "NM3E",
+    "name": "Monster Truck Madness 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "dd7cbfd6",
+    "gameCode": "NMYE",
+    "name": "Mortal Kombat Mythologies - Sub-Zero (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "0fa0615b",
+    "gameCode": "NMKE",
+    "name": "Mortal Kombat Trilogy (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "32d9a959",
+    "gameCode": "NMRP",
+    "name": "MRC - Multi-Racing Championship (Europe) (En,Fr,De)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "377e874d",
+    "gameCode": "NMRE",
+    "name": "MRC - Multi-Racing Championship (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "903404e6",
+    "gameCode": "NP9E",
+    "name": "Ms. Pac-Man - Maze Madness (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "add7a87d",
+    "gameCode": "NG5E",
+    "name": "Mystical Ninja Starring Goemon (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "0149b304",
+    "gameCode": "NH5E",
+    "name": "Nagano Winter Olympics '98 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "765d40ef",
+    "gameCode": "NNME",
+    "name": "Namco Museum 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7bf2d3eb",
+    "gameCode": "NN2E",
+    "name": "NASCAR 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "da3391cc",
+    "gameCode": "N9CE",
+    "name": "NASCAR 99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6e251c9d",
+    "gameCode": "NCKE",
+    "name": "NBA Courtside 2 featuring Kobe Bryant (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "95c1fec7",
+    "gameCode": "NXGE",
+    "name": "NBA Hangtime (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "5c02725a",
+    "gameCode": "NBAE",
+    "name": "NBA in the Zone '98 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7d55eee7",
+    "gameCode": "NB2E",
+    "name": "NBA in the Zone '99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "5e210d99",
+    "gameCode": "NWZE",
+    "name": "NBA in the Zone 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ee0902de",
+    "gameCode": "NJAE",
+    "name": "NBA Jam 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ac73d889",
+    "gameCode": "NB9E",
+    "name": "NBA Jam 99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "dff3047b",
+    "gameCode": "NNLE",
+    "name": "NBA Live 2000 (USA) (En,Fr,De,Es)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "2c389b1c",
+    "gameCode": "N9BE",
+    "name": "NBA Live 99 (USA) (En,Fr,De,Es,It)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c2880286",
+    "gameCode": "NSOE",
+    "name": "NBA Showtime - NBA on NBC (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "fb847357",
+    "gameCode": "NRIE",
+    "name": "New Tetris, The (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ab10bd70",
+    "gameCode": "NSZE",
+    "name": "NFL Blitz - Special Edition (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "5738bda3",
+    "gameCode": "NBZE",
+    "name": "NFL Blitz (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "dce98b4c",
+    "gameCode": "NBIE",
+    "name": "NFL Blitz 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "3049173b",
+    "gameCode": "NFBE",
+    "name": "NFL Blitz 2001 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "0498e26e",
+    "gameCode": "NQCE",
+    "name": "NFL QB Club 2001 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "09c9ebf2",
+    "gameCode": "NQBE",
+    "name": "NFL Quarterback Club 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "079955a7",
+    "gameCode": "NQ8E",
+    "name": "NFL Quarterback Club 98 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ec4d4431",
+    "gameCode": "NQ9E",
+    "name": "NFL Quarterback Club 99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "315bd0e7",
+    "gameCode": "N9HE",
+    "name": "NHL 99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "aa3b76f1",
+    "gameCode": "NHOE",
+    "name": "NHL Blades of Steel '99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "572a9139",
+    "gameCode": "NHLE",
+    "name": "NHL Breakaway 98 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b04bdbdf",
+    "gameCode": "NH9E",
+    "name": "NHL Breakaway 99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9908c4c6",
+    "gameCode": "NNCE",
+    "name": "Nightmare Creatures (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6fb60ce5",
+    "gameCode": "NCEP",
+    "name": "Nuclear Strike 64 (Europe) (En,Fr)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a2fe0cb3",
+    "gameCode": "NCEE",
+    "name": "Nuclear Strike 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "5d49e6d6",
+    "gameCode": "NOFE",
+    "name": "Off Road Challenge (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b372fa05",
+    "gameCode": "NOBE",
+    "name": "Ogre Battle 64 - Person of Lordly Caliber (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a5ee8965",
+    "gameCode": "NHNE",
+    "name": "Olympic Hockey 98 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "be5799f3",
+    "gameCode": "NMQE",
+    "name": "Paper Mario (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6565b3a3",
+    "gameCode": "NYPE",
+    "name": "Paperboy (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "5a98de60",
+    "gameCode": "NCRE",
+    "name": "Penny Racers (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d7d3a654",
+    "gameCode": "NPDP",
+    "name": "Perfect Dark (Europe) (En,Fr,De,Es,It)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "bc576a02",
+    "gameCode": "NPDE",
+    "name": "Perfect Dark (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d60fb3e2",
+    "gameCode": "NEAE",
+    "name": "PGA European Tour (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "71d82dc2",
+    "gameCode": "NPWE",
+    "name": "Pilotwings 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "77a46b7c",
+    "gameCode": "NPNE",
+    "name": "Pokemon Puzzle League (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "2d0f5798",
+    "gameCode": "NPOE",
+    "name": "Pokemon Stadium (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "4e6866ec",
+    "gameCode": "NPOE",
+    "name": "Pokemon Stadium (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "dd37743a",
+    "gameCode": "NP3E",
+    "name": "Pokemon Stadium 2 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "f7a5d91b",
+    "gameCode": "NPXE",
+    "name": "Polaris SnoCross (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "bf3c8a26",
+    "gameCode": "NPUE",
+    "name": "Power Rangers - Lightspeed Rescue (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "469caad8",
+    "gameCode": "NPQE",
+    "name": "Powerpuff Girls, The - Chemical X-Traction (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "82f83aa0",
+    "gameCode": "NPMP",
+    "name": "Premier Manager 64 (Europe)",
+    "region": "Europe",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ea7f1e54",
+    "gameCode": "NPBJ",
+    "name": "Puzzle Bobble 64 (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a5ac98e4",
+    "gameCode": "NQKE",
+    "name": "Quake (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "37579204",
+    "gameCode": "NQ2E",
+    "name": "Quake II (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9009a21a",
+    "gameCode": "NETE",
+    "name": "Quest 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "bfb37153",
+    "gameCode": "NMGD",
+    "name": "Racing Simulation 2 (Germany)",
+    "region": "Germany",
+    "languages": [],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b52c5792",
+    "gameCode": "NKRP",
+    "name": "Rakugakids (Europe)",
+    "region": "Europe",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e46fc562",
+    "gameCode": "NRAJ",
+    "name": "Rally '99 (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ead8d623",
+    "gameCode": "NWQE",
+    "name": "Rally Challenge 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "86766168",
+    "gameCode": "NRPE",
+    "name": "Rampage - World Tour (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "796528c0",
+    "gameCode": "N2PE",
+    "name": "Rampage 2 - Universal Tour (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d5c471b2",
+    "gameCode": "NRTE",
+    "name": "Rat Attack! (USA) (En,Fr,De,Es,It,Nl)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian",
+      "Dutch"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e487fef7",
+    "gameCode": "NY2E",
+    "name": "Rayman 2 - The Great Escape (USA) (En,Fr,De,Es,It)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "8b30b5a2",
+    "gameCode": "NFQE",
+    "name": "Razor Freestyle Scooter (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c88d19da",
+    "gameCode": "NRVE",
+    "name": "Re-Volt (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e34100cb",
+    "gameCode": "N22E",
+    "name": "Ready 2 Rumble Boxing - Round 2 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d51d95f6",
+    "gameCode": "NRDE",
+    "name": "Ready 2 Rumble Boxing (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "29f97010",
+    "gameCode": "NREE",
+    "name": "Resident Evil 2 (USA) (Rev 1)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": 1
+  },
+  {
+    "id": "94329154",
+    "gameCode": "NROE",
+    "name": "Road Rash 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e30ed745",
+    "gameCode": "NRRE",
+    "name": "Roadsters (USA) (En,Fr,Es)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "Spanish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a124d242",
+    "gameCode": "NR7J",
+    "name": "Robot Poncots 64 - 7tsu no Umi no Caramel (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "40bb5e42",
+    "gameCode": "NRXE",
+    "name": "Robotron 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9f9267a7",
+    "gameCode": "NSUE",
+    "name": "Rocket - Robot on Wheels (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "838fadd3",
+    "gameCode": "NRZE",
+    "name": "RR64 - Ridge Racer 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "33b6a071",
+    "gameCode": "NRGE",
+    "name": "Rugrats - Scavenger Hunt (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "63fd0b54",
+    "gameCode": "NRGP",
+    "name": "Rugrats - Treasure Hunt (Europe)",
+    "region": "Europe",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7809ed5d",
+    "gameCode": "NRKE",
+    "name": "Rugrats in Paris - The Movie (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "431a0df7",
+    "gameCode": "NR2E",
+    "name": "Rush 2 - Extreme Racing USA (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b98e996c",
+    "gameCode": "NCSE",
+    "name": "S.C.A.R.S. (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "44fc8855",
+    "gameCode": "NSFE",
+    "name": "San Francisco Rush - Extreme Racing (USA) (En,Fr,De)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "8b0f5e93",
+    "gameCode": "NRUE",
+    "name": "San Francisco Rush 2049 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "dbcfd54b",
+    "gameCode": "NSYE",
+    "name": "Scooby-Doo! - Classic Creep Capers (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ad282848",
+    "gameCode": "NELE",
+    "name": "Sesame Street - Elmo's Letter Adventure (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "fbe8c879",
+    "gameCode": "NENE",
+    "name": "Sesame Street - Elmo's Number Journey (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7fd2d858",
+    "gameCode": "NSDE",
+    "name": "Shadow Man (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "8decd965",
+    "gameCode": "NSGE",
+    "name": "Shadowgate 64 - Trials of the Four Towers (USA) (En,Es)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "Spanish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "2f9ac671",
+    "gameCode": "NS2J",
+    "name": "SimCity 2000 (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d30ca662",
+    "gameCode": "NSKE",
+    "name": "Snowboard Kids (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "3d9cd3dd",
+    "gameCode": "NK2E",
+    "name": "Snowboard Kids 2 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e339b46d",
+    "gameCode": "NSAJ",
+    "name": "Sonic Wings Assault (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "bcf9dab5",
+    "gameCode": "NCYE",
+    "name": "South Park - Chef's Luv Shack (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "72ebd4e4",
+    "gameCode": "NDTE",
+    "name": "South Park (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b908e90c",
+    "gameCode": "NPRE",
+    "name": "South Park Rally (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "06f96131",
+    "gameCode": "NIVE",
+    "name": "Space Invaders (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "4dfcb246",
+    "gameCode": "NSVE",
+    "name": "SpaceStation Silicon Valley (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e5cded18",
+    "gameCode": "NSLE",
+    "name": "Spider-Man (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b04b4109",
+    "gameCode": "NFXE",
+    "name": "Star Fox 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ba7f5a1a",
+    "gameCode": "NS6E",
+    "name": "Star Soldier - Vanishing Earth (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "437b3ee6",
+    "gameCode": "NRSE",
+    "name": "Star Wars - Rogue Squadron (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "8ea56d16",
+    "gameCode": "NSWE",
+    "name": "Star Wars - Shadows of the Empire (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "1558821a",
+    "gameCode": "NNAE",
+    "name": "Star Wars Episode I - Battle for Naboo (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c3f94820",
+    "gameCode": "NEPE",
+    "name": "Star Wars Episode I - Racer (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "663f3ce1",
+    "gameCode": "NSQE",
+    "name": "StarCraft 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d2ac74fa",
+    "gameCode": "NSCE",
+    "name": "Starshot - Space Circus Fever (USA) (En,Fr,Es)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "Spanish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6325fa4b",
+    "gameCode": "NR3E",
+    "name": "Stunt Racer 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c8179ef6",
+    "gameCode": "NBWE",
+    "name": "Super Bowling (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "7f1df0fa",
+    "gameCode": "NSMJ",
+    "name": "Super Mario 64 (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b393776d",
+    "gameCode": "NSME",
+    "name": "Super Mario 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "04079b93",
+    "gameCode": "NALE",
+    "name": "Super Smash Bros. (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b7214f05",
+    "gameCode": "NSXE",
+    "name": "Supercross 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "f45e7f35",
+    "gameCode": "NSPE",
+    "name": "Superman - The New Superman Aventures (USA) (En,Fr,Es)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "Spanish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "637fc831",
+    "gameCode": "NTAE",
+    "name": "Tarzan (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "1977ebb0",
+    "gameCode": "NTXP",
+    "name": "Taz Express (Europe) (En,Fr,De,Es,It,Nl)",
+    "region": "Europe",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian",
+      "Dutch"
+    ],
+    "videoMode": "PAL",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "44fb72e2",
+    "gameCode": "NT6J",
+    "name": "Tetris 64 (Japan) (En)",
+    "region": "Japan",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "558333cf",
+    "gameCode": "NTPE",
+    "name": "Tetrisphere (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b588d00b",
+    "gameCode": "NT9E",
+    "name": "Tigger's Honey Hunt (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d46bd615",
+    "gameCode": "NTJE",
+    "name": "Tom and Jerry in Fists of Furry (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "2dde91e1",
+    "gameCode": "NR6E",
+    "name": "Tom Clancy's Rainbow Six (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "647e59ff",
+    "gameCode": "NTTE",
+    "name": "Tonic Trouble (USA) (Rev 1)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": 1
+  },
+  {
+    "id": "c7fc35d3",
+    "gameCode": "NTFE",
+    "name": "Tony Hawk's Pro Skater (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9fc50ddd",
+    "gameCode": "NTQE",
+    "name": "Tony Hawk's Pro Skater 2 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9b9bb83b",
+    "gameCode": "N3TE",
+    "name": "Tony Hawk's Pro Skater 3 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "28ab6ca1",
+    "gameCode": "NGBE",
+    "name": "Top Gear Hyper-Bike (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "e5351549",
+    "gameCode": "NRCE",
+    "name": "Top Gear Overdrive (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9292bb08",
+    "gameCode": "NGRE",
+    "name": "Top Gear Rally (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "228c0bc9",
+    "gameCode": "NL2E",
+    "name": "Top Gear Rally 2 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "75fafe2c",
+    "gameCode": "NTHE",
+    "name": "Toy Story 2 - Buzz Lightyear to the Rescue! (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "71858b71",
+    "gameCode": "NOHE",
+    "name": "Transformers - Beast Wars Transmetals (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "2034d111",
+    "gameCode": "N3PE",
+    "name": "Triple Play 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "49326676",
+    "gameCode": "NTUE",
+    "name": "Turok - Dinosaur Hunter (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d976e47c",
+    "gameCode": "NRWE",
+    "name": "Turok - Rage Wars (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "54baf797",
+    "gameCode": "NT2E",
+    "name": "Turok 2 - Seeds of Evil (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "96be960f",
+    "gameCode": "NTKE",
+    "name": "Turok 3 - Shadow of Oblivion (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d58ab8d0",
+    "gameCode": "NSBE",
+    "name": "Twisted Edge - Extreme Snowboarding (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6c695db3",
+    "gameCode": "NIRJ",
+    "name": "Utchan Nanchan no Hono no Challenger - Denryuu Ira Ira Bou (Japan)",
+    "region": "Japan",
+    "languages": [
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "b4cdf5d8",
+    "gameCode": "NVLE",
+    "name": "V-Rally Edition 99 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "534e58e0",
+    "gameCode": "NVGE",
+    "name": "Vigilante 8 - 2nd Offense (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c9ae94fb",
+    "gameCode": "NV8E",
+    "name": "Vigilante 8 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d68f2b45",
+    "gameCode": "NVCE",
+    "name": "Virtual Chess 64 (USA) (En,Fr,Es)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "Spanish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "23a4cf27",
+    "gameCode": "NVRE",
+    "name": "Virtual Pool 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c22a994f",
+    "gameCode": "NWLE",
+    "name": "Waialae Country Club - True Golf Classics (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "ad5cc4e0",
+    "gameCode": "NWAE",
+    "name": "War Gods (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d7361105",
+    "gameCode": "NWRE",
+    "name": "Wave Race 64 - Kawasaki Jet Ski (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "1e98d321",
+    "gameCode": "NW8E",
+    "name": "Wayne Gretzky's 3D Hockey '98 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "648266c8",
+    "gameCode": "NWGE",
+    "name": "Wayne Gretzky's 3D Hockey (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "4fb4dd5f",
+    "gameCode": "NWVE",
+    "name": "WCW Backstage Assault (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "d90e6a67",
+    "gameCode": "NWME",
+    "name": "WCW Mayhem (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "4d845967",
+    "gameCode": "NW3E",
+    "name": "WCW Nitro (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "a0c63bac",
+    "gameCode": "NWNE",
+    "name": "WCW vs. nWo - World Tour (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "34a31993",
+    "gameCode": "NW2E",
+    "name": "WCW-nWo Revenge (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "335e71eb",
+    "gameCode": "NWTE",
+    "name": "Wetrix (USA) (En,Fr,De,Es,It,Nl)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian",
+      "Dutch"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "cbefde54",
+    "gameCode": "NWFE",
+    "name": "Wheel of Fortune (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6153de1c",
+    "gameCode": "NWDE",
+    "name": "WinBack - Covert Operations (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "924b4b58",
+    "gameCode": "NWPE",
+    "name": "Wipeout 64 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "3695a427",
+    "gameCode": "N8WE",
+    "name": "World Cup 98 (USA) (En,Fr,De,Es,It,Nl,Sv,Da)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "German",
+      "Spanish",
+      "Italian",
+      "Dutch",
+      "Swedish",
+      "Danish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "1ef07919",
+    "gameCode": "NWOE",
+    "name": "World Driver Championship (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "98e8864c",
+    "gameCode": "NADE",
+    "name": "Worms Armageddon (USA) (En,Fr,Es)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "French",
+      "Spanish"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "1dc8597e",
+    "gameCode": "NTIE",
+    "name": "WWF Attitude (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "5da73985",
+    "gameCode": "NW4E",
+    "name": "WWF No Mercy (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "c5c6ed65",
+    "gameCode": "NWWE",
+    "name": "WWF War Zone (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "6d6e21df",
+    "gameCode": "NWXE",
+    "name": "WWF WrestleMania 2000 (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "9684939c",
+    "gameCode": "NXFE",
+    "name": "Xena - Warrior Princess - The Talisman of Fate (USA)",
+    "region": "USA",
+    "languages": [
+      "English"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  },
+  {
+    "id": "324dfa08",
+    "gameCode": "NYSE",
+    "name": "Yoshi's Story (USA) (En,Ja)",
+    "region": "USA",
+    "languages": [
+      "English",
+      "Japanese"
+    ],
+    "videoMode": "NTSC",
+    "releaseType": "official",
+    "revision": null
+  }
+]

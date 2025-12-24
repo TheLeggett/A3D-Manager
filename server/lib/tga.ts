@@ -70,7 +70,6 @@ export async function convertToTga(
 ): Promise<void> {
   // Load and resize image to target dimensions
   const image = sharp(inputPath);
-  const metadata = await image.metadata();
 
   // Resize to target dimensions, maintaining aspect ratio and filling
   const resizedBuffer = await image

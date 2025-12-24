@@ -30,3 +30,5 @@ sd-card-example/
 *.sw?
 
 .claude/
+
+roms.dat.xml

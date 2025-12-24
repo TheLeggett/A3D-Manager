@@ -1,0 +1,122 @@
+.help-page {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.help-content {
+  max-width: 800px;
+  margin: 0 auto;
+  color: #e0e0e0;
+}
+
+.help-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #fff;
+  border-bottom: 2px solid #444;
+  padding-bottom: 0.5rem;
+}
+
+.help-section {
+  margin-bottom: 2.5rem;
+}
+
+.help-section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.help-section h3 {
+  font-size: 1.3rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #f0f0f0;
+}
+
+.help-section p {
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: #d0d0d0;
+}
+
+.help-section ul {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.8;
+}
+
+.help-section li {
+  margin-bottom: 0.5rem;
+  color: #d0d0d0;
+}
+
+.help-section code {
+  background: var(--color-surface-elevated);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  color: var(--color-accent);
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: never;
+  image-rendering: pixelated;
+}
+
+.help-section a {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.help-section a:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+.disclaimer {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.disclaimer-box {
+  background: #3a2a2a;
+  border: 2px solid #d32f2f;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.disclaimer-box p {
+  margin-bottom: 1rem;
+  color: #ffcdd2;
+}
+
+.disclaimer-box p:last-child {
+  margin-bottom: 0;
+}
+
+.disclaimer-box strong {
+  color: #ff5252;
+}
+
+/* Scrollbar styling */
+.help-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.help-page::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.help-page::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.help-page::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

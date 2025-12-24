@@ -277,9 +277,13 @@ A labels.db with zero entries would be:
 
 ---
 
-## Example Cartridge IDs
+## Cartridge ID Generation
 
-These are some known cartridge IDs from official N64 releases:
+Cartridge IDs are **CRC32 checksums of the first 8 KiB (8,192 bytes) of ROM data** in big-endian (Z64) format.
+
+For complete details on the algorithm, ROM format conversion, and a utility script to compute IDs from ROM files, see **[Cart ID Algorithm](./CART_ID_ALGORITHM.md)**.
+
+### Example Cartridge IDs
 
 | Hex ID | Game Title |
 |--------|------------|
