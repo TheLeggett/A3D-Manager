@@ -474,6 +474,12 @@ export function LabelsBrowser({ onSelectLabel }: LabelsBrowserProps) {
               {totalPages > 1 && (
                 <div className="labels-pagination">
                   <button
+                    onClick={() => handlePageChange(0)}
+                    disabled={page === 0 || loading}
+                  >
+                    First
+                  </button>
+                  <button
                     onClick={() => handlePageChange(page - 1)}
                     disabled={page === 0 || loading}
                   >
@@ -487,6 +493,12 @@ export function LabelsBrowser({ onSelectLabel }: LabelsBrowserProps) {
                     disabled={page >= totalPages - 1 || loading}
                   >
                     Next
+                  </button>
+                  <button
+                    onClick={() => handlePageChange(totalPages - 1)}
+                    disabled={page >= totalPages - 1 || loading}
+                  >
+                    Last
                   </button>
                 </div>
               )}
