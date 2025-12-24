@@ -5,10 +5,9 @@
  * Used for SD card sync operations where large file transfers need progress monitoring.
  */
 
-import { createReadStream, createWriteStream, statSync, readdirSync, mkdirSync } from 'fs';
+import { statSync } from 'fs';
 import { stat, readdir, mkdir } from 'fs/promises';
-import { Transform, TransformCallback } from 'stream';
-import { pipeline } from 'stream/promises';
+import { Transform, type TransformCallback } from 'stream';
 import path from 'path';
 
 // =============================================================================

@@ -95,10 +95,6 @@ function getCartName(cartId: string): string {
   return userEntry?.name || '';
 }
 
-function getCartEntry(cartId: string): CartNameEntry | undefined {
-  return cartNameMap.get(cartId.toLowerCase());
-}
-
 function getCartMetadata(cartId: string): Partial<CartNameEntry> {
   const entry = cartNameMap.get(cartId.toLowerCase());
   if (!entry) return {};
@@ -159,10 +155,6 @@ async function deleteUserCart(id: string): Promise<boolean> {
     await saveUserCarts();
   }
   return deleted;
-}
-
-function getUserCart(cartId: string): UserCartEntry | undefined {
-  return userCarts.get(cartId.toLowerCase());
 }
 
 // Load user carts on startup
@@ -607,7 +599,6 @@ router.get('/search/:query', async (req, res) => {
           cartId: id,
           index: -1,
           name: userCart.name,
-          isUserCart: true,
         });
       }
     }

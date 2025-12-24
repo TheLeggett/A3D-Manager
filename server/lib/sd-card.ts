@@ -4,10 +4,10 @@ import path from 'path';
 import {
   copyFileWithProgress,
   copyDirWithProgress,
-  ProgressCallback,
-  BatchProgressCallback,
-  FileProgress,
-  BatchProgress,
+  type ProgressCallback,
+  type BatchProgressCallback,
+  type FileProgress,
+  type BatchProgress,
 } from './file-transfer.js';
 import { parseLabelsDb, getLocalLabelsDbPath, hasLocalLabelsDb } from './labels-db-core.js';
 

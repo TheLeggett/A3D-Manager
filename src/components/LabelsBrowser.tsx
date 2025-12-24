@@ -43,11 +43,14 @@ interface LabelsStatus {
 
 interface LabelsBrowserProps {
   onSelectLabel: (cartId: string, name?: string) => void;
+  refreshKey?: number;
+  sdCardPath?: string;
 }
 
-export function LabelsBrowser({ onSelectLabel }: LabelsBrowserProps) {
+export function LabelsBrowser({ onSelectLabel, refreshKey }: LabelsBrowserProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const hasLoadedRef = useRef(false);
+  const [imageCacheBuster, setImageCacheBuster] = useState(0);
 
   const [status, setStatus] = useState<LabelsStatus | null>(null);
   const [entries, setEntries] = useState<LabelEntry[]>([]);
@@ -287,6 +290,14 @@ export function LabelsBrowser({ onSelectLabel }: LabelsBrowserProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [regionFilter, languageFilter, videoModeFilter, searchQuery, status?.imported]);
 
+  // Refetch when refreshKey changes (after delete/update)
+  useEffect(() => {
+    if (refreshKey === undefined || refreshKey === 0) return;
+    fetchPage(page);
+    setImageCacheBuster(Date.now());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
+
   return (
     <div className="labels-browser">
       <div className="labels-header">
@@ -454,7 +465,7 @@ export function LabelsBrowser({ onSelectLabel }: LabelsBrowserProps) {
                     <div className="cart-sprite">
                       <img
                         className="cart-artwork"
-                        src={`/api/labels/${entry.cartId}`}
+                        src={`/api/labels/${entry.cartId}${imageCacheBuster ? `?v=${imageCacheBuster}` : ''}`}
                         alt={entry.name || entry.cartId}
                         loading="lazy"
                       />
