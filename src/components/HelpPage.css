@@ -57,13 +57,9 @@
   background: var(--color-surface-elevated);
   padding: 0.2rem 0.4rem;
   border-radius: 3px;
-  font-family: var(--font-pixel);
-  font-size: 16px;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', 'Courier New', monospace;
+  font-size: 0.9em;
   color: var(--color-accent);
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: grayscale;
-  font-smooth: never;
-  image-rendering: pixelated;
 }
 
 .help-section a {

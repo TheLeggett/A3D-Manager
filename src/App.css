@@ -1851,8 +1851,8 @@
   background: var(--color-surface-elevated);
   padding: 0.2rem 0.5rem;
   border-radius: var(--radius-sm);
-  font-family: var(--font-pixel);
-  font-size: 16px;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', 'Courier New', monospace;
+  font-size: 0.9em;
 }
 
 .sync-no-changes {
@@ -2451,7 +2451,6 @@
 .page-header h2,
 .page-header .sd-card-path,
 .debug-section input,
-.sync-description code,
 .label-info label,
 .rename-folder,
 .empty-state h2 {
