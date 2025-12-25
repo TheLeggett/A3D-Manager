@@ -15,6 +15,7 @@
     "adm-zip": "^0.5.16",
     "archiver": "^7.0.1",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "fast-xml-parser": "^5.3.3",
     "multer": "^1.4.5-lts.1",

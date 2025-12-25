@@ -110,7 +110,7 @@
   left: 0.5rem;
   width: 20px;
   height: 20px;
-  background: rgba(0, 0, 0, 0.6);
+  background: #000000;
   border: 2px solid white;
   border-radius: 4px;
   display: flex;
@@ -126,8 +126,8 @@
 }
 
 .cartridge-card.selected .selection-checkbox {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: #000000;
+  border-color: #000000;
 }
 
 .cartridge-card.selected .selection-checkbox::after {
@@ -140,6 +140,10 @@
 }
 
 .cartridge-card.selected {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 2px;
+  background: var(--color-accent);
+}
+
+.cartridge-card.selected .cartridge-card-name,
+.cartridge-card.selected .cartridge-card-id {
+  color: #000000;
 }

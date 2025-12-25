@@ -6,6 +6,7 @@ import {
   getLabelsDbStatus,
   getAllLocalLabelsDbEntries,
   getLabelsDbImage,
+  getLabelsDbImageFromPath,
   searchLabelsDb,
   importLabelsDbFileFromBuffer,
   mergeLabelsDbFromBuffer,
@@ -15,6 +16,7 @@ import {
   updateEntryInLabelsDb,
 } from '../lib/labels-db-core.js';
 import { getOwnedCartIds } from '../lib/owned-carts.js';
+import { detectSDCards } from '../lib/sd-card.js';
 
 const router = Router();
 
@@ -747,7 +749,21 @@ router.put('/:cartId', uploadImage.single('image'), async (req, res) => {
 router.get('/:cartId', async (req, res) => {
   try {
     const cartId = req.params.cartId;
-    const pngBuffer = await getLabelsDbImage(cartId);
+    let pngBuffer: Buffer | null = null;
+
+    // Check if we should read from SD card only
+    const readFromSD = process.env.READ_LABELS_FROM_SD === 'true';
+
+    if (readFromSD) {
+      // Only read from SD card, no fallback to local
+      const sdCards = await detectSDCards();
+      if (sdCards.length > 0) {
+        pngBuffer = await getLabelsDbImageFromPath(sdCards[0].labelsDbPath, cartId);
+      }
+    } else {
+      // Read from local labels.db
+      pngBuffer = await getLabelsDbImage(cartId);
+    }
 
     if (!pngBuffer) {
       return res.status(404).json({ error: 'Label not found' });

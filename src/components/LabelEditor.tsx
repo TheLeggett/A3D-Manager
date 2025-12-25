@@ -311,7 +311,7 @@ export function LabelEditor({ cartId, gameName, onClose, onUpdate, onDelete }: L
         style={{ display: 'none' }}
       />
 
-      <p className="artwork-note">
+      <p className="artwork-note text-muted">
         Image will be resized to 74x86 pixels.
       </p>
 

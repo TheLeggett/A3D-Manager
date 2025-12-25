@@ -864,6 +864,40 @@ export async function getLabelsDbImage(cartIdHex: string): Promise<Buffer | null
 }
 
 /**
+ * Get a label image from any labels.db file by cart ID hex
+ * Used for reading directly from SD card
+ */
+export async function getLabelsDbImageFromPath(labelsDbPath: string, cartIdHex: string): Promise<Buffer | null> {
+  try {
+    const data = await readFile(labelsDbPath);
+    const db = parseLabelsDb(data);
+
+    const cartId = parseInt(cartIdHex, 16);
+    const index = db.idToIndex.get(cartId);
+
+    if (index === undefined) return null;
+
+    // Extract raw BGRA data
+    const offset = DATA_START + index * IMAGE_SLOT_SIZE;
+    const rawBgra = data.subarray(offset, offset + IMAGE_DATA_SIZE);
+
+    // Convert BGRA to RGBA
+    const rgba = bgraToRgba(rawBgra);
+
+    // Encode as PNG
+    const png = await sharp(rgba, {
+      raw: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT, channels: 4 },
+    })
+      .png()
+      .toBuffer();
+
+    return png;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Search entries in labels.db by cart ID
  */
 export async function searchLabelsDb(

@@ -22,6 +22,12 @@ export function Navbar() {
           Sync to SD
         </Link>
         <Link
+          to="/settings"
+          className={`nav-tab text-pixel ${location.pathname === '/settings' ? 'active' : ''}`}
+        >
+          Settings
+        </Link>
+        <Link
           to="/help"
           className={`nav-tab text-pixel ${location.pathname === '/help' ? 'active' : ''}`}
         >

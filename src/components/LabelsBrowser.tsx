@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useImageCache } from '../App';
 import { CartridgesActionBar } from './CartridgesActionBar';
 import { CartridgeCard } from './CartridgeCard';
 import { Pagination } from './Pagination';
@@ -58,7 +59,10 @@ interface LabelsBrowserProps {
 export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsBrowserProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const hasLoadedRef = useRef(false);
-  const [imageCacheBuster, setImageCacheBuster] = useState(0);
+  const { imageCacheBuster: globalCacheBuster } = useImageCache();
+  const [localCacheBuster, setLocalCacheBuster] = useState(0);
+  // Combine global and local cache busters
+  const imageCacheBuster = Math.max(globalCacheBuster, localCacheBuster);
 
   const [status, setStatus] = useState<LabelsStatus | null>(null);
   const [entries, setEntries] = useState<LabelEntry[]>([]);
@@ -299,7 +303,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
   useEffect(() => {
     if (refreshKey === undefined || refreshKey === 0) return;
     fetchPage(page);
-    setImageCacheBuster(Date.now());
+    setLocalCacheBuster(Date.now());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
@@ -578,8 +582,8 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
 
       <ExportBundleModal
         isOpen={showExportBundleModal}
-        onClose={() => {
-          setShowExportBundleModal(false);
+        onClose={() => setShowExportBundleModal(false)}
+        onExportComplete={() => {
           if (selectionMode) {
             setSelectionMode(false);
             setSelectedCartIds(new Set());

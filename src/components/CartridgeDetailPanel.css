@@ -149,11 +149,22 @@
   color: var(--color-muted);
 }
 
+.tab-content .field-group:has(.known-game-info) {
+  gap: 4px;
+}
+
+.tab-content .known-game-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 /* Label comparison in slide-over */
 .tab-content .label-comparison {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
+  padding-top:16px;
 }
 
 .tab-content .label-comparison h4 {
@@ -210,7 +221,6 @@
 
 .tab-content .artwork-note {
   font-size: 0.8rem;
-  color: var(--color-muted);
   margin: 0;
 }
 

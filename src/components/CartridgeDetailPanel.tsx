@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useImageCache } from '../App';
 import { IconButton, OptionSelector, ToggleSwitch } from './controls';
 import { CartridgeSprite } from './CartridgeSprite';
 import './CartridgeDetailPanel.css';
@@ -147,7 +148,10 @@ export function CartridgeDetailPanel({
   const [activeTab, setActiveTab] = useState<TabId>('label');
   const [isOwned, setIsOwned] = useState(false);
   const [lookupResult, setLookupResult] = useState<LookupResult | null>(null);
-  const [imageCacheBuster, setImageCacheBuster] = useState(Date.now());
+  const { imageCacheBuster: globalCacheBuster } = useImageCache();
+  const [localCacheBuster, setLocalCacheBuster] = useState(Date.now());
+  // Combine global and local cache busters
+  const imageCacheBuster = Math.max(globalCacheBuster, localCacheBuster);
 
   // Check ownership status
   useEffect(() => {
@@ -256,7 +260,7 @@ export function CartridgeDetailPanel({
               lookupResult={lookupResult}
               setLookupResult={setLookupResult}
               imageCacheBuster={imageCacheBuster}
-              onImageUpdate={() => setImageCacheBuster(Date.now())}
+              onImageUpdate={() => setLocalCacheBuster(Date.now())}
               onUpdate={onUpdate}
               onClose={onClose}
               onDelete={onDelete}
@@ -500,13 +504,15 @@ function LabelTab({
             )}
           </div>
         ) : (
-          <span className="readonly">{editableName || 'Unknown'}</span>
-        )}
-        {lookupResult?.source === 'internal' && lookupResult.region && (
-          <span className="field-hint">
-            {lookupResult.region}
-            {lookupResult.videoMode && lookupResult.videoMode !== 'Unknown' && ` • ${lookupResult.videoMode}`}
-          </span>
+          <div className="known-game-info">
+            <span className="readonly">{editableName || 'Unknown'}</span>
+            {lookupResult?.source === 'internal' && lookupResult.region && (
+              <span className="text-subtle">
+                {lookupResult.region}
+                {lookupResult.videoMode && lookupResult.videoMode !== 'Unknown' && ` • ${lookupResult.videoMode}`}
+              </span>
+            )}
+          </div>
         )}
       </div>
 
@@ -554,7 +560,7 @@ function LabelTab({
         style={{ display: 'none' }}
       />
 
-      <p className="artwork-note">
+      <p className="artwork-note text-muted">
         Image will be resized to 74x86 pixels.
       </p>
 

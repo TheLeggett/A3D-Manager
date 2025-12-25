@@ -4,9 +4,51 @@ import { CartridgesPage } from './components/CartridgesPage';
 import { Navbar } from './components/Navbar';
 import { SyncPage } from './components/SyncPage';
 import { HelpPage } from './components/HelpPage';
+import { SettingsPage } from './components/SettingsPage';
 import { ComponentTestPage } from './components/ComponentTestPage';
 import type { SDCard } from './types';
 import './App.css';
+
+// Image Cache Context for global cache invalidation
+interface ImageCacheContextType {
+  imageCacheBuster: number;
+  lastInvalidated: number;
+  invalidateImageCache: () => void;
+}
+
+const ImageCacheContext = createContext<ImageCacheContextType | null>(null);
+
+export function useImageCache() {
+  const context = useContext(ImageCacheContext);
+  if (!context) throw new Error('useImageCache must be used within ImageCacheProvider');
+  return context;
+}
+
+function ImageCacheProvider({ children }: { children: React.ReactNode }) {
+  const [imageCacheBuster, setImageCacheBuster] = useState(() => {
+    // Restore from localStorage if available
+    const saved = localStorage.getItem('imageCacheBuster');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+  const [lastInvalidated, setLastInvalidated] = useState(() => {
+    const saved = localStorage.getItem('lastImageCacheInvalidation');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
+  const invalidateImageCache = useCallback(() => {
+    const now = Date.now();
+    setImageCacheBuster(now);
+    setLastInvalidated(now);
+    localStorage.setItem('imageCacheBuster', now.toString());
+    localStorage.setItem('lastImageCacheInvalidation', now.toString());
+  }, []);
+
+  return (
+    <ImageCacheContext.Provider value={{ imageCacheBuster, lastInvalidated, invalidateImageCache }}>
+      {children}
+    </ImageCacheContext.Provider>
+  );
+}
 
 // SD Card Context to share state across pages
 interface SDCardContextType {
@@ -105,6 +147,7 @@ function AppContent() {
           <Route path="/cartridges" element={<CartridgesPage />} />
           <Route path="/labels" element={<Navigate to="/cartridges" replace />} />
           <Route path="/sync" element={<SyncPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/component-test" element={<ComponentTestPage />} />
         </Routes>
@@ -116,9 +159,11 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <SDCardProvider>
-        <AppContent />
-      </SDCardProvider>
+      <ImageCacheProvider>
+        <SDCardProvider>
+          <AppContent />
+        </SDCardProvider>
+      </ImageCacheProvider>
     </BrowserRouter>
   );
 }

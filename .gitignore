@@ -35,3 +35,6 @@ roms.dat.xml
 
 # Local notepad
 notes.md
+
+# Environment variables
+.env

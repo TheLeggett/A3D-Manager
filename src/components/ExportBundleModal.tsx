@@ -4,12 +4,14 @@ import { Modal, Button } from './ui';
 interface ExportBundleModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onExportComplete?: () => void;
   selectedCartIds?: string[]; // If provided, export only these carts
 }
 
 export function ExportBundleModal({
   isOpen,
   onClose,
+  onExportComplete,
   selectedCartIds,
 }: ExportBundleModalProps) {
   const [includeLabels, setIncludeLabels] = useState(true);
@@ -77,6 +79,7 @@ export function ExportBundleModal({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      onExportComplete?.();
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Export failed');

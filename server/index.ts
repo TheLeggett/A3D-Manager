@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -37,6 +38,9 @@ async function start() {
 
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    if (process.env.READ_LABELS_FROM_SD === 'true') {
+      console.log('📀 SD Card label reading enabled (READ_LABELS_FROM_SD=true)');
+    }
   });
 }
 
