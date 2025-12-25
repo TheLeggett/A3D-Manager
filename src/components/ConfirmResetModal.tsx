@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Modal, Button } from './ui';
 
 interface ConfirmResetModalProps {
   isOpen: boolean;
@@ -11,7 +12,12 @@ export function ConfirmResetModal({ isOpen, onClose, onConfirm, entryCount }: Co
   const [confirmText, setConfirmText] = useState('');
   const [resetting, setResetting] = useState(false);
 
-  if (!isOpen) return null;
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setConfirmText('');
+    }
+  }, [isOpen]);
 
   const isConfirmed = confirmText.toLowerCase() === 'delete';
 
@@ -38,58 +44,49 @@ export function ConfirmResetModal({ isOpen, onClose, onConfirm, entryCount }: Co
     }
   };
 
-  const handleClose = () => {
-    setConfirmText('');
-    onClose();
-  };
-
   return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal confirm-reset-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Clear All Labels</h2>
-          <button className="close-btn" onClick={handleClose}>
-            &times;
-          </button>
-        </div>
-
-        <div className="modal-body">
-          <div className="warning-banner">
-            <span className="warning-icon">⚠️</span>
-            <div>
-              <strong>This action cannot be undone</strong>
-              <p>
-                This will permanently delete {entryCount ? `all ${entryCount} cartridge labels` : 'your labels database'}.
-                You can import a new labels.db or add cartridges individually afterward.
-              </p>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Type "delete" to confirm</label>
-            <input
-              type="text"
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="delete"
-              autoComplete="off"
-            />
-          </div>
-        </div>
-
-        <div className="modal-footer">
-          <button className="btn-secondary" onClick={handleClose} disabled={resetting}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Clear All Labels"
+      size="md"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={resetting}>
             Cancel
-          </button>
-          <button
-            className="btn-danger"
+          </Button>
+          <Button
+            variant="danger"
             onClick={handleReset}
             disabled={!isConfirmed || resetting}
+            loading={resetting}
           >
-            {resetting ? 'Deleting...' : 'Delete All Labels'}
-          </button>
+            Delete All Labels
+          </Button>
+        </>
+      }
+    >
+      <div className="warning-box warning-box--with-icon">
+        <span className="warning-box__icon">⚠️</span>
+        <div>
+          <strong className="warning-box__title">This action cannot be undone</strong>
+          <p>
+            This will permanently delete {entryCount ? `all ${entryCount} cartridge labels` : 'your labels database'}.
+            You can import a new labels.db or add cartridges individually afterward.
+          </p>
         </div>
       </div>
-    </div>
+
+      <div className="form-group">
+        <label>Type "delete" to confirm</label>
+        <input
+          type="text"
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          placeholder="delete"
+          autoComplete="off"
+        />
+      </div>
+    </Modal>
   );
 }

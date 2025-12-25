@@ -87,14 +87,8 @@
 }
 
 .toggle-text {
-  font-family: var(--font-pixel);
-  font-size: 16px;
   line-height: 1;
-  text-transform: uppercase;
   color: #ffffff;
-  image-rendering: pixelated;
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: unset;
 }
 
 .toggle-switch {

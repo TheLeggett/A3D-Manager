@@ -1,11 +1,15 @@
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { CartridgesActionBar } from './CartridgesActionBar';
+import { CartridgeCard } from './CartridgeCard';
+import { Pagination } from './Pagination';
 import { LabelsImportModal } from './LabelsImportModal';
 import { AddCartridgeModal } from './AddCartridgeModal';
 import { ConfirmResetModal } from './ConfirmResetModal';
 import { ImportFromSDModal } from './ImportFromSDModal';
 import { ExportBundleModal } from './ExportBundleModal';
 import { ImportBundleModal } from './ImportBundleModal';
+import './LabelsBrowser.css';
 
 interface LabelEntry {
   cartId: string;
@@ -257,14 +261,14 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
 
     // Wait for next frame to ensure DOM is updated
     requestAnimationFrame(() => {
-      const tiles = document.querySelectorAll('.label-tile');
-      tiles.forEach((tile) => {
-        tile.classList.remove('animate-in');
+      const cards = document.querySelectorAll('.cartridge-card');
+      cards.forEach((card) => {
+        card.classList.remove('animate-in');
       });
 
       requestAnimationFrame(() => {
-        tiles.forEach((tile) => {
-          tile.classList.add('animate-in');
+        cards.forEach((card) => {
+          card.classList.add('animate-in');
         });
       });
     });
@@ -303,78 +307,27 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
       <div className="labels-header">
         <h2>Cartridges</h2>
         {status?.imported && (
-          <span className="label-count">
+          <span className="label-count text-pixel text-muted">
             {hasActiveFilters ? `${totalEntries} of ${totalUnfiltered}` : (totalEntries || status.entryCount)} cartridges
           </span>
         )}
       </div>
 
-      {/* Action Bar */}
-      <div className="labels-action-bar">
-        <div className="action-bar-left">
-          <button
-            className="btn-primary"
-            onClick={() => setShowImportModal(true)}
-          >
-            Import labels.db
-          </button>
-
-          <button
-            className="btn-secondary"
-            onClick={() => setShowAddModal(true)}
-          >
-            Add Cartridge
-          </button>
-
-          {sdCardPath && (
-            <button
-              className="btn-secondary"
-              onClick={() => setShowImportFromSDModal(true)}
-            >
-              Import from SD
-            </button>
-          )}
-
-          {status?.imported && (
-            <>
-              <button
-                className="btn-secondary"
-                onClick={() => setShowExportBundleModal(true)}
-              >
-                Export Bundle
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={() => setShowImportBundleModal(true)}
-              >
-                Import Bundle
-              </button>
-            </>
-          )}
-        </div>
-
-        {status?.imported && (
-          <div className="action-bar-right">
-            <div className="selection-mode-toggle">
-              <button
-                className={`btn-ghost ${selectionMode ? 'active' : ''}`}
-                onClick={() => {
-                  setSelectionMode(!selectionMode);
-                  setSelectedCartIds(new Set());
-                }}
-              >
-                {selectionMode ? 'Exit Select' : 'Select'}
-              </button>
-            </div>
-            <button
-              className="btn-ghost btn-danger-text"
-              onClick={() => setShowResetModal(true)}
-            >
-              Clear All Labels
-            </button>
-          </div>
-        )}
-      </div>
+      <CartridgesActionBar
+        hasLabels={status?.imported || false}
+        hasSDCard={!!sdCardPath}
+        selectionMode={selectionMode}
+        onImportLabels={() => setShowImportModal(true)}
+        onAddCartridge={() => setShowAddModal(true)}
+        onImportFromSD={() => setShowImportFromSDModal(true)}
+        onExportBundle={() => setShowExportBundleModal(true)}
+        onImportBundle={() => setShowImportBundleModal(true)}
+        onToggleSelectionMode={() => {
+          setSelectionMode(!selectionMode);
+          setSelectedCartIds(new Set());
+        }}
+        onClearAllLabels={() => setShowResetModal(true)}
+      />
 
       {error && <div className="error-message">{error}</div>}
 
@@ -414,7 +367,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
             </div>
 
             <div className="filter-group filter-group-search">
-              <label htmlFor="search-input">Search</label>
+              <label htmlFor="search-input" className="text-label">Search</label>
               <div className="search-input-wrapper">
                 <input
                   id="search-input"
@@ -438,7 +391,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
             {filterOptions && (
               <>
                 <div className="filter-group">
-                  <label htmlFor="region-filter">Region</label>
+                  <label htmlFor="region-filter" className="text-label">Region</label>
                   <select
                     id="region-filter"
                     value={regionFilter}
@@ -452,7 +405,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
                 </div>
 
                 <div className="filter-group">
-                  <label htmlFor="language-filter">Language</label>
+                  <label htmlFor="language-filter" className="text-label">Language</label>
                   <select
                     id="language-filter"
                     value={languageFilter}
@@ -466,7 +419,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
                 </div>
 
                 <div className="filter-group">
-                  <label htmlFor="videomode-filter">Video</label>
+                  <label htmlFor="videomode-filter" className="text-label">Video</label>
                   <select
                     id="videomode-filter"
                     value={videoModeFilter}
@@ -550,10 +503,14 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
             <>
               <div className="labels-grid">
                 {entries.map((entry, index) => (
-                  <div
+                  <CartridgeCard
                     key={entry.cartId}
-                    className={`label-tile ${entry.name ? 'has-name' : ''} ${selectionMode ? 'selectable' : ''} ${selectedCartIds.has(entry.cartId) ? 'selected' : ''}`}
-                    style={{ '--tile-index': index } as React.CSSProperties}
+                    cartId={entry.cartId}
+                    name={entry.name}
+                    index={index}
+                    selectionMode={selectionMode}
+                    isSelected={selectedCartIds.has(entry.cartId)}
+                    imageCacheBuster={imageCacheBuster}
                     onClick={() => {
                       if (selectionMode) {
                         const newSelection = new Set(selectedCartIds);
@@ -567,61 +524,16 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
                         onSelectLabel(entry.cartId, entry.name);
                       }
                     }}
-                  >
-                    {selectionMode && (
-                      <div className="selection-checkbox" />
-                    )}
-                    <div className="cart-sprite">
-                      <img
-                        className="cart-artwork"
-                        src={`/api/labels/${entry.cartId}${imageCacheBuster ? `?v=${imageCacheBuster}` : ''}`}
-                        alt={entry.name || entry.cartId}
-                        loading="lazy"
-                      />
-                      <img className="cart-overlay" src="/n64-cart-dark.png" alt="" />
-                      <img className="cart-overlay cart-overlay-hover" src="/n64-cart-black.png" alt="" />
-                    </div>
-                    <div className="label-info">
-                      <span className={`label-name ${!entry.name ? 'unknown' : ''}`}>
-                        {entry.name || 'Title Unknown'}
-                      </span>
-                      <span className="label-id">{entry.cartId}</span>
-                    </div>
-                  </div>
+                  />
                 ))}
               </div>
 
-              {totalPages > 1 && (
-                <div className="labels-pagination">
-                  <button
-                    onClick={() => handlePageChange(0)}
-                    disabled={page === 0 || loading}
-                  >
-                    First
-                  </button>
-                  <button
-                    onClick={() => handlePageChange(page - 1)}
-                    disabled={page === 0 || loading}
-                  >
-                    Previous
-                  </button>
-                  <span>
-                    Page {page + 1} of {totalPages}
-                  </span>
-                  <button
-                    onClick={() => handlePageChange(page + 1)}
-                    disabled={page >= totalPages - 1 || loading}
-                  >
-                    Next
-                  </button>
-                  <button
-                    onClick={() => handlePageChange(totalPages - 1)}
-                    disabled={page >= totalPages - 1 || loading}
-                  >
-                    Last
-                  </button>
-                </div>
-              )}
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                disabled={loading}
+              />
             </>
           )}
         </>

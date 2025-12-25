@@ -1,0 +1,145 @@
+.cartridge-card {
+  position: relative;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  padding: 20px;
+  transition: background-color 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cartridge-card.animate-in {
+  animation: cardSlideIn 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--tile-index) * 30ms);
+}
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cartridge-card:hover {
+  background: #ffffff;
+}
+
+/* Cart sprite wrapper */
+.cart-sprite-wrapper {
+  position: relative;
+  width: 150px;
+  height: 98px;
+  margin: 0 auto;
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cartridge-card:hover .cart-sprite-wrapper {
+  transform: translateY(-3px);
+}
+
+.cart-sprite-wrapper .cart-sprite-base,
+.cart-sprite-wrapper .cart-sprite-hover {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.cart-sprite-wrapper .cart-sprite-hover {
+  opacity: 0;
+  transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cartridge-card:hover .cart-sprite-wrapper .cart-sprite-hover {
+  opacity: 1;
+}
+
+/* Card info */
+.cartridge-card-info {
+  padding: 0.5rem 0 0 0;
+  text-align: center;
+}
+
+.cartridge-card-name {
+  display: block;
+  font-size: 14px;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cartridge-card:hover .cartridge-card-name {
+  color: #000000;
+}
+
+.cartridge-card-name.unknown {
+  color: var(--color-text-muted);
+}
+
+.cartridge-card:hover .cartridge-card-name.unknown {
+  color: #000000;
+}
+
+.cartridge-card-id {
+  display: block;
+  line-height: 16px;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cartridge-card:hover .cartridge-card-id {
+  color: #000000;
+}
+
+/* Selection mode */
+.cartridge-card.selectable:hover {
+  transform: scale(1.02);
+}
+
+.cartridge-card .selection-checkbox {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid white;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 10;
+}
+
+.cartridge-card.selectable .selection-checkbox {
+  opacity: 1;
+}
+
+.cartridge-card.selected .selection-checkbox {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.cartridge-card.selected .selection-checkbox::after {
+  content: '';
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid white;
+  border-bottom: 2px solid white;
+  transform: rotate(-45deg) translateY(-1px);
+}
+
+.cartridge-card.selected {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}

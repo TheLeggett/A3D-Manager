@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Modal, Button } from './ui';
 
 interface AddCartridgeModalProps {
   isOpen: boolean;
@@ -30,6 +31,18 @@ export function AddCartridgeModal({ isOpen, onClose, onAdd }: AddCartridgeModalP
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isValidCartId = /^[0-9a-fA-F]{8}$/.test(cartId);
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setCartId('');
+      setGameName('');
+      setFile(null);
+      setPreview(null);
+      setError(null);
+      setLookupResult(null);
+    }
+  }, [isOpen]);
 
   // Look up cart ID when valid
   const lookupCartId = useCallback(async (id: string) => {
@@ -75,8 +88,6 @@ export function AddCartridgeModal({ isOpen, onClose, onAdd }: AddCartridgeModalP
 
     return () => clearTimeout(timer);
   }, [cartId, isValidCartId, lookupCartId, isOpen]);
-
-  if (!isOpen) return null;
 
   const handleFile = (selectedFile: File) => {
     if (!selectedFile.type.startsWith('image/')) {
@@ -147,13 +158,6 @@ export function AddCartridgeModal({ isOpen, onClose, onAdd }: AddCartridgeModalP
         throw new Error(data.error || 'Failed to add cartridge');
       }
 
-      // Reset form
-      setCartId('');
-      setGameName('');
-      setFile(null);
-      setPreview(null);
-      setLookupResult(null);
-
       onAdd();
       onClose();
     } catch (err) {
@@ -163,144 +167,131 @@ export function AddCartridgeModal({ isOpen, onClose, onAdd }: AddCartridgeModalP
     }
   };
 
-  const handleClose = () => {
-    setCartId('');
-    setGameName('');
-    setFile(null);
-    setPreview(null);
-    setError(null);
-    setLookupResult(null);
-    onClose();
-  };
-
   // Determine if name field should be shown and if it's editable
   const showNameField = isValidCartId && !lookingUp;
   const isNameEditable = !lookupResult?.found || lookupResult.source === 'user';
   const isNameRequired = isNameEditable && !lookupResult?.found;
 
   return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal add-cartridge-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Add New Cartridge</h2>
-          <button className="close-btn" onClick={handleClose}>
-            &times;
-          </button>
-        </div>
-
-        <div className="modal-body">
-          <p className="modal-description">
-            Enter the 8-character hex cart ID. If we recognize it, the game name will
-            be filled automatically.
-          </p>
-
-          <div className="form-group">
-            <label>Cart ID</label>
-            <input
-              type="text"
-              value={cartId}
-              onChange={(e) => setCartId(e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 8))}
-              placeholder="e.g., b393776d"
-              maxLength={8}
-              className={cartId && !isValidCartId ? 'invalid' : ''}
-              autoFocus
-            />
-            {cartId && !isValidCartId && (
-              <span className="field-hint error">Must be exactly 8 hex characters</span>
-            )}
-            {lookingUp && (
-              <span className="field-hint">Looking up cart ID...</span>
-            )}
-          </div>
-
-          {showNameField && (
-            <div className="form-group">
-              <label>
-                Game Name
-                {lookupResult?.found && lookupResult.source === 'internal' && (
-                  <span className="label-badge label-badge-internal">Known Game</span>
-                )}
-                {lookupResult?.found && lookupResult.source === 'user' && (
-                  <span className="label-badge label-badge-user">Custom Name</span>
-                )}
-                {!lookupResult?.found && (
-                  <span className="label-badge label-badge-unknown">Unknown Cart</span>
-                )}
-              </label>
-              {isNameEditable ? (
-                <input
-                  type="text"
-                  value={gameName}
-                  onChange={(e) => setGameName(e.target.value)}
-                  placeholder={isNameRequired ? "Enter game name (required)" : "Enter game name"}
-                  className={isNameRequired && !gameName.trim() ? 'needs-input' : ''}
-                />
-              ) : (
-                <div className="readonly-field">{gameName}</div>
-              )}
-              {lookupResult?.found && lookupResult.source === 'internal' && lookupResult.region && (
-                <span className="field-hint">
-                  {lookupResult.region}
-                  {lookupResult.videoMode && lookupResult.videoMode !== 'Unknown' && ` • ${lookupResult.videoMode}`}
-                </span>
-              )}
-              {!lookupResult?.found && (
-                <span className="field-hint">
-                  This cart ID isn't in our database. This name is for your reference in A3D Manager only — the Analogue 3D will display its own internal name or "Unknown Cartridge".
-                </span>
-              )}
-            </div>
-          )}
-
-          {showNameField && (
-            <div className="form-group">
-              <label>Label Image</label>
-              <div
-                className={`drop-zone ${dragActive ? 'active' : ''}`}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragActive(true);
-                }}
-                onDragLeave={() => setDragActive(false)}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {preview ? (
-                  <img src={preview} alt="Preview" className="preview-image" />
-                ) : (
-                  <div className="drop-zone-content">
-                    <p>Drop image here</p>
-                    <p className="hint">or click to select</p>
-                  </div>
-                )}
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-                style={{ display: 'none' }}
-              />
-              <span className="field-hint">Image will be resized to 74×86 pixels</span>
-            </div>
-          )}
-
-          {error && <div className="error-message">{error}</div>}
-        </div>
-
-        <div className="modal-footer">
-          <button className="btn-secondary" onClick={handleClose} disabled={saving}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add New Cartridge"
+      size="md"
+      className="add-cartridge-modal"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>
             Cancel
-          </button>
-          <button
-            className="btn-primary"
+          </Button>
+          <Button
+            variant="primary"
             onClick={handleSubmit}
             disabled={!isValidCartId || !file || saving || (isNameRequired && !gameName.trim())}
+            loading={saving}
           >
-            {saving ? 'Adding...' : 'Add Cartridge'}
-          </button>
-        </div>
+            Add Cartridge
+          </Button>
+        </>
+      }
+    >
+      <p className="modal-description">
+        Enter the 8-character hex cart ID. If we recognize it, the game name will
+        be filled automatically.
+      </p>
+
+      <div className="form-group">
+        <label>Cart ID</label>
+        <input
+          type="text"
+          value={cartId}
+          onChange={(e) => setCartId(e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 8))}
+          placeholder="e.g., b393776d"
+          maxLength={8}
+          className={cartId && !isValidCartId ? 'invalid' : ''}
+          autoFocus
+        />
+        {cartId && !isValidCartId && (
+          <span className="field-hint error">Must be exactly 8 hex characters</span>
+        )}
+        {lookingUp && (
+          <span className="field-hint">Looking up cart ID...</span>
+        )}
       </div>
-    </div>
+
+      {showNameField && (
+        <div className="form-group">
+          <label>
+            Game Name
+            {lookupResult?.found && lookupResult.source === 'internal' && (
+              <span className="label-badge label-badge-internal">Known Game</span>
+            )}
+            {lookupResult?.found && lookupResult.source === 'user' && (
+              <span className="label-badge label-badge-user">Custom Name</span>
+            )}
+            {!lookupResult?.found && (
+              <span className="label-badge label-badge-unknown">Unknown Cart</span>
+            )}
+          </label>
+          {isNameEditable ? (
+            <input
+              type="text"
+              value={gameName}
+              onChange={(e) => setGameName(e.target.value)}
+              placeholder={isNameRequired ? "Enter game name (required)" : "Enter game name"}
+              className={isNameRequired && !gameName.trim() ? 'needs-input' : ''}
+            />
+          ) : (
+            <div className="readonly-field">{gameName}</div>
+          )}
+          {lookupResult?.found && lookupResult.source === 'internal' && lookupResult.region && (
+            <span className="field-hint">
+              {lookupResult.region}
+              {lookupResult.videoMode && lookupResult.videoMode !== 'Unknown' && ` • ${lookupResult.videoMode}`}
+            </span>
+          )}
+          {!lookupResult?.found && (
+            <span className="field-hint">
+              This cart ID isn't in our database. This name is for your reference in A3D Manager only — the Analogue 3D will display its own internal name or "Unknown Cartridge".
+            </span>
+          )}
+        </div>
+      )}
+
+      {showNameField && (
+        <div className="form-group">
+          <label>Label Image</label>
+          <div
+            className={`drop-zone ${dragActive ? 'active' : ''}`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragActive(true);
+            }}
+            onDragLeave={() => setDragActive(false)}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {preview ? (
+              <img src={preview} alt="Preview" className="preview-image" />
+            ) : (
+              <div className="drop-zone-content">
+                <p>Drop image here</p>
+                <p className="hint">or click to select</p>
+              </div>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+            style={{ display: 'none' }}
+          />
+          <span className="field-hint">Image will be resized to 74×86 pixels</span>
+        </div>
+      )}
+
+      {error && <div className="error-message">{error}</div>}
+    </Modal>
   );
 }

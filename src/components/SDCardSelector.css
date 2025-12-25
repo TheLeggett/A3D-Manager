@@ -1,0 +1,83 @@
+.sd-card-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sd-card-selector select {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  min-width: 200px;
+  width: 200px;
+  height: 36px;
+  cursor: pointer;
+  transition: border-color 0.2s, opacity 0.3s ease-in-out;
+}
+
+.sd-card-selector select:hover {
+  border-color: var(--color-accent);
+}
+
+.sd-card-selector select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.sd-card-selector select.fade-in {
+  animation: sdCardFadeIn 0.3s ease-in-out;
+}
+
+.sd-card-selector select.fade-out {
+  animation: sdCardFadeOut 0.3s ease-in-out;
+  opacity: 0;
+}
+
+.sd-refreshing-label {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  min-width: 200px;
+  width: 200px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  animation: sdCardFadeIn 0.3s ease-in-out, sdCardPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes sdCardFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sdCardFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sdCardPulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}

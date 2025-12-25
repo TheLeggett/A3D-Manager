@@ -13,7 +13,7 @@ export function ToggleSwitch({ label, checked, onChange, onText = 'ON', offText 
     <div className="control-row">
       <span className="control-label">{label}</span>
       <div className="toggle-container">
-        <span className={`toggle-text ${checked ? 'on' : 'off'}`}>
+        <span className={`toggle-text text-pixel ${checked ? 'on' : 'off'}`}>
           {checked ? onText : offText}
         </span>
         <button

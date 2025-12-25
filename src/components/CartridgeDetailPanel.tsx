@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { OptionSelector, ToggleSwitch } from './controls';
+import { CartridgeSprite } from './CartridgeSprite';
+import './CartridgeDetailPanel.css';
 
 interface CartridgeDetailPanelProps {
   cartId: string;
@@ -145,6 +147,7 @@ export function CartridgeDetailPanel({
   const [activeTab, setActiveTab] = useState<TabId>('label');
   const [isOwned, setIsOwned] = useState(false);
   const [lookupResult, setLookupResult] = useState<LookupResult | null>(null);
+  const [imageCacheBuster, setImageCacheBuster] = useState(Date.now());
 
   // Check ownership status
   useEffect(() => {
@@ -198,9 +201,15 @@ export function CartridgeDetailPanel({
     <div className="slide-over-overlay" onClick={onClose}>
       <div className="slide-over-panel" onClick={(e) => e.stopPropagation()}>
         <div className="slide-over-header">
+          <CartridgeSprite
+            artworkUrl={`/api/labels/${cartId}?v=${imageCacheBuster}`}
+            alt={displayName}
+            color="dark"
+            size="small"
+          />
           <div className="slide-over-title">
             <h2>{displayName}</h2>
-            <code className="cart-id-badge">{cartId}</code>
+            <code className="cart-id-badge text-mono-small">{cartId}</code>
           </div>
           <button className="close-btn" onClick={onClose}>
             &times;
@@ -246,6 +255,8 @@ export function CartridgeDetailPanel({
               cartId={cartId}
               lookupResult={lookupResult}
               setLookupResult={setLookupResult}
+              imageCacheBuster={imageCacheBuster}
+              onImageUpdate={() => setImageCacheBuster(Date.now())}
               onUpdate={onUpdate}
               onClose={onClose}
               onDelete={onDelete}
@@ -277,6 +288,8 @@ interface LabelTabProps {
   cartId: string;
   lookupResult: LookupResult | null;
   setLookupResult: React.Dispatch<React.SetStateAction<LookupResult | null>>;
+  imageCacheBuster: number;
+  onImageUpdate: () => void;
   onUpdate: () => void;
   onClose: () => void;
   onDelete?: () => void;
@@ -286,6 +299,8 @@ function LabelTab({
   cartId,
   lookupResult,
   setLookupResult,
+  imageCacheBuster,
+  onImageUpdate,
   onUpdate,
   onClose,
   onDelete,
@@ -310,7 +325,7 @@ function LabelTab({
     }
   }, [lookupResult?.name]);
 
-  const imageUrl = `/api/labels/${cartId}`;
+  const imageUrl = `/api/labels/${cartId}?v=${imageCacheBuster}`;
 
   const isUserCart = lookupResult?.source === 'user';
   const isUnknownCart = lookupResult && !lookupResult.found;
@@ -398,6 +413,7 @@ function LabelTab({
 
       setFile(null);
       setPreview(null);
+      onImageUpdate();
       onUpdate();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
@@ -485,19 +501,17 @@ function LabelTab({
       {/* Label Preview & Upload */}
       <div className="label-comparison">
         <div className="label-current">
-          <h4>Current Label</h4>
-          <div className="cart-sprite">
-            <img
-              className="cart-artwork"
-              src={imageUrl}
-              alt="Current label"
-            />
-            <img className="cart-overlay" src="/n64-cart-dark.png" alt="" />
-          </div>
+          <h4 className="text-label">Current Label</h4>
+          <CartridgeSprite
+            artworkUrl={imageUrl}
+            alt="Current label"
+            color="dark"
+            size="large"
+          />
         </div>
 
         <div className="label-new">
-          <h4>New Label</h4>
+          <h4 className="text-label">New Label</h4>
           <div
             className={`drop-zone ${dragActive ? 'active' : ''}`}
             onDragOver={(e) => {
@@ -1482,7 +1496,7 @@ function GamePakTab({ cartId, sdCardPath }: GamePakTabProps) {
         <div className="save-info-details">
           {localSaveInfo && (
             <div className="save-info-card">
-              <h4>Local Save Data</h4>
+              <h4 className="text-label">Local Save Data</h4>
               <div className="save-stats">
                 <div className="stat">
                   <span className="stat-value">{localSaveInfo.pagesUsed}</span>
@@ -1566,7 +1580,7 @@ function GamePakTab({ cartId, sdCardPath }: GamePakTabProps) {
       )}
 
       <div className="info-box">
-        <h4>About Game Paks</h4>
+        <h4 className="text-label">About Game Paks</h4>
         <p>
           Game Paks are 32KB controller pak save files (controller_pak.img).
           These contain save data for games that use the Controller Pak accessory.

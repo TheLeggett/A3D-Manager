@@ -1,0 +1,31 @@
+.cartridges-action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.action-bar-left {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.action-bar-right {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.selection-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selection-mode-toggle button {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+}

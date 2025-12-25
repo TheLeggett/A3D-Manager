@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Modal, Button } from './ui';
 
 interface LabelEditorProps {
   cartId: string;
@@ -185,135 +186,136 @@ export function LabelEditor({ cartId, gameName, onClose, onUpdate, onDelete }: L
   const displayName = editableName || gameName;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal label-editor-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Edit Label</h2>
-          <button className="close-btn" onClick={onClose}>
-            &times;
-          </button>
-        </div>
-
-        <div className="modal-body">
-          <div className="label-info">
-            <label>
-              Game Name
-              {lookupResult?.source === 'internal' && (
-                <span className="label-badge label-badge-internal">Known Game</span>
-              )}
-              {lookupResult?.source === 'user' && (
-                <span className="label-badge label-badge-user">Custom Name</span>
-              )}
-              {isUnknownCart && (
-                <span className="label-badge label-badge-unknown">Unknown Cart</span>
-              )}
-            </label>
-            {canEditName ? (
-              <div className="name-editor">
-                <input
-                  type="text"
-                  value={editableName}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="Enter game name"
-                />
-                {nameChanged && (
-                  <button
-                    className="btn-primary btn-small"
-                    onClick={handleSaveName}
-                    disabled={savingName || !editableName.trim()}
-                  >
-                    {savingName ? 'Saving...' : 'Save'}
-                  </button>
-                )}
-              </div>
-            ) : (
-              displayName && <span className="readonly">{displayName}</span>
-            )}
-            {lookupResult?.source === 'internal' && lookupResult.region && (
-              <span className="field-hint" style={{ marginTop: '0.25rem' }}>
-                {lookupResult.region}
-                {lookupResult.videoMode && lookupResult.videoMode !== 'Unknown' && ` • ${lookupResult.videoMode}`}
-              </span>
-            )}
-
-            <label style={{ marginTop: '1rem' }}>Cart ID</label>
-            <code className="readonly">{cartId}</code>
-          </div>
-
-          <div className="label-comparison">
-            <div className="label-current">
-              <h4>Current Label</h4>
-              <div className="cart-sprite">
-                <img
-                  className="cart-artwork"
-                  src={imageUrl}
-                  alt="Current label"
-                />
-                <img className="cart-overlay" src="/n64-cart-dark.png" alt="" />
-              </div>
-            </div>
-
-            <div className="label-new">
-              <h4>Select New Label</h4>
-              <div
-                className={`drop-zone ${dragActive ? 'active' : ''}`}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragActive(true);
-                }}
-                onDragLeave={() => setDragActive(false)}
-                onDrop={handleDrop}
-                onClick={() => inputRef.current?.click()}
-              >
-                {preview ? (
-                  <img src={preview} alt="Preview" className="preview-image" />
-                ) : (
-                  <div className="drop-zone-content">
-                    <p>Drop image here</p>
-                    <p className="hint">or click to select</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-            style={{ display: 'none' }}
-          />
-
-          <p className="artwork-note">
-            Image will be resized to 74x86 pixels.
-          </p>
-
-          {error && <div className="error-message">{error}</div>}
-        </div>
-
-        <div className="modal-footer modal-footer-split">
-          <button
-            className="btn-ghost btn-danger-text"
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Edit Label"
+      size="lg"
+      className="label-editor-modal"
+      footer={
+        <div className="modal-footer-split">
+          <Button
+            variant="ghost"
+            className="btn-danger-text"
             onClick={handleDelete}
             disabled={uploading || deleting}
+            loading={deleting}
           >
-            {deleting ? 'Deleting...' : 'Delete Cartridge'}
-          </button>
+            Delete Cartridge
+          </Button>
           <div className="modal-footer-actions">
-            <button className="btn-secondary" onClick={onClose} disabled={uploading || deleting}>
+            <Button variant="secondary" onClick={onClose} disabled={uploading || deleting}>
               Cancel
-            </button>
-            <button
-              className="btn-primary"
+            </Button>
+            <Button
+              variant="primary"
               onClick={handleUpload}
               disabled={!file || uploading || deleting}
+              loading={uploading}
             >
-              {uploading ? 'Uploading...' : 'Update Label'}
-            </button>
+              Update Label
+            </Button>
+          </div>
+        </div>
+      }
+    >
+      <div className="label-info">
+        <label>
+          Game Name
+          {lookupResult?.source === 'internal' && (
+            <span className="label-badge label-badge-internal">Known Game</span>
+          )}
+          {lookupResult?.source === 'user' && (
+            <span className="label-badge label-badge-user">Custom Name</span>
+          )}
+          {isUnknownCart && (
+            <span className="label-badge label-badge-unknown">Unknown Cart</span>
+          )}
+        </label>
+        {canEditName ? (
+          <div className="name-editor">
+            <input
+              type="text"
+              value={editableName}
+              onChange={(e) => handleNameChange(e.target.value)}
+              placeholder="Enter game name"
+            />
+            {nameChanged && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSaveName}
+                disabled={savingName || !editableName.trim()}
+                loading={savingName}
+              >
+                Save
+              </Button>
+            )}
+          </div>
+        ) : (
+          displayName && <span className="readonly">{displayName}</span>
+        )}
+        {lookupResult?.source === 'internal' && lookupResult.region && (
+          <span className="field-hint" style={{ marginTop: '0.25rem' }}>
+            {lookupResult.region}
+            {lookupResult.videoMode && lookupResult.videoMode !== 'Unknown' && ` • ${lookupResult.videoMode}`}
+          </span>
+        )}
+
+        <label style={{ marginTop: '1rem' }}>Cart ID</label>
+        <code className="readonly">{cartId}</code>
+      </div>
+
+      <div className="label-comparison">
+        <div className="label-current">
+          <h4>Current Label</h4>
+          <div className="cart-sprite">
+            <img
+              className="cart-artwork"
+              src={imageUrl}
+              alt="Current label"
+            />
+            <img className="cart-overlay" src="/n64-cart-dark.png" alt="" />
+          </div>
+        </div>
+
+        <div className="label-new">
+          <h4>Select New Label</h4>
+          <div
+            className={`drop-zone ${dragActive ? 'active' : ''}`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragActive(true);
+            }}
+            onDragLeave={() => setDragActive(false)}
+            onDrop={handleDrop}
+            onClick={() => inputRef.current?.click()}
+          >
+            {preview ? (
+              <img src={preview} alt="Preview" className="preview-image" />
+            ) : (
+              <div className="drop-zone-content">
+                <p>Drop image here</p>
+                <p className="hint">or click to select</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+        style={{ display: 'none' }}
+      />
+
+      <p className="artwork-note">
+        Image will be resized to 74x86 pixels.
+      </p>
+
+      {error && <div className="error-message">{error}</div>}
+    </Modal>
   );
 }

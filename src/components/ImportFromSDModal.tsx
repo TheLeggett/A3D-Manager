@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Modal, Button } from './ui';
 
 interface CartridgeInfo {
   cartId: string;
@@ -197,8 +198,6 @@ export function ImportFromSDModal({
     }
   };
 
-  if (!isOpen) return null;
-
   const selectedWithSettings = scanResult?.cartridges.filter(
     c => selectedIds.has(c.cartId) && c.hasSettings
   ).length || 0;
@@ -208,169 +207,166 @@ export function ImportFromSDModal({
   ).length || 0;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal import-sd-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Import from SD Card</h2>
-          <button className="close-btn" onClick={onClose} disabled={importing}>
-            &times;
-          </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Import from SD Card"
+      size="lg"
+      className="import-sd-modal"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={importing}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleImport}
+            disabled={importing || selectedIds.size === 0 || !scanResult}
+            loading={importing}
+          >
+            Import {selectedIds.size} Cartridges
+          </Button>
+        </>
+      }
+    >
+      {scanning ? (
+        <div className="scanning-status">
+          <div className="spinner"></div>
+          <p>Scanning SD card for cartridges...</p>
         </div>
+      ) : error && !scanResult ? (
+        <div className="error-state">
+          <div className="error-message">{error}</div>
+          <Button variant="secondary" onClick={scanSDCard}>
+            Retry
+          </Button>
+        </div>
+      ) : scanResult ? (
+        <>
+          {/* Summary */}
+          <div className="scan-summary">
+            Found <strong>{scanResult.summary.total}</strong> cartridges on SD card
+            {scanResult.summary.alreadyOwned > 0 && (
+              <span className="already-owned-note">
+                ({scanResult.summary.alreadyOwned} already marked as owned)
+              </span>
+            )}
+          </div>
 
-        <div className="modal-body">
-          {scanning ? (
-            <div className="scanning-status">
-              <div className="spinner"></div>
-              <p>Scanning SD card for cartridges...</p>
-            </div>
-          ) : error && !scanResult ? (
-            <div className="error-state">
-              <div className="error-message">{error}</div>
-              <button className="btn-secondary" onClick={scanSDCard}>
-                Retry
-              </button>
-            </div>
-          ) : scanResult ? (
-            <>
-              {/* Summary */}
-              <div className="scan-summary">
-                Found <strong>{scanResult.summary.total}</strong> cartridges on SD card
-                {scanResult.summary.alreadyOwned > 0 && (
-                  <span className="already-owned-note">
-                    ({scanResult.summary.alreadyOwned} already marked as owned)
-                  </span>
-                )}
-              </div>
+          {/* Selection Controls */}
+          <div className="selection-controls">
+            <Button variant="ghost" size="sm" onClick={selectAll}>
+              Select All
+            </Button>
+            <Button variant="ghost" size="sm" onClick={selectNone}>
+              Select None
+            </Button>
+            {scanResult.summary.alreadyOwned > 0 && (
+              <Button variant="ghost" size="sm" onClick={selectNew}>
+                Select New Only
+              </Button>
+            )}
+            <span className="selection-count">{selectedIds.size} selected</span>
+          </div>
 
-              {/* Selection Controls */}
-              <div className="selection-controls">
-                <button className="btn-ghost btn-small" onClick={selectAll}>
-                  Select All
-                </button>
-                <button className="btn-ghost btn-small" onClick={selectNone}>
-                  Select None
-                </button>
-                {scanResult.summary.alreadyOwned > 0 && (
-                  <button className="btn-ghost btn-small" onClick={selectNew}>
-                    Select New Only
-                  </button>
-                )}
-                <span className="selection-count">{selectedIds.size} selected</span>
-              </div>
+          {/* Cartridge List */}
+          <div className="cartridge-list">
+            {scanResult.cartridges.map((cart) => (
+              <label
+                key={cart.cartId}
+                className={`cartridge-item ${selectedIds.has(cart.cartId) ? 'selected' : ''} ${cart.alreadyOwned ? 'already-owned' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(cart.cartId)}
+                  onChange={() => toggleCartridge(cart.cartId)}
+                  disabled={importing}
+                />
+                <div className="cartridge-info">
+                  <span className="cartridge-name">{cart.folderName}</span>
+                  <span className="cartridge-id">{cart.cartId}</span>
+                </div>
+                <div className="cartridge-badges">
+                  {cart.hasSettings && <span className="badge badge-settings">Settings</span>}
+                  {cart.hasGamePak && <span className="badge badge-pak">Pak</span>}
+                  {cart.alreadyOwned && <span className="badge badge-owned">Owned</span>}
+                </div>
+              </label>
+            ))}
+          </div>
 
-              {/* Cartridge List */}
-              <div className="cartridge-list">
-                {scanResult.cartridges.map((cart) => (
-                  <label
-                    key={cart.cartId}
-                    className={`cartridge-item ${selectedIds.has(cart.cartId) ? 'selected' : ''} ${cart.alreadyOwned ? 'already-owned' : ''}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(cart.cartId)}
-                      onChange={() => toggleCartridge(cart.cartId)}
-                      disabled={importing}
-                    />
-                    <div className="cartridge-info">
-                      <span className="cartridge-name">{cart.folderName}</span>
-                      <span className="cartridge-id">{cart.cartId}</span>
-                    </div>
-                    <div className="cartridge-badges">
-                      {cart.hasSettings && <span className="badge badge-settings">Settings</span>}
-                      {cart.hasGamePak && <span className="badge badge-pak">Pak</span>}
-                      {cart.alreadyOwned && <span className="badge badge-owned">Owned</span>}
-                    </div>
-                  </label>
-                ))}
-              </div>
+          {/* Download Options */}
+          <div className="download-options">
+            <h4>Also download to local storage:</h4>
+            <label className="download-option">
+              <input
+                type="checkbox"
+                checked={downloadSettings}
+                onChange={(e) => setDownloadSettings(e.target.checked)}
+                disabled={importing || selectedWithSettings === 0}
+              />
+              <span>
+                Settings ({selectedWithSettings} available)
+              </span>
+            </label>
+            <label className="download-option">
+              <input
+                type="checkbox"
+                checked={downloadGamePaks}
+                onChange={(e) => setDownloadGamePaks(e.target.checked)}
+                disabled={importing || selectedWithGamePaks === 0}
+              />
+              <span>
+                Game Paks ({selectedWithGamePaks} available)
+              </span>
+            </label>
+          </div>
 
-              {/* Download Options */}
-              <div className="download-options">
-                <h4>Also download to local storage:</h4>
-                <label className="download-option">
-                  <input
-                    type="checkbox"
-                    checked={downloadSettings}
-                    onChange={(e) => setDownloadSettings(e.target.checked)}
-                    disabled={importing || selectedWithSettings === 0}
-                  />
-                  <span>
-                    Settings ({selectedWithSettings} available)
-                  </span>
-                </label>
-                <label className="download-option">
-                  <input
-                    type="checkbox"
-                    checked={downloadGamePaks}
-                    onChange={(e) => setDownloadGamePaks(e.target.checked)}
-                    disabled={importing || selectedWithGamePaks === 0}
-                  />
-                  <span>
-                    Game Paks ({selectedWithGamePaks} available)
-                  </span>
-                </label>
-              </div>
-
-              {/* Progress */}
-              {progress && (
-                <div className="import-progress">
-                  {progress.step === 'ownership' && (
-                    <div className="progress-step">
-                      {progress.status === 'completed' ? (
-                        <p>Marked {progress.added} cartridges as owned</p>
-                      ) : (
-                        <p>Marking cartridges as owned...</p>
-                      )}
-                    </div>
-                  )}
-                  {progress.step === 'settings' && (
-                    <div className="progress-step">
-                      {progress.status === 'completed' ? (
-                        <p>Downloaded {progress.downloaded} settings files</p>
-                      ) : (
-                        <p>
-                          Downloading settings... ({progress.current}/{progress.total})
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  {progress.step === 'gamePaks' && (
-                    <div className="progress-step">
-                      {progress.status === 'completed' ? (
-                        <p>Downloaded {progress.downloaded} game paks</p>
-                      ) : (
-                        <p>
-                          Downloading game paks... ({progress.current}/{progress.total})
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  {progress.step === 'done' && (
-                    <div className="progress-step success">
-                      <p>Import complete!</p>
-                    </div>
+          {/* Progress */}
+          {progress && (
+            <div className="import-progress">
+              {progress.step === 'ownership' && (
+                <div className="progress-step">
+                  {progress.status === 'completed' ? (
+                    <p>Marked {progress.added} cartridges as owned</p>
+                  ) : (
+                    <p>Marking cartridges as owned...</p>
                   )}
                 </div>
               )}
+              {progress.step === 'settings' && (
+                <div className="progress-step">
+                  {progress.status === 'completed' ? (
+                    <p>Downloaded {progress.downloaded} settings files</p>
+                  ) : (
+                    <p>
+                      Downloading settings... ({progress.current}/{progress.total})
+                    </p>
+                  )}
+                </div>
+              )}
+              {progress.step === 'gamePaks' && (
+                <div className="progress-step">
+                  {progress.status === 'completed' ? (
+                    <p>Downloaded {progress.downloaded} game paks</p>
+                  ) : (
+                    <p>
+                      Downloading game paks... ({progress.current}/{progress.total})
+                    </p>
+                  )}
+                </div>
+              )}
+              {progress.step === 'done' && (
+                <div className="progress-step success">
+                  <p>Import complete!</p>
+                </div>
+              )}
+            </div>
+          )}
 
-              {error && <div className="error-message">{error}</div>}
-            </>
-          ) : null}
-        </div>
-
-        <div className="modal-footer">
-          <button className="btn-secondary" onClick={onClose} disabled={importing}>
-            Cancel
-          </button>
-          <button
-            className="btn-primary"
-            onClick={handleImport}
-            disabled={importing || selectedIds.size === 0 || !scanResult}
-          >
-            {importing ? 'Importing...' : `Import ${selectedIds.size} Cartridges`}
-          </button>
-        </div>
-      </div>
-    </div>
+          {error && <div className="error-message">{error}</div>}
+        </>
+      ) : null}
+    </Modal>
   );
 }

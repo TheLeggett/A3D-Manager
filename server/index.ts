@@ -5,7 +5,6 @@ import { mkdir } from 'fs/promises';
 
 import syncRouter from './routes/sync.js';
 import labelsRouter from './routes/labels.js';
-import cartDbRouter from './routes/cart-db.js';
 import cartridgesRouter from './routes/cartridges.js';
 
 const app = express();
@@ -25,7 +24,6 @@ async function ensureLocalDirs() {
 // Routes
 app.use('/api/sync', syncRouter);
 app.use('/api/labels', labelsRouter);
-app.use('/api/cart-db', cartDbRouter);
 app.use('/api/cartridges', cartridgesRouter);
 
 // Health check

@@ -32,3 +32,6 @@ sd-card-example/
 .claude/
 
 roms.dat.xml
+
+# Local notepad
+notes.md

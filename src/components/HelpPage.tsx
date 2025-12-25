@@ -17,7 +17,7 @@ export function HelpPage() {
 
         <section className="help-section disclaimer">
           <h2>Important Disclaimer</h2>
-          <div className="disclaimer-box">
+          <div className="warning-box">
             <p>
               <strong>This is NOT official Analogue software.</strong> This tool is a community project
               and is not affiliated with, endorsed by, or supported by Analogue.

@@ -194,7 +194,7 @@ export function SyncPage() {
     return (
       <div className="sync-page">
         <div className="page-header">
-          <h2>Sync to SD Card</h2>
+          <h2 className="text-pixel">Sync to SD Card</h2>
         </div>
         <div className="sync-no-card">
           <p>No SD card selected.</p>
@@ -202,7 +202,7 @@ export function SyncPage() {
         </div>
 
         <div className="sync-manual-section">
-          <h3>Manual Export</h3>
+          <h3 className="text-pixel text-muted">Manual Export</h3>
           <p className="sync-description">
             If you're unable to connect your SD card directly (e.g., no card reader, or the card
             isn't being detected), you can export your labels.db file and copy it manually.
@@ -241,8 +241,8 @@ export function SyncPage() {
   return (
     <div className="sync-page">
       <div className="page-header">
-        <h2>Sync to SD Card</h2>
-        <span className="sd-card-path">{selectedSDCard.path}</span>
+        <h2 className="text-pixel">Sync to SD Card</h2>
+        <span className="sd-card-path text-pixel text-muted">{selectedSDCard.path}</span>
       </div>
 
       {loading ? (
@@ -274,7 +274,7 @@ export function SyncPage() {
             <>
               {/* Labels Export */}
               <div className="sync-section">
-                <h3>Label Artwork</h3>
+                <h3 className="text-pixel text-accent">Label Artwork</h3>
                 <p className="sync-count">
                   labels.db with {preview.labels.localLabelCount} label(s) will be
                   copied to SD card
@@ -294,7 +294,7 @@ export function SyncPage() {
           )}
 
           <div className="sync-manual-section">
-            <h3>Manual Export</h3>
+            <h3 className="text-pixel text-muted">Manual Export</h3>
             <p className="sync-description">
               Prefer to copy the file manually? Export your labels.db and place it at:
             </p>
@@ -323,22 +323,22 @@ export function SyncPage() {
 
           {/* Percentage and file name */}
           <div className="progress-header">
-            <span className="progress-percent">{progress.percentage}%</span>
+            <span className="progress-percent text-pixel text-accent">{progress.percentage}%</span>
             {progress.fileName && (
-              <span className="progress-filename">{progress.fileName}</span>
+              <span className="progress-filename text-mono-small text-muted">{progress.fileName}</span>
             )}
           </div>
 
           {/* Transfer details */}
           {progress.bytesWritten && (
             <div className="progress-details">
-              <span className="progress-bytes">
+              <span className="progress-bytes text-mono-small">
                 {progress.bytesWritten} / {progress.totalBytes}
               </span>
               {progress.speed && (
                 <>
                   <span className="progress-separator">•</span>
-                  <span className="progress-speed">{progress.speed}</span>
+                  <span className="progress-speed text-mono-small text-accent">{progress.speed}</span>
                 </>
               )}
               {progress.eta && progress.eta !== '0ms' && (
@@ -355,7 +355,7 @@ export function SyncPage() {
       ) : step === 'complete' && results ? (
         <div className="sync-complete">
           <div className="sync-success-icon">&#10003;</div>
-          <h3>Sync Complete!</h3>
+          <h3 className="text-pixel text-success">Sync Complete!</h3>
 
           <div className="sync-results">
             {results.labels.success && (

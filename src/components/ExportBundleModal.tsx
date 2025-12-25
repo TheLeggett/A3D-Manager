@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Modal, Button } from './ui';
 
 interface ExportBundleModalProps {
   isOpen: boolean;
@@ -19,6 +20,17 @@ export function ExportBundleModal({
   const [error, setError] = useState<string | null>(null);
 
   const isSelectionExport = selectedCartIds && selectedCartIds.length > 0;
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setError(null);
+      setIncludeLabels(true);
+      setIncludeOwnership(true);
+      setIncludeSettings(true);
+      setIncludeGamePaks(true);
+    }
+  }, [isOpen]);
 
   const handleExport = async () => {
     try {
@@ -73,103 +85,97 @@ export function ExportBundleModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal export-bundle-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>{isSelectionExport ? 'Export Selection' : 'Export Bundle'}</h2>
-          <button className="close-btn" onClick={onClose} disabled={exporting}>
-            &times;
-          </button>
-        </div>
-
-        <div className="modal-body">
-          {isSelectionExport ? (
-            <p className="export-info">
-              Export settings and game paks for <strong>{selectedCartIds.length}</strong> selected cartridge{selectedCartIds.length !== 1 ? 's' : ''}.
-            </p>
-          ) : (
-            <>
-              <p className="export-info">
-                Create a backup bundle (.a3d) containing your cartridge data.
-              </p>
-
-              <div className="export-options">
-                <h4>Include in bundle:</h4>
-
-                <label className="export-option">
-                  <input
-                    type="checkbox"
-                    checked={includeLabels}
-                    onChange={(e) => setIncludeLabels(e.target.checked)}
-                    disabled={exporting}
-                  />
-                  <div className="option-content">
-                    <span className="option-label">Labels Database</span>
-                    <span className="option-desc">All cartridge label artwork (labels.db)</span>
-                  </div>
-                </label>
-
-                <label className="export-option">
-                  <input
-                    type="checkbox"
-                    checked={includeOwnership}
-                    onChange={(e) => setIncludeOwnership(e.target.checked)}
-                    disabled={exporting}
-                  />
-                  <div className="option-content">
-                    <span className="option-label">Ownership Data</span>
-                    <span className="option-desc">Your list of owned cartridges</span>
-                  </div>
-                </label>
-
-                <label className="export-option">
-                  <input
-                    type="checkbox"
-                    checked={includeSettings}
-                    onChange={(e) => setIncludeSettings(e.target.checked)}
-                    disabled={exporting}
-                  />
-                  <div className="option-content">
-                    <span className="option-label">Game Settings</span>
-                    <span className="option-desc">Per-game display and hardware settings</span>
-                  </div>
-                </label>
-
-                <label className="export-option">
-                  <input
-                    type="checkbox"
-                    checked={includeGamePaks}
-                    onChange={(e) => setIncludeGamePaks(e.target.checked)}
-                    disabled={exporting}
-                  />
-                  <div className="option-content">
-                    <span className="option-label">Game Paks</span>
-                    <span className="option-desc">Controller pak save data</span>
-                  </div>
-                </label>
-              </div>
-            </>
-          )}
-
-          {error && <div className="error-message">{error}</div>}
-        </div>
-
-        <div className="modal-footer">
-          <button className="btn-secondary" onClick={onClose} disabled={exporting}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isSelectionExport ? 'Export Selection' : 'Export Bundle'}
+      size="md"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={exporting}>
             Cancel
-          </button>
-          <button
-            className="btn-primary"
+          </Button>
+          <Button
+            variant="primary"
             onClick={handleExport}
             disabled={exporting || (!isSelectionExport && !includeLabels && !includeOwnership && !includeSettings && !includeGamePaks)}
+            loading={exporting}
           >
-            {exporting ? 'Exporting...' : 'Export Bundle'}
-          </button>
-        </div>
-      </div>
-    </div>
+            Export Bundle
+          </Button>
+        </>
+      }
+    >
+      {isSelectionExport ? (
+        <p className="export-info">
+          Export settings and game paks for <strong>{selectedCartIds.length}</strong> selected cartridge{selectedCartIds.length !== 1 ? 's' : ''}.
+        </p>
+      ) : (
+        <>
+          <p className="export-info">
+            Create a backup bundle (.a3d) containing your cartridge data.
+          </p>
+
+          <div className="export-options">
+            <h4>Include in bundle:</h4>
+
+            <label className="export-option">
+              <input
+                type="checkbox"
+                checked={includeLabels}
+                onChange={(e) => setIncludeLabels(e.target.checked)}
+                disabled={exporting}
+              />
+              <div className="option-content">
+                <span className="option-label">Labels Database</span>
+                <span className="option-desc">All cartridge label artwork (labels.db)</span>
+              </div>
+            </label>
+
+            <label className="export-option">
+              <input
+                type="checkbox"
+                checked={includeOwnership}
+                onChange={(e) => setIncludeOwnership(e.target.checked)}
+                disabled={exporting}
+              />
+              <div className="option-content">
+                <span className="option-label">Ownership Data</span>
+                <span className="option-desc">Your list of owned cartridges</span>
+              </div>
+            </label>
+
+            <label className="export-option">
+              <input
+                type="checkbox"
+                checked={includeSettings}
+                onChange={(e) => setIncludeSettings(e.target.checked)}
+                disabled={exporting}
+              />
+              <div className="option-content">
+                <span className="option-label">Game Settings</span>
+                <span className="option-desc">Per-game display and hardware settings</span>
+              </div>
+            </label>
+
+            <label className="export-option">
+              <input
+                type="checkbox"
+                checked={includeGamePaks}
+                onChange={(e) => setIncludeGamePaks(e.target.checked)}
+                disabled={exporting}
+              />
+              <div className="option-content">
+                <span className="option-label">Game Paks</span>
+                <span className="option-desc">Controller pak save data</span>
+              </div>
+            </label>
+          </div>
+        </>
+      )}
+
+      {error && <div className="error-message">{error}</div>}
+    </Modal>
   );
 }

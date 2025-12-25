@@ -1,0 +1,62 @@
+/* ============================================================================
+   Cartridge Sprite Component
+   ============================================================================ */
+
+.cartridge-sprite {
+  position: relative;
+  image-rendering: pixelated;
+}
+
+.cartridge-sprite__artwork {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+.cartridge-sprite__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+/* Size: Large (default) - 150x98 */
+.cartridge-sprite--large {
+  width: 150px;
+  height: 98px;
+}
+
+.cartridge-sprite--large .cartridge-sprite__artwork {
+  width: 74px;
+  height: 86px;
+  top: 7px;
+}
+
+/* Size: Medium - 112x73 (75%) */
+.cartridge-sprite--medium {
+  width: 112px;
+  height: 73px;
+}
+
+.cartridge-sprite--medium .cartridge-sprite__artwork {
+  width: 55px;
+  height: 64px;
+  top: 5px;
+}
+
+/* Size: Small - 75x49 (50%) */
+.cartridge-sprite--small {
+  width: 75px;
+  height: 49px;
+}
+
+.cartridge-sprite--small .cartridge-sprite__artwork {
+  width: 37px;
+  height: 43px;
+  top: 3.5px;
+}
