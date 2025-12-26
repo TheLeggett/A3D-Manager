@@ -13,19 +13,7 @@ import path from 'path';
 import { test, assert, assertEqual, TestSuite } from '../utils.js';
 
 // Import modules under test
-import {
-  loadOwnedCarts,
-  saveOwnedCarts,
-  getOwnedCartIds,
-  getOwnedCartridges,
-  isCartridgeOwned,
-  addOwnedCartridge,
-  addOwnedCartridges,
-  removeOwnedCartridge,
-  clearOwnedCartridges,
-  getOwnedCartsPath,
-  type OwnedCartsData,
-} from '../../server/lib/owned-carts.js';
+import { type OwnedCartsData } from '../../server/lib/owned-carts.js';
 
 import {
   parseSettings,
@@ -79,8 +67,6 @@ async function getFixtureGamePak(): Promise<Buffer> {
 
 const ownedCartsTests = [
   test('loadOwnedCarts returns empty array when file does not exist', async () => {
-    // Save original path
-    const originalPath = getOwnedCartsPath();
     const testPath = path.join(OUTPUT_DIR, 'test-owned-carts.json');
 
     // Make sure test file doesn't exist
@@ -247,15 +233,16 @@ const settingsTests = [
     assert(parsed.hardware !== undefined, 'Should add default hardware');
   }),
 
-  test('parseSettings rejects non-object input', () => {
+  test('parseSettings rejects non-object JSON input', () => {
+    // JSON.parse of a quoted string returns a string, which should fail validation
     let threw = false;
     try {
       parseSettings('"just a string"');
-    } catch {
+    } catch (e) {
       threw = true;
+      assert(e instanceof Error && e.message === 'Settings must be an object', 'Should throw correct error');
     }
-    // JSON.parse of a string returns a string, which should fail validation
-    // but parseSettings wraps it, so we need to check differently
+    assert(threw, 'Should throw for non-object input');
   }),
 ];
 

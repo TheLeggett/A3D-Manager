@@ -410,7 +410,7 @@ export async function uploadSettingsToSD(
       const folderName = `${settings.title} ${normalizedId}`;
       sdGameFolder = path.join(gamesDir, folderName);
       await mkdir(sdGameFolder, { recursive: true });
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: 'Game folder not found on SD card and could not create one',

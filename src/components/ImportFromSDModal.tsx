@@ -68,6 +68,7 @@ export function ImportFromSDModal({
       setProgress(null);
       setError(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, sdCardPath]);
 
   const scanSDCard = async () => {

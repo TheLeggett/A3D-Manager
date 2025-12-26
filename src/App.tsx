@@ -19,6 +19,7 @@ interface ImageCacheContextType {
 
 const ImageCacheContext = createContext<ImageCacheContextType | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useImageCache() {
   const context = useContext(ImageCacheContext);
   if (!context) throw new Error('useImageCache must be used within ImageCacheProvider');
@@ -62,6 +63,7 @@ interface SDCardContextType {
 
 const SDCardContext = createContext<SDCardContextType | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSDCard() {
   const context = useContext(SDCardContext);
   if (!context) throw new Error('useSDCard must be used within SDCardProvider');
@@ -154,6 +156,7 @@ interface SettingsClipboardContextType {
 
 const SettingsClipboardContext = createContext<SettingsClipboardContextType | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSettingsClipboard() {
   const context = useContext(SettingsClipboardContext);
   if (!context) throw new Error('useSettingsClipboard must be used within SettingsClipboardProvider');

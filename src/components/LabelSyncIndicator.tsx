@@ -15,6 +15,7 @@ interface LabelSyncContextType {
 
 const LabelSyncContext = createContext<LabelSyncContextType | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useLabelSync() {
   const context = useContext(LabelSyncContext);
   if (!context) throw new Error('useLabelSync must be used within LabelSyncProvider');
@@ -99,6 +100,7 @@ export function LabelSyncProvider({ children }: LabelSyncProviderProps) {
     const currentPath = selectedSDCard?.path ?? null;
 
     if (!selectedSDCard) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSyncStatus('local-only');
       prevSDCardPath.current = null;
       return;
@@ -114,6 +116,7 @@ export function LabelSyncProvider({ children }: LabelSyncProviderProps) {
   // Re-check if we have local changes and reconnect
   useEffect(() => {
     if (hasLocalChanges && selectedSDCard) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSyncStatus('sync-required');
     }
   }, [hasLocalChanges, selectedSDCard]);

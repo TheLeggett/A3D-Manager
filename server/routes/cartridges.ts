@@ -275,7 +275,7 @@ router.post('/owned/import-from-sd/apply', async (req, res: Response) => {
       sendProgress({ step: 'settings', status: 'started', total: cartIds.length });
 
       let settingsDownloaded = 0;
-      let settingsErrors: string[] = [];
+      const settingsErrors: string[] = [];
 
       for (let i = 0; i < cartIds.length; i++) {
         const cartId = cartIds[i];
@@ -308,7 +308,7 @@ router.post('/owned/import-from-sd/apply', async (req, res: Response) => {
       sendProgress({ step: 'gamePaks', status: 'started', total: cartIds.length });
 
       let gamePaksDownloaded = 0;
-      let gamePakErrors: string[] = [];
+      const gamePakErrors: string[] = [];
 
       for (let i = 0; i < cartIds.length; i++) {
         const cartId = cartIds[i];
