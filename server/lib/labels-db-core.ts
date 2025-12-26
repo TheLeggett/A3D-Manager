@@ -966,16 +966,38 @@ export async function deleteEntryFromLabelsDb(cartId: number): Promise<void> {
 
 /**
  * Update an existing entry in the local labels.db file
+ * Creates a new labels.db if one doesn't exist
  */
 export async function updateEntryInLabelsDb(
   cartId: number,
   imageBuffer: Buffer
 ): Promise<void> {
-  // Read existing labels.db
-  const data = await readFile(LOCAL_LABELS_DB_PATH);
+  // Ensure parent directory exists
+  await mkdir(path.dirname(LOCAL_LABELS_DB_PATH), { recursive: true });
 
-  // Update the entry
-  const updatedData = await updateEntry(data, cartId, imageBuffer);
+  let data: Buffer;
+
+  // Check if labels.db exists
+  try {
+    await access(LOCAL_LABELS_DB_PATH, constants.R_OK);
+    data = await readFile(LOCAL_LABELS_DB_PATH);
+  } catch {
+    // Create empty labels.db
+    data = createEmptyLabelsDb();
+  }
+
+  // Check if entry exists - if not, add it; if yes, update it
+  const db = parseLabelsDb(data);
+  const entryExists = db.idToIndex.has(cartId);
+
+  let updatedData: Buffer;
+  if (!entryExists) {
+    // Entry doesn't exist, add it
+    updatedData = await addEntry(data, cartId, imageBuffer);
+  } else {
+    // Entry exists, update it
+    updatedData = await updateEntry(data, cartId, imageBuffer);
+  }
 
   // Write back to disk
   await writeFile(LOCAL_LABELS_DB_PATH, updatedData);

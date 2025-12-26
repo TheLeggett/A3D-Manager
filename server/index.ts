@@ -7,6 +7,8 @@ import { mkdir } from 'fs/promises';
 import syncRouter from './routes/sync.js';
 import labelsRouter from './routes/labels.js';
 import cartridgesRouter from './routes/cartridges.js';
+import sdCardRouter from './routes/sd-card.js';
+import localDataRouter from './routes/local-data.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -26,6 +28,8 @@ async function ensureLocalDirs() {
 app.use('/api/sync', syncRouter);
 app.use('/api/labels', labelsRouter);
 app.use('/api/cartridges', cartridgesRouter);
+app.use('/api/sd-card', sdCardRouter);
+app.use('/api/local-data', localDataRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {

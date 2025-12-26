@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Modal, Button } from './ui';
+import { useLabelSync } from './LabelSyncIndicator';
 
 interface AddCartridgeModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ interface LookupResult {
 }
 
 export function AddCartridgeModal({ isOpen, onClose, onAdd }: AddCartridgeModalProps) {
+  const { markLocalChanges } = useLabelSync();
   const [cartId, setCartId] = useState('');
   const [gameName, setGameName] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -158,6 +160,7 @@ export function AddCartridgeModal({ isOpen, onClose, onAdd }: AddCartridgeModalP
         throw new Error(data.error || 'Failed to add cartridge');
       }
 
+      markLocalChanges(); // Update sync status indicator
       onAdd();
       onClose();
     } catch (err) {

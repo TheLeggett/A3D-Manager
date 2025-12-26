@@ -1,0 +1,145 @@
+.cartridges-empty-state {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.empty-state-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.empty-state-header .empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  filter: grayscale(100%);
+}
+
+.empty-state-header h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+  color: var(--color-text-primary);
+}
+
+.empty-state-subtitle {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Options Grid */
+.empty-state-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Card Styles */
+.empty-state-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.2s, opacity 0.2s;
+}
+
+.empty-state-card:hover:not(.disabled) {
+  border-color: var(--color-border-hover);
+}
+
+.empty-state-card.disabled {
+  opacity: 0.5;
+}
+
+.empty-state-card.disabled .card-content h3,
+.empty-state-card.disabled .card-content p:not(.card-meta) {
+  color: var(--color-text-muted);
+}
+
+/* Card Icon */
+.empty-state-card .card-icon {
+  font-size: 1.75rem;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+}
+
+/* Card Content */
+.empty-state-card .card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.empty-state-card .card-content h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--color-text-primary);
+}
+
+.empty-state-card .card-content p {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.empty-state-card .card-content p + p {
+  margin-top: 0.5rem;
+}
+
+.empty-state-card .card-meta {
+  font-size: 0.8125rem;
+  color: var(--color-primary);
+}
+
+.empty-state-card .card-meta.muted {
+  color: var(--color-text-muted);
+}
+
+.empty-state-card .card-meta a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.empty-state-card .card-meta a:hover {
+  text-decoration: underline;
+}
+
+/* Card Button */
+.empty-state-card > button {
+  flex-shrink: 0;
+  align-self: center;
+  min-width: 140px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .cartridges-empty-state {
+    padding: 2rem 1rem;
+  }
+
+  .empty-state-card {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .empty-state-card .card-icon {
+    align-self: center;
+  }
+
+  .empty-state-card > button {
+    align-self: stretch;
+    min-width: auto;
+  }
+}

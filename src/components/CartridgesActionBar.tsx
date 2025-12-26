@@ -4,53 +4,24 @@ interface CartridgesActionBarProps {
   hasLabels: boolean;
   hasSDCard: boolean;
   selectionMode: boolean;
-  onImportLabels: () => void;
-  onAddCartridge: () => void;
   onImportFromSD: () => void;
-  onExportBundle: () => void;
-  onImportBundle: () => void;
   onToggleSelectionMode: () => void;
-  onClearAllLabels: () => void;
 }
 
 export function CartridgesActionBar({
   hasLabels,
   hasSDCard,
   selectionMode,
-  onImportLabels,
-  onAddCartridge,
   onImportFromSD,
-  onExportBundle,
-  onImportBundle,
   onToggleSelectionMode,
-  onClearAllLabels,
 }: CartridgesActionBarProps) {
   return (
     <div className="cartridges-action-bar">
       <div className="action-bar-left">
-        <button className="btn-primary" onClick={onImportLabels}>
-          Import labels.db
-        </button>
-
-        <button className="btn-secondary" onClick={onAddCartridge}>
-          Add Cartridge
-        </button>
-
-        {hasSDCard && (
+        {hasSDCard && hasLabels && (
           <button className="btn-secondary" onClick={onImportFromSD}>
             Import from SD
           </button>
-        )}
-
-        {hasLabels && (
-          <>
-            <button className="btn-secondary" onClick={onExportBundle}>
-              Export Bundle
-            </button>
-            <button className="btn-secondary" onClick={onImportBundle}>
-              Import Bundle
-            </button>
-          </>
         )}
       </div>
 
@@ -64,12 +35,6 @@ export function CartridgesActionBar({
               {selectionMode ? 'Exit Select' : 'Select'}
             </button>
           </div>
-          <button
-            className="btn-ghost btn-danger-text"
-            onClick={onClearAllLabels}
-          >
-            Clear All Labels
-          </button>
         </div>
       )}
     </div>

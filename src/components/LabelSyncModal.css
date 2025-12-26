@@ -1,0 +1,198 @@
+.label-sync-modal {
+  max-width: 480px;
+}
+
+.label-sync-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label-sync-modal .modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.label-sync-modal .modal-close-btn:hover {
+  color: var(--color-text);
+}
+
+/* Loading state */
+.sync-modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+/* Status summary */
+.sync-status-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-md);
+}
+
+.sync-status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sync-status-label {
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.sync-status-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+.sync-status-item.has-data .sync-status-value {
+  color: var(--color-success);
+}
+
+.sync-status-item.no-data .sync-status-value {
+  color: var(--color-text-muted);
+}
+
+/* Scenario content */
+.sync-scenario {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sync-description {
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+/* Direction options for "both exist" scenario */
+.sync-direction-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sync-direction-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.sync-direction-btn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface-hover);
+}
+
+.sync-direction-title {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sync-direction-desc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* Actions */
+.sync-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+/* Progress state */
+.sync-modal-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.sync-progress-status {
+  font-weight: 500;
+  text-align: center;
+}
+
+.sync-warning {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-align: center;
+  font-style: italic;
+}
+
+/* Complete state */
+.sync-modal-complete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.sync-success-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-success);
+  color: #000;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sync-modal-complete h3 {
+  color: var(--color-success);
+  margin: 0;
+}
+
+/* Error state */
+.sync-modal-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.sync-error-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-error);
+  color: #fff;
+  font-size: 28px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sync-modal-error h3 {
+  color: var(--color-error);
+  margin: 0;
+}

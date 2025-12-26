@@ -49,8 +49,8 @@ export function ImportFromSDModal({
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [downloadSettings, setDownloadSettings] = useState(false);
-  const [downloadGamePaks, setDownloadGamePaks] = useState(false);
+  const [downloadSettings, setDownloadSettings] = useState(true);
+  const [downloadGamePaks, setDownloadGamePaks] = useState(true);
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState<ImportProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -63,8 +63,8 @@ export function ImportFromSDModal({
       // Reset state when modal closes
       setScanResult(null);
       setSelectedIds(new Set());
-      setDownloadSettings(false);
-      setDownloadGamePaks(false);
+      setDownloadSettings(true);
+      setDownloadGamePaks(true);
       setProgress(null);
       setError(null);
     }

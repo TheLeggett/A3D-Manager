@@ -202,23 +202,33 @@ const uploadImage = multer({
   },
 });
 
-// GET /api/labels/status - Check if local labels.db exists
+// GET /api/labels/status - Check if local labels.db exists and/or owned carts exist
 router.get('/status', async (_req, res) => {
   try {
     const status = await getLabelsDbStatus();
+    const ownedIds = await getOwnedCartIds();
 
-    if (!status) {
+    const hasLabels = !!status;
+    const hasOwnedCarts = ownedIds.length > 0;
+
+    // We have content if we have labels OR owned carts
+    if (!hasLabels && !hasOwnedCarts) {
       return res.json({
         imported: false,
-        message: 'No labels.db imported.',
+        hasLabels: false,
+        hasOwnedCarts: false,
+        message: 'No labels.db imported and no owned cartridges.',
       });
     }
 
     res.json({
-      imported: true,
-      entryCount: status.entryCount,
-      fileSize: status.fileSize,
-      fileSizeMB: (status.fileSize / 1024 / 1024).toFixed(2),
+      imported: true, // We have browsable content
+      hasLabels,
+      hasOwnedCarts,
+      entryCount: status?.entryCount || 0,
+      ownedCount: ownedIds.length,
+      fileSize: status?.fileSize || 0,
+      fileSizeMB: status ? (status.fileSize / 1024 / 1024).toFixed(2) : '0',
     });
   } catch (error) {
     console.error('Error checking labels status:', error);
@@ -362,7 +372,9 @@ function applyFilters(
       const query = filters.search.toLowerCase();
       const nameMatch = entry.name?.toLowerCase().includes(query);
       const idMatch = entry.cartId.toLowerCase().includes(query);
-      if (!nameMatch && !idMatch) return false;
+      // Also match entries without names when searching for "unknown" or "cartridge"
+      const unknownMatch = !entry.name && 'unknown cartridge'.includes(query);
+      if (!nameMatch && !idMatch && !unknownMatch) return false;
     }
 
     if (filters.region) {
@@ -535,6 +547,7 @@ router.get('/user-carts', async (_req, res) => {
 });
 
 // GET /api/labels/page/:page - Get paginated labels (sorted alphabetically)
+// Merges entries from labels.db and owned-carts.json
 router.get('/page/:page', async (req, res) => {
   try {
     await loadCartDatabase();
@@ -549,24 +562,90 @@ router.get('/page/:page', async (req, res) => {
     const search = req.query.search as string | undefined;
     const owned = req.query.owned === 'true';
 
-    const sortedEntries = await getSortedEntries();
+    // Get entries from labels.db (may be null if no labels.db exists)
+    const labelsEntries = await getSortedEntries();
 
-    if (!sortedEntries) {
+    // Get all owned cart IDs
+    const allOwnedIds = await getOwnedCartIds();
+    const ownedIdsSet = new Set(allOwnedIds.map(id => id.toLowerCase()));
+
+    // If no labels.db and no owned carts, show empty state
+    if (!labelsEntries && allOwnedIds.length === 0) {
       return res.json({
         imported: false,
-        message: 'No labels.db imported.',
+        message: 'No labels.db imported and no owned cartridges.',
       });
     }
 
-    // Get owned IDs if filtering by owned
-    let ownedIds: Set<string> | undefined;
+    // Build merged entries list
+    let mergedEntries: EnhancedEntry[];
+
+    if (labelsEntries) {
+      // Start with labels entries
+      const labelsIdsSet = new Set(labelsEntries.map(e => e.cartId.toLowerCase()));
+      mergedEntries = [...labelsEntries];
+
+      // Add owned carts that don't have labels
+      for (const cartId of allOwnedIds) {
+        if (!labelsIdsSet.has(cartId.toLowerCase())) {
+          const meta = getCartMetadata(cartId);
+          mergedEntries.push({
+            cartId,
+            index: -1, // No label index
+            name: getCartName(cartId),
+            region: meta.region,
+            languages: meta.languages,
+            videoMode: meta.videoMode,
+            releaseType: meta.releaseType,
+            revision: meta.revision,
+          });
+        }
+      }
+
+      // Re-sort the merged list
+      mergedEntries.sort((a, b) => {
+        if (a.name && b.name) {
+          return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+        }
+        if (a.name && !b.name) return -1;
+        if (!a.name && b.name) return 1;
+        return a.cartId.localeCompare(b.cartId);
+      });
+    } else {
+      // No labels.db - create entries from owned carts only
+      mergedEntries = allOwnedIds.map(cartId => {
+        const meta = getCartMetadata(cartId);
+        return {
+          cartId,
+          index: -1,
+          name: getCartName(cartId),
+          region: meta.region,
+          languages: meta.languages,
+          videoMode: meta.videoMode,
+          releaseType: meta.releaseType,
+          revision: meta.revision,
+        };
+      });
+
+      // Sort
+      mergedEntries.sort((a, b) => {
+        if (a.name && b.name) {
+          return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+        }
+        if (a.name && !b.name) return -1;
+        if (!a.name && b.name) return 1;
+        return a.cartId.localeCompare(b.cartId);
+      });
+    }
+
+    // Get owned IDs for filtering if owned filter is set
+    let filterOwnedIds: Set<string> | undefined;
     if (owned) {
-      const ids = await getOwnedCartIds();
-      ownedIds = new Set(ids.map(id => id.toLowerCase()));
+      filterOwnedIds = ownedIdsSet;
     }
 
     // Apply filters if any are set
-    const filteredEntries = applyFilters(sortedEntries, { region, language, videoMode, search, ownedIds });
+    const filteredEntries = applyFilters(mergedEntries, { region, language, videoMode, search, ownedIds: filterOwnedIds });
 
     const totalEntries = filteredEntries.length;
     const totalPages = Math.ceil(totalEntries / pageSize);
@@ -575,12 +654,14 @@ router.get('/page/:page', async (req, res) => {
     const entries = filteredEntries.slice(start, end);
 
     res.json({
-      imported: true,
+      imported: true, // We have content to show (either labels or owned carts)
+      hasLabels: !!labelsEntries,
+      hasOwnedCarts: allOwnedIds.length > 0,
       page,
       pageSize,
       totalPages,
       totalEntries,
-      totalUnfiltered: sortedEntries.length,
+      totalUnfiltered: mergedEntries.length,
       filters: { region, language, videoMode, owned },
       entries,
     });

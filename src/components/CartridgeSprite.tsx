@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import './CartridgeSprite.css';
 
 export type CartridgeSpriteColor = 'dark' | 'black';
@@ -16,6 +17,8 @@ interface CartridgeSpriteProps {
   className?: string;
 }
 
+const PLACEHOLDER_URL = '/cart-placeholder.png';
+
 export function CartridgeSprite({
   artworkUrl,
   alt = 'Cartridge artwork',
@@ -23,15 +26,28 @@ export function CartridgeSprite({
   size = 'large',
   className = '',
 }: CartridgeSpriteProps) {
+  const [imgSrc, setImgSrc] = useState(artworkUrl);
   const overlayImage = color === 'black' ? '/n64-cart-black.png' : '/n64-cart-dark.png';
+
+  // Update imgSrc when artworkUrl prop changes
+  useEffect(() => {
+    setImgSrc(artworkUrl);
+  }, [artworkUrl]);
+
+  const handleError = () => {
+    if (imgSrc !== PLACEHOLDER_URL) {
+      setImgSrc(PLACEHOLDER_URL);
+    }
+  };
 
   return (
     <div className={`cartridge-sprite cartridge-sprite--${size} ${className}`}>
       <img
         className="cartridge-sprite__artwork"
-        src={artworkUrl}
+        src={imgSrc}
         alt={alt}
         loading="lazy"
+        onError={handleError}
       />
       <img
         className="cartridge-sprite__overlay"

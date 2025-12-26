@@ -1,0 +1,93 @@
+.label-sync-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.label-sync-label {
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* The pill-shaped indicator light - matches ConnectionIndicator */
+.label-sync-light {
+  display: inline-block;
+  width: 20px;
+  height: 6px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+/* Synced - Green with glow */
+.label-sync-indicator.synced .label-sync-light {
+  background-color: #00FA04;
+  box-shadow: 0 0 8px rgba(0, 250, 4, 0.6);
+}
+
+/* Sync Required - Red with glow */
+.label-sync-indicator.sync-required .label-sync-light {
+  background-color: var(--color-error);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+}
+
+/* Local Only - Gray (disconnected style) */
+.label-sync-indicator.local-only .label-sync-light {
+  background-color: #6b7280;
+}
+
+/* SD Only - Amber (labels on SD but not local) */
+.label-sync-indicator.sd-only .label-sync-light {
+  background-color: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+}
+
+/* None - Gray (no labels anywhere) */
+.label-sync-indicator.none .label-sync-light {
+  background-color: #6b7280;
+}
+
+/* Checking - Animated pulse */
+.label-sync-indicator.checking .label-sync-light {
+  background-color: var(--color-text-muted);
+  animation: pulse-light 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-light {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Sync Now button - small, 24px tall */
+.label-sync-button {
+  height: 24px;
+  padding: 0 0.625rem;
+  background: var(--color-error);
+  color: #000000;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.label-sync-button:hover:not(:disabled) {
+  background: #ff6b6b;
+}
+
+.label-sync-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Amber button for sd-only state */
+.label-sync-indicator.sd-only .label-sync-button {
+  background: #f59e0b;
+}
+
+.label-sync-indicator.sd-only .label-sync-button:hover:not(:disabled) {
+  background: #fbbf24;
+}

@@ -3,6 +3,7 @@ import { useImageCache } from '../App';
 import { IconButton, OptionSelector, ToggleSwitch } from './controls';
 import { CartridgeSprite } from './CartridgeSprite';
 import { ConnectionIndicator } from './ConnectionIndicator';
+import { useLabelSync } from './LabelSyncIndicator';
 import './CartridgeDetailPanel.css';
 
 interface CartridgeDetailPanelProps {
@@ -236,12 +237,6 @@ export function CartridgeDetailPanel({
             >
               Settings
             </button>
-            <button
-              className={`tab-btn ${activeTab === 'gamepak' ? 'active' : ''}`}
-              onClick={() => setActiveTab('gamepak')}
-            >
-              Game Pak
-            </button>
           </div>
           <div className="ownership-toggle">
             <ToggleSwitch
@@ -269,12 +264,6 @@ export function CartridgeDetailPanel({
           )}
           {activeTab === 'settings' && (
             <SettingsTab
-              cartId={cartId}
-              sdCardPath={sdCardPath}
-            />
-          )}
-          {activeTab === 'gamepak' && (
-            <GamePakTab
               cartId={cartId}
               sdCardPath={sdCardPath}
             />
@@ -310,6 +299,7 @@ function LabelTab({
   onClose,
   onDelete,
 }: LabelTabProps) {
+  const { markLocalChanges } = useLabelSync();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -420,6 +410,7 @@ function LabelTab({
       setPreview(null);
       onImageUpdate();
       onUpdate();
+      markLocalChanges(); // Mark that local labels have changed
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
@@ -449,6 +440,7 @@ function LabelTab({
         await fetch(`/api/labels/user-cart/${cartId}`, { method: 'DELETE' });
       }
 
+      markLocalChanges(); // Mark that local labels have changed
       onDelete?.();
       onClose();
     } catch (err) {

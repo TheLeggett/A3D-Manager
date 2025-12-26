@@ -45,23 +45,6 @@ export function Button({
   );
 }
 
-// Convenience variants
-export function PrimaryButton(props: Omit<ButtonProps, 'variant'>) {
-  return <Button variant="primary" {...props} />;
-}
-
-export function SecondaryButton(props: Omit<ButtonProps, 'variant'>) {
-  return <Button variant="secondary" {...props} />;
-}
-
-export function DangerButton(props: Omit<ButtonProps, 'variant'>) {
-  return <Button variant="danger" {...props} />;
-}
-
-export function GhostButton(props: Omit<ButtonProps, 'variant'>) {
-  return <Button variant="ghost" {...props} />;
-}
-
 // Icon button for toolbar-style buttons
 export function IconButton(props: Omit<ButtonProps, 'icon'>) {
   return <Button icon {...props} />;

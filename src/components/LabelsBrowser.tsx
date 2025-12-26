@@ -5,11 +5,11 @@ import { CartridgesActionBar } from './CartridgesActionBar';
 import { CartridgeCard } from './CartridgeCard';
 import { Pagination } from './Pagination';
 import { LabelsImportModal } from './LabelsImportModal';
-import { AddCartridgeModal } from './AddCartridgeModal';
-import { ConfirmResetModal } from './ConfirmResetModal';
 import { ImportFromSDModal } from './ImportFromSDModal';
 import { ExportBundleModal } from './ExportBundleModal';
-import { ImportBundleModal } from './ImportBundleModal';
+import { LabelSyncModal } from './LabelSyncModal';
+import { CartridgesEmptyState } from './CartridgesEmptyState';
+import { useLabelSync } from './LabelSyncIndicator';
 import { TooltipIcon } from './ui';
 import './LabelsBrowser.css';
 
@@ -45,7 +45,10 @@ interface FilterOptions {
 
 interface LabelsStatus {
   imported: boolean;
+  hasLabels?: boolean;
+  hasOwnedCarts?: boolean;
   entryCount?: number;
+  ownedCount?: number;
   fileSize?: number;
   fileSizeMB?: string;
 }
@@ -60,6 +63,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
   const [searchParams, setSearchParams] = useSearchParams();
   const hasLoadedRef = useRef(false);
   const { imageCacheBuster: globalCacheBuster } = useImageCache();
+  const { labelsRefreshKey } = useLabelSync();
   const [localCacheBuster, setLocalCacheBuster] = useState(0);
   // Combine global and local cache busters
   const imageCacheBuster = Math.max(globalCacheBuster, localCacheBuster);
@@ -83,11 +87,9 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
 
   // Modal states
   const [showImportModal, setShowImportModal] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showResetModal, setShowResetModal] = useState(false);
   const [showImportFromSDModal, setShowImportFromSDModal] = useState(false);
   const [showExportBundleModal, setShowExportBundleModal] = useState(false);
-  const [showImportBundleModal, setShowImportBundleModal] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
   // Selection mode
   const [selectionMode, setSelectionMode] = useState(false);
@@ -201,14 +203,6 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
     await fetchPage(0);
   };
 
-  const handleResetComplete = async () => {
-    setStatus(null);
-    setEntries([]);
-    setTotalPages(0);
-    setTotalEntries(0);
-    await fetchStatus();
-  };
-
   const clearAllFilters = () => {
     setRegionFilter('');
     setLanguageFilter('');
@@ -282,7 +276,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
   // Debounced refetch when filters or search change (but not on mount)
   const initialFetchDoneRef = useRef(false);
   useEffect(() => {
-    // Don't run on initial mount or if status not loaded
+    // Don't run on initial mount or if no content
     if (!status?.imported || !hasLoadedRef.current) return;
 
     // Skip the first run after initial load
@@ -307,49 +301,56 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
+  // Refetch when labelsRefreshKey changes (after sync from navbar)
+  useEffect(() => {
+    if (labelsRefreshKey === 0) return;
+    // Full refresh - refetch status and page
+    fetchStatus().then((s) => {
+      if (s?.imported) {
+        fetchPage(0);
+        fetchFilterOptions();
+      }
+    });
+    setLocalCacheBuster(Date.now());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [labelsRefreshKey]);
+
+  const hasLabels = status?.hasLabels ?? false;
+  const hasContent = status?.imported ?? false;
+
   return (
     <div className="labels-browser">
-      <div className="labels-header">
-        <h2>Cartridges</h2>
-        {status?.imported && (
-          <span className="label-count text-pixel text-muted">
-            {hasActiveFilters ? `${totalEntries} of ${totalUnfiltered}` : (totalEntries || status.entryCount)} cartridges
-          </span>
-        )}
-      </div>
+      {hasContent && (
+        <>
+          <div className="labels-header">
+            <h2>Cartridges</h2>
+            <span className="label-count text-pixel text-muted">
+              {hasActiveFilters ? `${totalEntries} of ${totalUnfiltered}` : (totalEntries || status?.entryCount || 0)} cartridges
+            </span>
+          </div>
 
-      <CartridgesActionBar
-        hasLabels={status?.imported || false}
-        hasSDCard={!!sdCardPath}
-        selectionMode={selectionMode}
-        onImportLabels={() => setShowImportModal(true)}
-        onAddCartridge={() => setShowAddModal(true)}
-        onImportFromSD={() => setShowImportFromSDModal(true)}
-        onExportBundle={() => setShowExportBundleModal(true)}
-        onImportBundle={() => setShowImportBundleModal(true)}
-        onToggleSelectionMode={() => {
-          setSelectionMode(!selectionMode);
-          setSelectedCartIds(new Set());
-        }}
-        onClearAllLabels={() => setShowResetModal(true)}
-      />
+          <CartridgesActionBar
+            hasLabels={hasLabels}
+            hasSDCard={!!sdCardPath}
+            selectionMode={selectionMode}
+            onImportFromSD={() => setShowImportFromSDModal(true)}
+            onToggleSelectionMode={() => {
+              setSelectionMode(!selectionMode);
+              setSelectedCartIds(new Set());
+            }}
+          />
+        </>
+      )}
 
       {error && <div className="error-message">{error}</div>}
 
-      {!status?.imported ? (
-        <div className="labels-empty">
-          <div className="empty-icon">🎮</div>
-          <h3>No Cartridges Yet</h3>
-          <p>Import an existing labels.db file to get started quickly, or build your collection by adding cartridges one at a time.</p>
-          <div className="empty-actions">
-            <button className="btn-primary" onClick={() => setShowImportModal(true)}>
-              Import labels.db
-            </button>
-            <button className="btn-secondary" onClick={() => setShowAddModal(true)}>
-              Add First Cartridge
-            </button>
-          </div>
-        </div>
+      {!hasContent ? (
+        <CartridgesEmptyState
+          sdCardPath={sdCardPath ?? null}
+          onImportLabelsDb={() => setShowImportModal(true)}
+          onImportFromSD={() => setShowImportFromSDModal(true)}
+          onSyncLabelsFromSD={() => setShowSyncModal(true)}
+        />
       ) : (
         <>
           {/* Search and Filters */}
@@ -509,12 +510,13 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
           ) : (
             <>
               <div className="labels-grid">
-                {entries.map((entry, index) => (
+                {entries.map((entry, i) => (
                   <CartridgeCard
                     key={entry.cartId}
                     cartId={entry.cartId}
                     name={entry.name}
-                    index={index}
+                    gridIndex={i}
+                    hasLabel={entry.index >= 0}
                     selectionMode={selectionMode}
                     isSelected={selectedCartIds.has(entry.cartId)}
                     imageCacheBuster={imageCacheBuster}
@@ -558,19 +560,6 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
         } : null}
       />
 
-      <AddCartridgeModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAdd={handleRefresh}
-      />
-
-      <ConfirmResetModal
-        isOpen={showResetModal}
-        onClose={() => setShowResetModal(false)}
-        onConfirm={handleResetComplete}
-        entryCount={status?.entryCount}
-      />
-
       {sdCardPath && (
         <ImportFromSDModal
           isOpen={showImportFromSDModal}
@@ -592,10 +581,10 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
         selectedCartIds={selectionMode && selectedCartIds.size > 0 ? Array.from(selectedCartIds) : undefined}
       />
 
-      <ImportBundleModal
-        isOpen={showImportBundleModal}
-        onClose={() => setShowImportBundleModal(false)}
-        onImportComplete={handleRefresh}
+      <LabelSyncModal
+        isOpen={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        onSyncComplete={handleRefresh}
       />
     </div>
   );

@@ -41,16 +41,6 @@
   margin: 0 auto;
 }
 
-/* Sync actions (used by SyncPage) */
-.sync-actions {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.sync-actions button {
-  flex: 1;
-}
-
 /* Buttons */
 .btn-primary,
 .btn-secondary {
@@ -846,172 +836,6 @@
   border: 1px solid var(--color-border);
 }
 
-/* Sync Page */
-.sync-page {
-  flex: 1;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.sync-page .sync-no-card {
-  text-align: center;
-  padding: 3rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-}
-
-.sync-page .sync-no-card .hint {
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-}
-
-.sync-page .sync-loading {
-  text-align: center;
-  padding: 3rem;
-}
-
-.sync-page .sync-error {
-  text-align: center;
-  padding: 2rem;
-}
-
-.sync-page .sync-preview {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-}
-
-.sync-page .sync-description {
-  color: var(--color-text-muted);
-  margin-bottom: 1.5rem;
-}
-
-.sync-page .sync-actions {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.sync-page .btn-large {
-  padding: 1rem 2rem;
-  font-size: 1rem;
-}
-
-.sync-page .sync-progress {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 3rem 2rem;
-  text-align: center;
-}
-
-.sync-page .sync-complete {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  text-align: center;
-}
-
-.sync-page .sync-results {
-  text-align: left;
-  margin: 1.5rem 0;
-  padding: 1rem;
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-}
-
-.sync-page .sync-note {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-  margin-top: 1rem;
-}
-
-/* Manual Export Section */
-.sync-manual-section {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-}
-
-.sync-preview .sync-manual-section {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding-left: 0;
-  padding-right: 0;
-  padding-bottom: 0;
-}
-
-.sync-manual-section h3 {
-  margin: 0 0 0.75rem 0;
-}
-
-.sync-manual-section .sync-description {
-  margin-bottom: 1rem;
-}
-
-.manual-export-actions {
-  margin: 1rem 0;
-}
-
-.manual-instructions {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background: var(--color-surface-elevated);
-  border-radius: var(--radius-md);
-}
-
-.manual-instructions h4 {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.9rem;
-  color: var(--color-text);
-}
-
-.manual-instructions ol {
-  margin: 0;
-  padding-left: 1.25rem;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-  line-height: 1.8;
-}
-
-.manual-instructions li {
-  margin-bottom: 0.25rem;
-}
-
-.manual-instructions code {
-  background: var(--color-surface);
-  padding: 0.1rem 0.4rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  color: var(--color-accent);
-}
-
-.path-example {
-  margin: 1rem 0 0 0;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-}
-
-.path-example code {
-  display: inline-block;
-  background: var(--color-surface-elevated);
-  padding: 0.4rem 0.75rem;
-  border-radius: var(--radius-md);
-  font-size: 0.85rem;
-  color: var(--color-accent);
-}
-
 /* Pixel font - disable anti-aliasing for crisp rendering */
 .game-list-container h2,
 .game-id,
@@ -1021,14 +845,6 @@
 .form-group label,
 .form-group .readonly,
 .diff-section h4,
-.sync-header h2,
-.status-imported,
-.sync-section h3,
-.progress-percent,
-.sync-complete h3,
-.sync-details h4,
-.sync-errors h4,
-.sync-to-sd-btn,
 .page-header h2,
 .page-header .sd-card-path,
 .debug-section input,

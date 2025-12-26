@@ -2,10 +2,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { CartridgesPage } from './components/CartridgesPage';
 import { Navbar } from './components/Navbar';
-import { SyncPage } from './components/SyncPage';
 import { HelpPage } from './components/HelpPage';
 import { SettingsPage } from './components/SettingsPage';
 import { ComponentTestPage } from './components/ComponentTestPage';
+import { LabelSyncProvider } from './components/LabelSyncIndicator';
 import type { SDCard } from './types';
 import './App.css';
 
@@ -146,7 +146,6 @@ function AppContent() {
           <Route path="/" element={<Navigate to="/cartridges" replace />} />
           <Route path="/cartridges" element={<CartridgesPage />} />
           <Route path="/labels" element={<Navigate to="/cartridges" replace />} />
-          <Route path="/sync" element={<SyncPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/component-test" element={<ComponentTestPage />} />
@@ -161,7 +160,9 @@ function App() {
     <BrowserRouter>
       <ImageCacheProvider>
         <SDCardProvider>
-          <AppContent />
+          <LabelSyncProvider>
+            <AppContent />
+          </LabelSyncProvider>
         </SDCardProvider>
       </ImageCacheProvider>
     </BrowserRouter>

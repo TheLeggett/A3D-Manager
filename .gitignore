@@ -38,3 +38,6 @@ notes.md
 
 # Environment variables
 .env
+
+# For debugging / testing / benchmarking
+labels.db

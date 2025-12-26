@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Modal, Button } from './ui';
+import { useLabelSync } from './LabelSyncIndicator';
 
 type ImportMode = 'replace' | 'merge-overwrite' | 'merge-skip';
 
@@ -20,6 +21,7 @@ export function LabelsImportModal({
   onImportComplete,
   currentStatus,
 }: LabelsImportModalProps) {
+  const { markLocalChanges } = useLabelSync();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -59,9 +61,9 @@ export function LabelsImportModal({
         throw new Error(data.error || 'Import failed');
       }
 
-      const result = await response.json();
-      console.log('Import result:', result);
+      await response.json();
 
+      markLocalChanges(); // Mark that local labels have changed
       onImportComplete();
       onClose();
     } catch (err) {

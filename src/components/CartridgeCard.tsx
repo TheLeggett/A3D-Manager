@@ -4,7 +4,8 @@ import './CartridgeCard.css';
 interface CartridgeCardProps {
   cartId: string;
   name?: string;
-  index: number;
+  gridIndex: number;
+  hasLabel: boolean;
   selectionMode: boolean;
   isSelected: boolean;
   imageCacheBuster?: number;
@@ -14,18 +15,21 @@ interface CartridgeCardProps {
 export function CartridgeCard({
   cartId,
   name,
-  index,
+  gridIndex,
+  hasLabel,
   selectionMode,
   isSelected,
   imageCacheBuster,
   onClick,
 }: CartridgeCardProps) {
-  const imageUrl = `/api/labels/${cartId}${imageCacheBuster ? `?v=${imageCacheBuster}` : ''}`;
+  const imageUrl = hasLabel
+    ? `/api/labels/${cartId}${imageCacheBuster ? `?v=${imageCacheBuster}` : ''}`
+    : '/cart-placeholder.png';
 
   return (
     <div
       className={`cartridge-card ${name ? 'has-name' : ''} ${selectionMode ? 'selectable' : ''} ${isSelected ? 'selected' : ''}`}
-      style={{ '--tile-index': index } as React.CSSProperties}
+      style={{ '--tile-index': gridIndex } as React.CSSProperties}
       onClick={onClick}
     >
       {selectionMode && <div className="selection-checkbox" />}
@@ -47,7 +51,7 @@ export function CartridgeCard({
       </div>
       <div className="cartridge-card-info">
         <span className={`cartridge-card-name ${!name ? 'unknown' : ''}`}>
-          {name || 'Title Unknown'}
+          {name || 'Unknown Cartridge'}
         </span>
         <span className="cartridge-card-id text-pixel">{cartId}</span>
       </div>

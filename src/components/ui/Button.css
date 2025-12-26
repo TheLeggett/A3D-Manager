@@ -148,17 +148,3 @@
   }
 }
 
-/* Button groups */
-.btn-group {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.btn-group-vertical {
-  flex-direction: column;
-}
-
-/* Full width variant */
-.btn-block {
-  width: 100%;
-}

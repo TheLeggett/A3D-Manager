@@ -16,12 +16,6 @@ export function Navbar() {
           Cartridges
         </Link>
         <Link
-          to="/sync"
-          className={`nav-tab text-pixel ${location.pathname === '/sync' ? 'active' : ''}`}
-        >
-          Sync to SD
-        </Link>
-        <Link
           to="/settings"
           className={`nav-tab text-pixel ${location.pathname === '/settings' ? 'active' : ''}`}
         >

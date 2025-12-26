@@ -433,6 +433,29 @@
   margin-top: 0.5rem;
 }
 
+/* Danger Zone */
+.settings-section--danger {
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  background: #000000
+}
+
+.settings-section--danger h2 {
+  color: var(--color-error);
+}
+
+.setting-row--danger {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: var(--color-surface);
+}
+
+.setting-row--reset {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(239, 68, 68, 0.2);
+  padding-top: 1.5rem;
+}
+
 /* Scrollbar styling */
 .settings-page::-webkit-scrollbar {
   width: 8px;
