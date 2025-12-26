@@ -1,5 +1,7 @@
 # A3D Manager
 
+![CI](https://github.com/TheLeggett/A3D-Manager/actions/workflows/ci.yml/badge.svg)
+
 **The unofficial companion app for managing your Analogue 3D N64 cartridge collection.**
 
 A3D Manager is a desktop utility that lets you manage label artwork, per-game display and hardware settings, and controller pak saves for your Analogue 3D. Build and maintain your perfect cartridge library with full control over every aspect of your N64 gaming experience.
