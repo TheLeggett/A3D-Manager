@@ -7,6 +7,9 @@
 
 import { mkdir, rm, writeFile, readFile, stat } from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { test, assert, assertEqual, TestSuite } from '../utils.js';
 import {
   copyFileWithProgress,
@@ -19,7 +22,7 @@ import {
   BatchProgress,
 } from '../../server/lib/file-transfer.js';
 
-const OUTPUT_DIR = path.join(import.meta.dirname, 'output');
+const OUTPUT_DIR = path.join(__dirname, 'output');
 
 async function createTestFile(filePath: string, sizeBytes: number): Promise<void> {
   const buffer = Buffer.alloc(sizeBytes);

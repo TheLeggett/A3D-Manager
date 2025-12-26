@@ -7,6 +7,9 @@
 
 import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync } from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import sharp from 'sharp';
 import { test, assert, assertEqual, assertBuffersEqual, TestSuite } from '../utils.js';
 
@@ -47,8 +50,8 @@ interface CartMapping {
   imageFile: string;
 }
 
-const FIXTURES_DIR = path.join(import.meta.dirname, 'fixtures');
-const OUTPUT_DIR = path.join(import.meta.dirname, 'output');
+const FIXTURES_DIR = path.join(__dirname, 'fixtures');
+const OUTPUT_DIR = path.join(__dirname, 'output');
 
 export function cleanOutput(): void {
   mkdirSync(OUTPUT_DIR, { recursive: true });

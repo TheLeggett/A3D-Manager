@@ -10,6 +10,9 @@
 import { readFile, writeFile, mkdir, rm } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { test, assert, assertEqual, TestSuite } from '../utils.js';
 
 // Import modules under test
@@ -37,7 +40,7 @@ import {
 // Test Output Directory
 // =============================================================================
 
-const OUTPUT_DIR = path.join(import.meta.dirname, 'output');
+const OUTPUT_DIR = path.join(__dirname, 'output');
 
 export async function cleanOutput(): Promise<void> {
   if (existsSync(OUTPUT_DIR)) {
@@ -50,7 +53,7 @@ export async function cleanOutput(): Promise<void> {
 // Test Fixtures
 // =============================================================================
 
-const FIXTURES_DIR = path.join(import.meta.dirname, '..', 'game-data', 'fixtures');
+const FIXTURES_DIR = path.join(__dirname, '..', 'game-data', 'fixtures');
 
 async function getFixtureSettings(): Promise<CartridgeSettings> {
   const content = await readFile(path.join(FIXTURES_DIR, 'settings.json'), 'utf-8');
