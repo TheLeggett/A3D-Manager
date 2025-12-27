@@ -131,7 +131,7 @@ Comprehensive N64 cartridge database:
 
 ### Prerequisites
 
-- Node.js 18 or higher
+- Node.js 20 or higher
 - An Analogue 3D with an SD card
 
 ### Installation (Recommended)
