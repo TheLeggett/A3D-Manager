@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build output (rebuilt in container)
+dist/
+
+# Local data and config
+.local/
+.env
+.env.local
+*.log
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__/
+coverage/
+
+# Docker files (avoid recursive)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Documentation (not needed at runtime)
+*.md
+LICENSE

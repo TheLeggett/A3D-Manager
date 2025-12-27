@@ -31,6 +31,8 @@ tests/
 ├── cartridge-data/
 │   ├── tests.ts            # Cartridge data tests
 │   └── output/             # Generated output (gitignored)
+├── sd-card/
+│   └── tests.ts            # SD card configuration tests
 └── game-data/
     └── fixtures/           # Shared fixtures (settings.json, controller_pak.img)
 
@@ -119,6 +121,16 @@ Tests for cartridge ownership tracking, settings parsing, and game pak operation
 | Owned Carts | 5 | Load/save round-trip, duplicate handling, ID normalization, version validation |
 | Settings | 12 | parseSettings, validateSettings, hardware/display extraction, defaults |
 | Game Pak | 11 | 32KB size validation, empty pak creation, header structure, page tracking |
+
+---
+
+## SD Card Configuration Tests (4 tests)
+
+Tests for SD card detection and Docker volume path configuration.
+
+| Category | Tests | Description |
+|----------|-------|-------------|
+| Volumes Path | 4 | SD_VOLUMES_PATH env var, default /Volumes, Linux/macOS paths |
 
 ---
 

@@ -1,0 +1,36 @@
+services:
+  a3d-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: a3d-manager:latest
+    container_name: a3d-manager
+    ports:
+      - "3001:3001"
+    volumes:
+      # Persist local library data (cartridge art, games metadata)
+      - a3d-data:/app/.local
+      # Mount SD card for detection and sync
+      # Configure via SD_VOLUMES_PATH in .env file
+      # Default: /Volumes/ANALOGUE 3D (standard Analogue 3D SD card name)
+      - "${SD_VOLUMES_PATH:-/Volumes/ANALOGUE 3D}:${SD_VOLUMES_PATH:-/Volumes/ANALOGUE 3D}:rw"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - SD_VOLUMES_PATH=${SD_VOLUMES_PATH:-/Volumes/ANALOGUE 3D}
+      # File transfer settings
+      - TRANSFER_CHUNK_SIZE=2097152
+      - TRANSFER_FSYNC_PER_CHUNK=true
+      # Set to 'true' to read labels directly from SD card (slower)
+      - READ_LABELS_FROM_SD=false
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  a3d-data:
+    name: a3d-manager-data
