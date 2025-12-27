@@ -23,36 +23,64 @@ export interface SDCardInfo {
 }
 
 /**
- * Detect Analogue 3D SD cards by scanning /Volumes for the expected structure
+ * Get the path where the Analogue 3D SD card is mounted
+ * Defaults to /Volumes/ANALOGUE 3D (standard macOS mount), can be overridden via SD_VOLUMES_PATH env var
+ */
+export function getVolumesPath(): string {
+  return process.env.SD_VOLUMES_PATH || '/Volumes/ANALOGUE 3D';
+}
+
+/**
+ * Check if a path is an Analogue 3D SD card root
+ */
+async function isAnalogue3DRoot(volumePath: string): Promise<SDCardInfo | null> {
+  const libraryPath = path.join(volumePath, 'Library', 'N64');
+  const libraryDbPath = path.join(libraryPath, 'library.db');
+
+  try {
+    await access(libraryDbPath, constants.R_OK);
+    const volumeStat = await stat(volumePath);
+    if (volumeStat.isDirectory()) {
+      return {
+        name: path.basename(volumePath),
+        path: volumePath,
+        gamesPath: path.join(libraryPath, 'Games'),
+        libraryDbPath,
+        labelsDbPath: path.join(libraryPath, 'Images', 'labels.db'),
+      };
+    }
+  } catch {
+    // Not an Analogue 3D SD card
+  }
+  return null;
+}
+
+/**
+ * Detect Analogue 3D SD cards by scanning volumes path for the expected structure
+ * Supports both:
+ * - Direct SD card path (e.g., /Volumes/ANALOGUE 3D)
+ * - Parent directory containing SD cards (e.g., /Volumes)
  */
 export async function detectSDCards(): Promise<SDCardInfo[]> {
-  const volumesPath = '/Volumes';
+  const volumesPath = getVolumesPath();
   const sdCards: SDCardInfo[] = [];
 
   try {
+    // First, check if volumesPath itself is an Analogue 3D SD card
+    const directCard = await isAnalogue3DRoot(volumesPath);
+    if (directCard) {
+      sdCards.push(directCard);
+      return sdCards;
+    }
+
+    // Otherwise, scan volumesPath as a parent directory containing volumes
     const volumes = await readdir(volumesPath);
 
     for (const volume of volumes) {
       const volumePath = path.join(volumesPath, volume);
-      const libraryPath = path.join(volumePath, 'Library', 'N64');
-      const libraryDbPath = path.join(libraryPath, 'library.db');
-
-      try {
-        // Check if this volume has the Analogue 3D structure
-        await access(libraryDbPath, constants.R_OK);
-
-        const volumeStat = await stat(volumePath);
-        if (volumeStat.isDirectory()) {
-          sdCards.push({
-            name: volume,
-            path: volumePath,
-            gamesPath: path.join(libraryPath, 'Games'),
-            libraryDbPath,
-            labelsDbPath: path.join(libraryPath, 'Images', 'labels.db'),
-          });
-        }
-      } catch {
-        // This volume doesn't have Analogue 3D structure, skip it
+      const card = await isAnalogue3DRoot(volumePath);
+      if (card) {
+        sdCards.push(card);
       }
     }
   } catch (error) {

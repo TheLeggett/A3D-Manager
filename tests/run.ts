@@ -14,6 +14,7 @@ import { labelsDbSuite, cleanOutput as cleanLabelsOutput, writeTestArtifacts } f
 import { fileTransferSuite, cleanOutput as cleanFileTransferOutput } from './file-transfer/tests.js';
 import { cartridgeDataSuite, cleanOutput as cleanCartridgeOutput } from './cartridge-data/tests.js';
 import { bundleArchiveSuite, cleanOutput as cleanBundleOutput } from './bundle-archive/tests.js';
+import { sdCardSuite } from './sd-card/tests.js';
 
 const verbose = process.argv.includes('--verbose');
 
@@ -55,6 +56,13 @@ async function main() {
   await cleanBundleOutput();
   const bundleArchiveResults = await runSuite(bundleArchiveSuite);
   allResults.push(...bundleArchiveResults);
+
+  // SD Card Configuration Tests
+  console.log(`\n┌───────────────────────────────────────────────────────────────┐`);
+  console.log(`│  ${sdCardSuite.name} (${sdCardSuite.tests.length} tests)`);
+  console.log(`└───────────────────────────────────────────────────────────────┘`);
+  const sdCardResults = await runSuite(sdCardSuite);
+  allResults.push(...sdCardResults);
 
   // Print summary
   printSummary(allResults);
