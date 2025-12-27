@@ -36,12 +36,23 @@ interface DetailedCompareResult {
   };
 }
 
+interface DetailedCompareBreakdown {
+  idTableReadMs: number;
+  idCompareMs: number;
+  imageCompareMs: number;
+}
+
+interface PartialSyncBreakdown {
+  compareMs: number;
+  writeMs: number;
+}
+
 interface BenchmarkResults {
   uploadToSD: { durationMs: number; bytesWritten: number };
   createLocalDiffs: { durationMs: number; modifiedCartIds: string[] };
   quickCheck: { durationMs: number; identical: boolean };
-  detailedCompare: { durationMs: number; modified: number; breakdown: any };
-  partialSync: { durationMs: number; entriesUpdated: number; bytesWritten: number; breakdown: any };
+  detailedCompare: { durationMs: number; modified: number; breakdown: DetailedCompareBreakdown };
+  partialSync: { durationMs: number; entriesUpdated: number; bytesWritten: number; breakdown: PartialSyncBreakdown };
 }
 
 interface ChunkBenchmarkResult {

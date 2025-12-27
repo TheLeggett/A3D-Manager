@@ -10,22 +10,13 @@
 import { readFile, writeFile, mkdir, rm } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { test, assert, assertEqual, TestSuite } from '../utils.js';
 
 // Import modules under test
-import {
-  loadOwnedCarts,
-  saveOwnedCarts,
-  getOwnedCartIds,
-  getOwnedCartridges,
-  isCartridgeOwned,
-  addOwnedCartridge,
-  addOwnedCartridges,
-  removeOwnedCartridge,
-  clearOwnedCartridges,
-  getOwnedCartsPath,
-  type OwnedCartsData,
-} from '../../server/lib/owned-carts.js';
+import { type OwnedCartsData } from '../../server/lib/owned-carts.js';
 
 import {
   parseSettings,
@@ -49,7 +40,7 @@ import {
 // Test Output Directory
 // =============================================================================
 
-const OUTPUT_DIR = path.join(import.meta.dirname, 'output');
+const OUTPUT_DIR = path.join(__dirname, 'output');
 
 export async function cleanOutput(): Promise<void> {
   if (existsSync(OUTPUT_DIR)) {
@@ -62,7 +53,7 @@ export async function cleanOutput(): Promise<void> {
 // Test Fixtures
 // =============================================================================
 
-const FIXTURES_DIR = path.join(import.meta.dirname, '..', 'game-data', 'fixtures');
+const FIXTURES_DIR = path.join(__dirname, '..', 'game-data', 'fixtures');
 
 async function getFixtureSettings(): Promise<CartridgeSettings> {
   const content = await readFile(path.join(FIXTURES_DIR, 'settings.json'), 'utf-8');
@@ -79,8 +70,6 @@ async function getFixtureGamePak(): Promise<Buffer> {
 
 const ownedCartsTests = [
   test('loadOwnedCarts returns empty array when file does not exist', async () => {
-    // Save original path
-    const originalPath = getOwnedCartsPath();
     const testPath = path.join(OUTPUT_DIR, 'test-owned-carts.json');
 
     // Make sure test file doesn't exist
@@ -247,15 +236,16 @@ const settingsTests = [
     assert(parsed.hardware !== undefined, 'Should add default hardware');
   }),
 
-  test('parseSettings rejects non-object input', () => {
+  test('parseSettings rejects non-object JSON input', () => {
+    // JSON.parse of a quoted string returns a string, which should fail validation
     let threw = false;
     try {
       parseSettings('"just a string"');
-    } catch {
+    } catch (e) {
       threw = true;
+      assert(e instanceof Error && e.message === 'Settings must be an object', 'Should throw correct error');
     }
-    // JSON.parse of a string returns a string, which should fail validation
-    // but parseSettings wraps it, so we need to check differently
+    assert(threw, 'Should throw for non-object input');
   }),
 ];
 

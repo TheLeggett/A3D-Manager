@@ -7,6 +7,9 @@
 
 import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync } from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import sharp from 'sharp';
 import { test, assert, assertEqual, assertBuffersEqual, TestSuite } from '../utils.js';
 
@@ -41,8 +44,14 @@ import {
   deleteEntry,
 } from '../../server/lib/labels-db-core.js';
 
-const FIXTURES_DIR = path.join(import.meta.dirname, 'fixtures');
-const OUTPUT_DIR = path.join(import.meta.dirname, 'output');
+// Type for cart-ids.json mapping entries
+interface CartMapping {
+  cartId: string;
+  imageFile: string;
+}
+
+const FIXTURES_DIR = path.join(__dirname, 'fixtures');
+const OUTPUT_DIR = path.join(__dirname, 'output');
 
 export function cleanOutput(): void {
   mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -182,7 +191,7 @@ const emptyDbTests = [
 function createRoundTripTests(): ReturnType<typeof test>[] {
   const mapping = JSON.parse(readFileSync(path.join(FIXTURES_DIR, 'cart-ids.json'), 'utf-8'));
 
-  return Object.entries(mapping).map(([name, cart]: [string, any]) =>
+  return Object.entries(mapping).map(([name, cart]: [string, CartMapping]) =>
     test(`Round-trip: ${name}`, async () => {
       const originalPng = readFileSync(path.join(FIXTURES_DIR, cart.imageFile));
       const db = await createLabelsDb([{ cartId: cart.cartId, imageBuffer: originalPng }]);
@@ -413,7 +422,7 @@ function createBinaryTests(): ReturnType<typeof test>[] {
       for (let n = 1; n <= 4; n++) {
         const entries = Object.entries(mapping)
           .slice(0, n)
-          .map(([, cart]: [string, any]) => ({
+          .map(([, cart]: [string, CartMapping]) => ({
             cartId: cart.cartId,
             imageBuffer: readFileSync(path.join(FIXTURES_DIR, cart.imageFile)),
           }));
@@ -437,7 +446,7 @@ export async function writeTestArtifacts(): Promise<void> {
   const mapping = JSON.parse(readFileSync(path.join(FIXTURES_DIR, 'cart-ids.json'), 'utf-8'));
   const samplePng = readFileSync(path.join(FIXTURES_DIR, 'sample-label.png'));
 
-  const entries = Object.entries(mapping).map(([, cart]: [string, any]) => ({
+  const entries = Object.entries(mapping).map(([, cart]: [string, CartMapping]) => ({
     cartId: cart.cartId,
     imageBuffer: samplePng,
   }));

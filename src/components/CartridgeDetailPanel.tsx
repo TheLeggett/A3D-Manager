@@ -130,7 +130,7 @@ export function CartridgeDetailPanel({
   const [isOwned, setIsOwned] = useState(false);
   const [lookupResult, setLookupResult] = useState<LookupResult | null>(null);
   const { imageCacheBuster: globalCacheBuster } = useImageCache();
-  const [localCacheBuster, setLocalCacheBuster] = useState(Date.now());
+  const [localCacheBuster, setLocalCacheBuster] = useState(() => Date.now());
   // Combine global and local cache busters
   const imageCacheBuster = Math.max(globalCacheBuster, localCacheBuster);
 
@@ -678,7 +678,7 @@ function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
         setInfo(emptyInfo);
         return emptyInfo;
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load settings info');
       return null;
     } finally {
@@ -1060,6 +1060,7 @@ type SettingsEditorTab = 'display' | 'hardware';
 function SettingsEditor({ cartId, settings: initialSettings, sdCardPath, onSettingsChange }: SettingsEditorProps) {
   const [activeTab, setActiveTab] = useState<SettingsEditorTab>('display');
   const [settings, setSettings] = useState<CartridgeSettings>(initialSettings);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_saveStatus, setSaveStatus] = useState<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
 
@@ -1425,7 +1426,7 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
       } else {
         setInfo({ local: { exists: false, source: 'local', path: '' }, sd: null });
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load game pak info');
     } finally {
       setLoading(false);

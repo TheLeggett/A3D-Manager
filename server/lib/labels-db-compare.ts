@@ -3,7 +3,7 @@
  */
 
 import { createHash } from 'crypto';
-import { open, stat } from 'fs/promises';
+import { open, stat, type FileHandle } from 'fs/promises';
 import {
   ID_TABLE_START,
   DATA_START,
@@ -97,7 +97,7 @@ async function hashIdTable(filePath: string): Promise<string> {
  * Compute a quick hash of a single image slot
  * Uses first 1KB + last 1KB for speed while still being reliable
  */
-async function hashImageSlot(fileHandle: any, index: number): Promise<string> {
+async function hashImageSlot(fileHandle: FileHandle, index: number): Promise<string> {
   const offset = DATA_START + index * IMAGE_SLOT_SIZE;
 
   // Read first 1KB and last 1KB of actual image data (not padding)
@@ -115,7 +115,7 @@ async function hashImageSlot(fileHandle: any, index: number): Promise<string> {
 /**
  * Compute full hash of an image slot (more accurate but slower)
  */
-async function hashImageSlotFull(fileHandle: any, index: number): Promise<string> {
+async function hashImageSlotFull(fileHandle: FileHandle, index: number): Promise<string> {
   const offset = DATA_START + index * IMAGE_SLOT_SIZE;
   const buffer = Buffer.alloc(IMAGE_DATA_SIZE);
   await fileHandle.read(buffer, 0, IMAGE_DATA_SIZE, offset);
@@ -183,7 +183,7 @@ export async function compareQuick(localPath: string, otherPath: string): Promis
       otherEntryCount,
       durationMs: performance.now() - startTime,
     };
-  } catch (error) {
+  } catch {
     return {
       identical: false,
       reason: 'unknown',

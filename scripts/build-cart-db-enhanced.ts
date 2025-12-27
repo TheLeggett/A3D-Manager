@@ -158,7 +158,8 @@ function getVideoMode(gameCode: string): 'NTSC' | 'PAL' | 'Unknown' {
 /**
  * Extract clean title (without region/language/version info)
  */
-function extractCleanTitle(name: string): string {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _extractCleanTitle(name: string): string {
   // Remove parenthetical info but keep the base title
   let clean = name
     .replace(/\s*\([^)]*\)/g, '') // Remove all parenthetical content
@@ -224,7 +225,7 @@ async function parseDatFile(): Promise<Map<string, Omit<EnhancedCartEntry, 'id'>
 
     console.log(`Parsed ${gameCodeToMeta.size} game codes from DAT file`);
     return gameCodeToMeta;
-  } catch (err) {
+  } catch {
     console.log(`
 No roms.dat.xml found. Download from:
   https://github.com/mroach/rom64

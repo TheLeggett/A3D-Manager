@@ -81,7 +81,7 @@ async function parseDatFile(): Promise<Map<string, string> | null> {
 
     console.log(`Parsed ${gameCodeToName.size} game codes from DAT file`);
     return gameCodeToName;
-  } catch (err) {
+  } catch {
     return null;
   }
 }

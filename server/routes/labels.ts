@@ -93,7 +93,7 @@ async function loadCartDatabase(): Promise<void> {
 
     cartDbLastLoaded = Date.now();
     console.log(`Loaded cart name database: ${cartNames.length} entries`);
-  } catch (err) {
+  } catch {
     console.log('Cart name database not found, names will not be available');
     cartNames = [];
     filterOptions = null;
@@ -1002,9 +1002,9 @@ router.get('/debug/benchmark-stream', async (_req, res) => {
     uploadToSD: { durationMs: number; bytesWritten: number };
     createLocalDiffs: { durationMs: number; modifiedCartIds: string[] };
     quickCheck: { durationMs: number; identical: boolean };
-    detailedCompare: { durationMs: number; modified: number; breakdown: any };
-    partialSync: { durationMs: number; entriesUpdated: number; bytesWritten: number; breakdown: any };
-  } = {} as any;
+    detailedCompare: { durationMs: number; modified: number; breakdown: { idTableReadMs: number; idCompareMs: number; imageCompareMs: number } };
+    partialSync: { durationMs: number; entriesUpdated: number; bytesWritten: number; breakdown: { compareMs: number; writeMs: number } };
+  } = {} as Partial<typeof results> as typeof results;
 
   try {
     // Ensure Debug directory exists

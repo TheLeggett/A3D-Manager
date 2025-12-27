@@ -17,7 +17,6 @@ import {
   parseLabelsDb,
   DATA_START,
   IMAGE_SLOT_SIZE,
-  IMAGE_DATA_SIZE,
   ID_TABLE_START,
 } from '../server/lib/labels-db-core.js';
 import { compareQuick, compareDetailed } from '../server/lib/labels-db-compare.js';
@@ -27,7 +26,7 @@ const SOURCE_LABELS_DB = join(process.cwd(), 'labels.db');
 interface BenchmarkResult {
   name: string;
   durationMs: number;
-  result: any;
+  result: unknown;
 }
 
 async function fileExists(path: string): Promise<boolean> {
@@ -114,7 +113,7 @@ async function createModifiedLabelsDb(
 
 async function runBenchmark(
   name: string,
-  fn: () => Promise<any>
+  fn: () => Promise<unknown>
 ): Promise<BenchmarkResult> {
   const start = performance.now();
   const result = await fn();

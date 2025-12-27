@@ -112,7 +112,7 @@ async function parseDatFile(): Promise<Map<string, string>> {
 
     console.log(`Parsed ${gameCodeToName.size} game codes from DAT file`);
     return gameCodeToName;
-  } catch (err) {
+  } catch {
     console.log(`
 No roms.dat.xml found in project root.
 

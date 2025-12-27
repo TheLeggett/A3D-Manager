@@ -43,7 +43,7 @@ export function ComponentTestPage() {
         clearInterval(uploadIntervalRef.current);
       }
     };
-  }, []);
+  }, [totalBytes]);
 
   const formatBytes = (bytes: number) => {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -51,6 +51,7 @@ export function ComponentTestPage() {
   };
 
   const getUploadSpeed = () => {
+    // eslint-disable-next-line react-hooks/purity
     const baseSpeed = 500 + Math.random() * 300;
     return `${baseSpeed.toFixed(1)} KB/s`;
   };

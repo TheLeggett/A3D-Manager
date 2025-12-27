@@ -188,7 +188,7 @@ Shows all metadata available in the ROM header including:
   const { stat } = await import('fs/promises');
   const pathStat = await stat(inputPath);
 
-  let roms: RomInfo[] = [];
+  const roms: RomInfo[] = [];
 
   if (pathStat.isFile()) {
     roms.push(await analyzeRom(inputPath));
