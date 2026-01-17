@@ -124,6 +124,76 @@
   margin-bottom: 0.75rem;
 }
 
+/* Sprite Loading Demo */
+.sprite-loading-demo {
+  display: flex;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+}
+
+.sprite-loading-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sprite-loading-sizes {
+  display: flex;
+  align-items: flex-end;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+}
+
+/* Pixel Loader Grid */
+.pixel-loader-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.pixel-loader-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+}
+
+.pixel-loader-demo h3 {
+  margin: 0;
+}
+
+.pixel-loader-demo p {
+  margin: 0;
+  text-align: center;
+}
+
+.pixel-loader-sizes {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+}
+
+.pixel-loader-size-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* Debug Section */
 .test-section.debug-section .debug-output {
   font-family: var(--font-mono);

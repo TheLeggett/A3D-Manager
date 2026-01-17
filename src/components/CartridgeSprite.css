@@ -7,12 +7,26 @@
   image-rendering: pixelated;
 }
 
-.cartridge-sprite__artwork {
+.cartridge-sprite__artwork,
+.cartridge-sprite__loader {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   object-fit: cover;
   image-rendering: pixelated;
+  /* Fade transitions */
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+
+/* Show elements when visible class is added */
+.cartridge-sprite__artwork.visible,
+.cartridge-sprite__loader.visible {
+  opacity: 1;
+}
+
+.cartridge-sprite__loader {
+  border: none;
 }
 
 .cartridge-sprite__overlay {
@@ -31,7 +45,8 @@
   height: 98px;
 }
 
-.cartridge-sprite--large .cartridge-sprite__artwork {
+.cartridge-sprite--large .cartridge-sprite__artwork,
+.cartridge-sprite--large .cartridge-sprite__loader {
   width: 74px;
   height: 86px;
   top: 7px;
@@ -43,7 +58,8 @@
   height: 73px;
 }
 
-.cartridge-sprite--medium .cartridge-sprite__artwork {
+.cartridge-sprite--medium .cartridge-sprite__artwork,
+.cartridge-sprite--medium .cartridge-sprite__loader {
   width: 55px;
   height: 64px;
   top: 5px;
@@ -55,7 +71,8 @@
   height: 49px;
 }
 
-.cartridge-sprite--small .cartridge-sprite__artwork {
+.cartridge-sprite--small .cartridge-sprite__artwork,
+.cartridge-sprite--small .cartridge-sprite__loader {
   width: 37px;
   height: 43px;
   top: 3.5px;

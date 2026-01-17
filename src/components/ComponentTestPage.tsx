@@ -3,6 +3,7 @@ import { OptionSelector, ToggleSwitch } from './controls';
 import { CartridgeSprite } from './CartridgeSprite';
 import type { CartridgeSpriteColor, CartridgeSpriteSize } from './CartridgeSprite';
 import { ProgressBar } from './ProgressBar';
+import { PixelLoader } from './PixelLoader';
 import './ComponentTestPage.css';
 
 export function ComponentTestPage() {
@@ -148,6 +149,84 @@ export function ComponentTestPage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Pixel Loader Section */}
+      <section className="test-section">
+        <h2 className="test-section-header text-section-header">Pixel Loaders (8-bit Loading)</h2>
+        <p className="text-body-small text-muted" style={{ marginBottom: '1.5rem' }}>
+          Retro-styled loading placeholders for label images
+        </p>
+
+        <h3 className="text-label">In Cartridge Sprite (Loading State)</h3>
+        <p className="text-caption text-muted" style={{ marginBottom: '1rem' }}>
+          How it looks inside the cartridge while images load from blobs
+        </p>
+        <div className="sprite-loading-demo">
+          <div className="sprite-loading-item">
+            <CartridgeSprite
+              artworkUrl="/cart-placeholder.png"
+              color="dark"
+              size="large"
+              loading={true}
+            />
+            <code className="text-mono-small text-muted">loading</code>
+          </div>
+          <div className="sprite-loading-item">
+            <CartridgeSprite
+              artworkUrl="/cart-placeholder.png"
+              color="dark"
+              size="large"
+              loading={false}
+            />
+            <code className="text-mono-small text-muted">loaded</code>
+          </div>
+          <div className="sprite-loading-item">
+            <CartridgeSprite
+              artworkUrl="/cart-placeholder.png"
+              color="black"
+              size="large"
+              loading={true}
+            />
+            <code className="text-mono-small text-muted">loading (black)</code>
+          </div>
+        </div>
+
+        <h3 className="text-label" style={{ marginTop: '2rem' }}>All Sizes Loading</h3>
+        <div className="sprite-loading-sizes">
+          {(['large', 'medium', 'small'] as CartridgeSpriteSize[]).map((size) => (
+            <div key={size} className="sprite-loading-item">
+              <CartridgeSprite
+                artworkUrl="/cart-placeholder.png"
+                color="dark"
+                size={size}
+                loading={true}
+              />
+              <code className="text-mono-small text-muted">{size}</code>
+            </div>
+          ))}
+        </div>
+
+        <h3 className="text-label" style={{ marginTop: '2rem' }}>Standalone Variants</h3>
+        <div className="pixel-loader-grid">
+          <div className="pixel-loader-demo">
+            <h4 className="text-label">Scanline</h4>
+            <p className="text-caption text-muted">CRT-style moving scanline</p>
+            <PixelLoader variant="scanline" width={80} height={112} />
+          </div>
+
+          <div className="pixel-loader-demo">
+            <h4 className="text-label">Blocks</h4>
+            <p className="text-caption text-muted">Animated pixel blocks</p>
+            <PixelLoader variant="blocks" width={80} height={112} />
+          </div>
+
+          <div className="pixel-loader-demo">
+            <h4 className="text-label">Pulse</h4>
+            <p className="text-caption text-muted">Ripple pulse from center</p>
+            <PixelLoader variant="pulse" width={80} height={112} />
+          </div>
         </div>
       </section>
 

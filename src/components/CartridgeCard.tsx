@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { CartridgeSprite } from './CartridgeSprite';
 import './CartridgeCard.css';
 
@@ -26,6 +27,9 @@ export function CartridgeCard({
   isStaticMode: isStaticModeProp,
   onClick,
 }: CartridgeCardProps) {
+  // Track whether the image has loaded (for fade-in effect)
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   // Determine the image URL to use
   // In static mode: use provided URL or placeholder (never API)
   // In server mode: use API URL
@@ -43,6 +47,22 @@ export function CartridgeCard({
       : '/cart-placeholder.png';
   }
 
+  // Reset loaded state when image URL changes
+  useEffect(() => {
+    if (imageUrlProp) {
+      setImageLoaded(false);
+      // Preload image to detect when it's ready
+      const img = new Image();
+      img.onload = () => setImageLoaded(true);
+      img.src = imageUrlProp;
+    }
+  }, [imageUrlProp]);
+
+  // Show loading state when:
+  // 1. In static mode and waiting for blob URL (hasLabel but no imageUrlProp)
+  // 2. In static mode and blob URL provided but image not yet loaded
+  const showLoading = isStaticModeProp && hasLabel && (!imageUrlProp || !imageLoaded);
+
   return (
     <div
       className={`cartridge-card ${name ? 'has-name' : ''} ${selectionMode ? 'selectable' : ''} ${isSelected ? 'selected' : ''}`}
@@ -56,6 +76,7 @@ export function CartridgeCard({
           alt={name || cartId}
           color="dark"
           size="large"
+          loading={showLoading}
           className="cart-sprite-base"
         />
         <CartridgeSprite
@@ -63,6 +84,7 @@ export function CartridgeCard({
           alt={name || cartId}
           color="black"
           size="large"
+          loading={showLoading}
           className="cart-sprite-hover"
         />
       </div>

@@ -1,0 +1,213 @@
+/**
+ * PixelLoader - 8-bit style loading animations
+ */
+
+.pixel-loader {
+  position: relative;
+  background: #1a1a1a;
+  overflow: hidden;
+  image-rendering: pixelated;
+  border: 2px solid #333;
+}
+
+/* Scanline variant - CRT-style moving scanline */
+.pixel-loader--scanline {
+  background: linear-gradient(
+    to bottom,
+    #0a0a0a 0%,
+    #1a1a1a 50%,
+    #0a0a0a 100%
+  );
+}
+
+.pixel-loader__scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(100, 200, 255, 0.3) 50%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 8px rgba(100, 200, 255, 0.4),
+    0 0 16px rgba(100, 200, 255, 0.2);
+  animation: scanline-move 1.5s linear infinite;
+}
+
+@keyframes scanline-move {
+  0% {
+    top: -4px;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: calc(100% + 4px);
+    opacity: 0;
+  }
+}
+
+/* Add subtle CRT scanlines overlay */
+.pixel-loader--scanline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.2) 2px,
+    rgba(0, 0, 0, 0.2) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Pixel grid shimmer effect */
+.pixel-loader--scanline::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      transparent 100%
+    );
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+}
+
+/* Blocks variant - animated pixel blocks */
+.pixel-loader--blocks {
+  background: #0f0f0f;
+}
+
+.pixel-loader__blocks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  width: 100%;
+  height: 100%;
+  gap: 2px;
+  padding: 4px;
+}
+
+.pixel-loader__block {
+  background: #222;
+  animation: block-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes block-pulse {
+  0%, 100% {
+    background: #222;
+    box-shadow: none;
+  }
+  50% {
+    background: #3a3a3a;
+    box-shadow: inset 0 0 4px rgba(100, 200, 255, 0.3);
+  }
+}
+
+/* Staggered block animation for wave effect */
+.pixel-loader__block:nth-child(1) { animation-delay: 0s; }
+.pixel-loader__block:nth-child(2) { animation-delay: 0.1s; }
+.pixel-loader__block:nth-child(3) { animation-delay: 0.2s; }
+.pixel-loader__block:nth-child(4) { animation-delay: 0.3s; }
+.pixel-loader__block:nth-child(5) { animation-delay: 0.1s; }
+.pixel-loader__block:nth-child(6) { animation-delay: 0.2s; }
+.pixel-loader__block:nth-child(7) { animation-delay: 0.3s; }
+.pixel-loader__block:nth-child(8) { animation-delay: 0.4s; }
+.pixel-loader__block:nth-child(9) { animation-delay: 0.2s; }
+.pixel-loader__block:nth-child(10) { animation-delay: 0.3s; }
+.pixel-loader__block:nth-child(11) { animation-delay: 0.4s; }
+.pixel-loader__block:nth-child(12) { animation-delay: 0.5s; }
+.pixel-loader__block:nth-child(13) { animation-delay: 0.3s; }
+.pixel-loader__block:nth-child(14) { animation-delay: 0.4s; }
+.pixel-loader__block:nth-child(15) { animation-delay: 0.5s; }
+.pixel-loader__block:nth-child(16) { animation-delay: 0.6s; }
+
+/* Pulse variant - 3x3 grid with expanding pulse */
+.pixel-loader--pulse {
+  background: #0f0f0f;
+}
+
+.pixel-loader__pulse-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  gap: 3px;
+  padding: 8px;
+}
+
+.pixel-loader__pulse-cell {
+  background: #1a1a1a;
+  animation: cell-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes cell-pulse {
+  0%, 100% {
+    background: #1a1a1a;
+    transform: scale(1);
+  }
+  50% {
+    background: #2a2a2a;
+    transform: scale(0.9);
+  }
+}
+
+/* Center cell pulses differently */
+.pixel-loader__pulse-cell:nth-child(5) {
+  animation: center-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes center-pulse {
+  0%, 100% {
+    background: #222;
+    box-shadow: 0 0 0 0 rgba(100, 200, 255, 0);
+  }
+  50% {
+    background: #333;
+    box-shadow: 0 0 8px 2px rgba(100, 200, 255, 0.3);
+  }
+}
+
+/* Ripple effect from center */
+.pixel-loader__pulse-cell:nth-child(2),
+.pixel-loader__pulse-cell:nth-child(4),
+.pixel-loader__pulse-cell:nth-child(6),
+.pixel-loader__pulse-cell:nth-child(8) {
+  animation-delay: 0.15s;
+}
+
+.pixel-loader__pulse-cell:nth-child(1),
+.pixel-loader__pulse-cell:nth-child(3),
+.pixel-loader__pulse-cell:nth-child(7),
+.pixel-loader__pulse-cell:nth-child(9) {
+  animation-delay: 0.3s;
+}
