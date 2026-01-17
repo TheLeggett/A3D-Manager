@@ -86,11 +86,13 @@
   max-height: 100%;
   width: auto;
   height: auto;
+  opacity: 0;
+  transform: scale(1.08);
 }
 
-/* Ken Burns style fade-in for images */
-.onboarding-image-side .onboarding-image,
-.onboarding-image-wrapper .onboarding-image {
+/* Ken Burns style fade-in for images - only when loaded */
+.onboarding-image-side .onboarding-image.loaded,
+.onboarding-image-wrapper .onboarding-image.loaded {
   animation: kenBurnsFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

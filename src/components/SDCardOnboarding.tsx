@@ -5,10 +5,37 @@
  * Displays as a modal overlay until an SD card is connected.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useServices } from '../contexts/ServicesContext';
 import { Button } from './ui/Button';
 import './SDCardOnboarding.css';
+
+// Image component that waits for load before animating
+function OnboardingImage({
+  src,
+  alt,
+  className = ''
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+}) {
+  const [loaded, setLoaded] = useState(false);
+
+  // Reset loaded state when src changes
+  useEffect(() => {
+    setLoaded(false);
+  }, [src]);
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`${className} ${loaded ? 'loaded' : ''}`}
+      onLoad={() => setLoaded(true)}
+    />
+  );
+}
 
 const WELCOME_SEEN_KEY = 'a3d-welcome-seen';
 
@@ -87,8 +114,7 @@ export function SDCardOnboarding() {
         <div className="onboarding-modal">
           <div className="onboarding-split">
             <div className="onboarding-image-side">
-              <img
-                key="welcome"
+              <OnboardingImage
                 src="/welcome.png"
                 alt="Analogue 3D with controller and game cartridge"
                 className="onboarding-image"
@@ -146,8 +172,7 @@ export function SDCardOnboarding() {
         <div className="onboarding-modal">
           <div className="onboarding-split">
             <div className="onboarding-image-side">
-              <img
-                key="welcome"
+              <OnboardingImage
                 src="/welcome.png"
                 alt="Analogue 3D with controller and game cartridge"
                 className="onboarding-image"
@@ -202,8 +227,7 @@ export function SDCardOnboarding() {
         <div className="onboarding-modal">
           <div className="onboarding-split">
             <div className="onboarding-image-side">
-              <img
-                key="setup-1"
+              <OnboardingImage
                 src="/setup-1.png"
                 alt="Connect Analogue 3D to computer via USB-C"
                 className="onboarding-image"
@@ -255,8 +279,7 @@ export function SDCardOnboarding() {
           <div className="onboarding-split">
             <div className="onboarding-image-side">
               <div className="onboarding-image-wrapper">
-                <img
-                  key="setup-2"
+                <OnboardingImage
                   src="/setup-2.png"
                   alt="Analogue 3D front view showing power and reset buttons"
                   className="onboarding-image"
@@ -314,8 +337,7 @@ export function SDCardOnboarding() {
         <div className="onboarding-modal">
           <div className="onboarding-split">
             <div className="onboarding-image-side onboarding-image-side--cover">
-              <img
-                key="sd-card-instruction"
+              <OnboardingImage
                 src="/sd-card-instruction.png"
                 alt="SD card being inserted into a card reader"
                 className="onboarding-image"

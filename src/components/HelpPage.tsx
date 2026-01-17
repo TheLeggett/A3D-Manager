@@ -9,7 +9,7 @@ export function HelpPage() {
         <section className="help-section">
           <h2>What is this?</h2>
           <p>
-            A3D Manager is an unofficial, community-created utility for managing custom label artwork
+            A3D Manager is an unofficial utility for managing custom label artwork and settings
             on your Analogue 3D (N64) SD card. It allows you to browse, edit, and sync cartridge labels
             to the <code>labels.db</code> file that the Analogue 3D uses to display game artwork.
           </p>
