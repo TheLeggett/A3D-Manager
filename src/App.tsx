@@ -6,7 +6,7 @@ import { HelpPage } from './components/HelpPage';
 import { SettingsPage } from './components/SettingsPage';
 import { ComponentTestPage } from './components/ComponentTestPage';
 import { LabelSyncProvider } from './components/LabelSyncIndicator';
-import { ServicesProvider } from './contexts/ServicesContext';
+import { ServicesProvider, ServicesContext } from './contexts/ServicesContext';
 import { BrowserCompatibilityScreen, useCompatibilityCheck } from './components/BrowserCompatibilityScreen';
 import { InstallPrompt } from './components/InstallPrompt';
 import type { SDCard } from './types';
@@ -77,13 +77,38 @@ export function useSDCard() {
 }
 
 function SDCardProvider({ children }: { children: React.ReactNode }) {
+  // In static mode, get SD card state from ServicesContext
+  const servicesContext = useContext(ServicesContext);
+
   const [sdCards, setSDCards] = useState<SDCard[]>([]);
   const [selectedSDCard, setSelectedSDCard] = useState<SDCard | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // In static mode, sync selectedSDCard from ServicesContext
+  useEffect(() => {
+    if (isStaticMode && servicesContext) {
+      const browserSDCard = servicesContext.sdCard;
+      if (browserSDCard && browserSDCard.isValid) {
+        // Convert BrowserSDCard to SDCard format for compatibility
+        // In browser mode, we use the folder name as the identifier
+        const sdCard: SDCard = {
+          name: browserSDCard.name,
+          path: browserSDCard.name, // Use name as path identifier in browser mode
+          gamesPath: 'Games',
+          libraryDbPath: 'Library/N64/library.db',
+          labelsDbPath: 'Library/N64/labels.db',
+        };
+        setSelectedSDCard(sdCard);
+        setSDCards([sdCard]);
+      } else {
+        setSelectedSDCard(null);
+        setSDCards([]);
+      }
+    }
+  }, [servicesContext?.sdCard, servicesContext?.isSDCardConnected]);
+
   const detectSDCards = useCallback(async (isPolling = false) => {
     // In static mode, SD card selection is handled by ServicesContext
-    // This provider is kept for backward compatibility with server mode
     if (isStaticMode) {
       return;
     }
