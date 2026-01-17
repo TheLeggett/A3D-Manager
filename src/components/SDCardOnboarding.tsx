@@ -39,6 +39,21 @@ function OnboardingImage({
 
 const WELCOME_SEEN_KEY = 'a3d-welcome-seen';
 
+// Check for reset query parameter and clear welcome state if present
+function checkResetWelcomeState() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('resetWelcomeState') === '1') {
+    localStorage.removeItem(WELCOME_SEEN_KEY);
+    // Clean up the URL by removing the query parameter
+    const url = new URL(window.location.href);
+    url.searchParams.delete('resetWelcomeState');
+    window.history.replaceState({}, '', url.toString());
+  }
+}
+
+// Run once on module load
+checkResetWelcomeState();
+
 type ConnectionMethod = 'analogue-3d' | 'sd-reader' | null;
 type OnboardingStep =
   | 'welcome'

@@ -115,9 +115,10 @@
 
 .onboarding-image-side--cover .onboarding-image {
   width: 95%;
-  height: 85%;
+  height: 80%;
   object-fit: cover;
   object-position: left top;
+  margin-left:80px;
 }
 
 /* Stronger fade for cover variant */
