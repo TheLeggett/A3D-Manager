@@ -26,6 +26,8 @@ export interface BrowserInfo {
   isFullySupported: boolean;
   /** List of missing features */
   missingFeatures: string[];
+  /** Whether we're in a secure context (HTTPS or localhost) */
+  isSecureContext: boolean;
 }
 
 export type SupportLevel = 'full' | 'partial' | 'unsupported';
@@ -46,22 +48,47 @@ export interface CompatibilityResult {
 // =============================================================================
 
 /**
+ * Check if the browser is Brave
+ * Brave exposes navigator.brave which has an isBrave() method
+ */
+async function isBraveBrowser(): Promise<boolean> {
+  try {
+    // @ts-expect-error - navigator.brave is Brave-specific
+    if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
+      // @ts-expect-error - navigator.brave is Brave-specific
+      return await navigator.brave.isBrave();
+    }
+  } catch {
+    // Not Brave or error checking
+  }
+  return false;
+}
+
+/**
+ * Synchronous check for Brave (for initial detection)
+ * Less reliable than async version but works for immediate checks
+ */
+function isBraveBrowserSync(): boolean {
+  // @ts-expect-error - navigator.brave is Brave-specific
+  return !!(navigator.brave && typeof navigator.brave.isBrave === 'function');
+}
+
+/**
  * Parse user agent to get browser name and version
  */
 function parseUserAgent(): { name: string; version: string } {
   const ua = navigator.userAgent;
 
+  // Check for Brave first using its API (Brave doesn't identify itself in UA)
+  if (isBraveBrowserSync()) {
+    const match = ua.match(/Chrome\/(\d+[\d.]*)/);
+    return { name: 'Brave', version: match?.[1] || 'unknown' };
+  }
+
   // Check specific browsers in order of specificity
   if (ua.includes('Arc/')) {
     const match = ua.match(/Arc\/(\d+[\d.]*)/);
     return { name: 'Arc', version: match?.[1] || 'unknown' };
-  }
-
-  if (ua.includes('Brave/')) {
-    // Brave doesn't always identify itself in UA
-    // Check for Brave-specific feature
-    const match = ua.match(/Chrome\/(\d+[\d.]*)/);
-    return { name: 'Brave', version: match?.[1] || 'unknown' };
   }
 
   if (ua.includes('Edg/')) {
@@ -92,11 +119,19 @@ function parseUserAgent(): { name: string; version: string } {
   return { name: 'Unknown', version: 'unknown' };
 }
 
+// Export for use in async contexts
+export { isBraveBrowser };
+
 /**
  * Check if the browser is Chromium-based
  */
 export function isChromiumBased(): boolean {
   const ua = navigator.userAgent;
+
+  // Check for Brave first (Brave is Chromium-based)
+  if (isBraveBrowserSync()) {
+    return true;
+  }
 
   // Check for Chromium signature in user agent
   if (ua.includes('Chrome/') || ua.includes('Chromium/')) {
@@ -117,13 +152,87 @@ export function isChromiumBased(): boolean {
 }
 
 /**
+ * Check if we're in a secure context (HTTPS or localhost)
+ * File System Access API only works in secure contexts
+ */
+export function isSecureContext(): boolean {
+  // Use the built-in isSecureContext property (available in all modern browsers)
+  if (typeof window.isSecureContext === 'boolean') {
+    return window.isSecureContext;
+  }
+
+  // Fallback: check protocol manually
+  const loc = window.location;
+  const protocol = loc.protocol;
+  const hostname = loc.hostname;
+
+  // HTTPS is always secure
+  if (protocol === 'https:') {
+    return true;
+  }
+
+  // Localhost variants are considered secure
+  if (protocol === 'http:' && (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]')) {
+    return true;
+  }
+
+  // file:// protocol is NOT a secure context for File System Access API
+  return false;
+}
+
+/**
  * Check if File System Access API is available
+ * Uses multiple detection methods for reliability across browsers
  */
 export function hasFileSystemAccessAPI(): boolean {
-  return (
-    'showDirectoryPicker' in window &&
-    typeof window.showDirectoryPicker === 'function'
-  );
+  try {
+    // First check: must be in a secure context
+    // File System Access API is only available in secure contexts
+    if (!isSecureContext()) {
+      return false;
+    }
+
+    // Primary check: showDirectoryPicker on window
+    if ('showDirectoryPicker' in window) {
+      return true;
+    }
+
+    // Secondary check: Check if the function exists on the window object
+    // Some browsers/environments may not report it via 'in' operator
+    // @ts-expect-error - showDirectoryPicker may not be in Window type in all TS versions
+    if (typeof window.showDirectoryPicker === 'function') {
+      return true;
+    }
+
+    // Tertiary check: Check for FileSystemDirectoryHandle
+    // If this exists, the API is likely supported
+    if ('FileSystemDirectoryHandle' in window) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    // If any check throws, assume not supported
+    return false;
+  }
+}
+
+/**
+ * Check if browser would support File System Access API in a secure context
+ * Used to determine if the issue is the browser or the context
+ */
+export function wouldSupportFileSystemAccessInSecureContext(): boolean {
+  // Chromium-based browsers support File System Access API
+  if (isChromiumBased()) {
+    return true;
+  }
+
+  // Check for the presence of related APIs that would indicate support
+  if ('FileSystemDirectoryHandle' in window || 'FileSystemFileHandle' in window) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -150,6 +259,7 @@ export function hasServiceWorkerSupport(): boolean {
 export function getBrowserInfo(): BrowserInfo {
   const { name, version } = parseUserAgent();
   const isChromium = isChromiumBased();
+  const secureContext = isSecureContext();
   const hasFileSystemAccess = hasFileSystemAccessAPI();
   const hasIndexedDB = hasIndexedDBSupport();
   const hasServiceWorker = hasServiceWorkerSupport();
@@ -157,7 +267,12 @@ export function getBrowserInfo(): BrowserInfo {
   const missingFeatures: string[] = [];
 
   if (!hasFileSystemAccess) {
-    missingFeatures.push('File System Access API (required for SD card access)');
+    // Check if the issue is secure context vs browser support
+    if (!secureContext && wouldSupportFileSystemAccessInSecureContext()) {
+      missingFeatures.push('File System Access API (requires HTTPS or localhost - please access via secure URL)');
+    } else {
+      missingFeatures.push('File System Access API (required for SD card access)');
+    }
   }
 
   if (!hasIndexedDB) {
@@ -181,6 +296,7 @@ export function getBrowserInfo(): BrowserInfo {
     hasServiceWorker,
     isFullySupported,
     missingFeatures,
+    isSecureContext: secureContext,
   };
 }
 
@@ -200,9 +316,21 @@ export function checkBrowserCompatibility(): CompatibilityResult {
     message = `${browser.name} ${browser.version} is fully supported.`;
     showWarning = false;
   } else if (browser.hasIndexedDB && !browser.hasFileSystemAccess) {
-    level = 'partial';
-    message = `${browser.name} does not support the File System Access API. You can browse and manage your collection, but you won't be able to sync with your SD card. For full functionality, please use Chrome, Edge, Brave, or Arc.`;
-    showWarning = true;
+    // Check if the issue is secure context
+    if (!browser.isSecureContext && browser.isChromium) {
+      level = 'partial';
+      message = `${browser.name} supports all required features, but you need to access this app via HTTPS or localhost for SD card sync to work. You can still browse and manage your collection.`;
+      showWarning = true;
+    } else if (browser.isChromium) {
+      // Chromium browser but still no File System Access - might be disabled or very old version
+      level = 'partial';
+      message = `${browser.name} should support SD card sync, but the File System Access API is not available. This may be due to browser settings or an older version. You can still browse and manage your collection.`;
+      showWarning = true;
+    } else {
+      level = 'partial';
+      message = `${browser.name} does not support the File System Access API. You can browse and manage your collection, but you won't be able to sync with your SD card. For full functionality, please use Chrome, Edge, Brave, or Arc.`;
+      showWarning = true;
+    }
   } else {
     level = 'unsupported';
     message = `${browser.name} is not supported. Please use Chrome, Edge, Brave, or Arc for the best experience.`;
