@@ -49,23 +49,35 @@ export function LabelSyncProvider({ children }: LabelSyncProviderProps) {
     if (isStaticMode && servicesContext) {
       setSyncStatus('checking');
       try {
-        const { storage, sdCard: sdCardService } = servicesContext.services;
+        const { labelsDb, sdCard: sdCardService } = servicesContext.services;
         const browserSDCard = servicesContext.sdCard;
 
-        // Check if we have local labels in IndexedDB
-        const localLabels = await storage.getLabelsDb();
-        const hasLocalLabels = localLabels !== null;
+        // Get local labels.db status (includes fileSize and entryCount)
+        const localStatus = await labelsDb.getLabelsDbStatus();
+        const hasLocalLabels = localStatus !== null && localStatus.exists;
 
-        // Check if SD card has labels.db
-        let sdHasLabels = false;
-        if (browserSDCard?.handle) {
-          sdHasLabels = await sdCardService.hasLabelsDb(browserSDCard.handle);
+        // Get SD card labels.db info
+        let sdInfo: { exists: boolean; size?: number; entryCount?: number } | null = null;
+        if (browserSDCard) {
+          sdInfo = await sdCardService.getLabelsDbInfo(browserSDCard);
         }
+        const sdHasLabels = sdInfo?.exists === true;
 
         if (hasLocalLabels && sdHasLabels) {
-          // Both exist - would need to compare, for now mark as sync-required
-          // TODO: Implement actual comparison
-          setSyncStatus('sync-required');
+          // Both exist - compare by file size and entry count
+          const localSize = localStatus.fileSize;
+          const sdSize = sdInfo?.size || 0;
+          const localCount = localStatus.entryCount;
+          const sdCount = sdInfo?.entryCount || 0;
+
+          if (localSize === sdSize && localCount === sdCount) {
+            // Same size and entry count - likely identical
+            setSyncStatus('synced');
+            setHasLocalChanges(false);
+          } else {
+            // Different - sync required
+            setSyncStatus('sync-required');
+          }
         } else if (hasLocalLabels && !sdHasLabels) {
           // Local only
           setSyncStatus('local-only');
