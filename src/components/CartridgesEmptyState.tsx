@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 import './CartridgesEmptyState.css';
 
 interface SDCardStatus {
@@ -21,12 +23,19 @@ interface CartridgesEmptyStateProps {
   onSyncLabelsFromSD: () => void;
 }
 
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export function CartridgesEmptyState({
   sdCardPath,
   onImportLabelsDb,
   onImportFromSD,
   onSyncLabelsFromSD,
 }: CartridgesEmptyStateProps) {
+  const servicesContext = useContext(ServicesContext);
   const [sdStatus, setSdStatus] = useState<SDCardStatus>({ labels: null, games: null });
   const [loading, setLoading] = useState(false);
 
@@ -40,6 +49,37 @@ export function CartridgesEmptyState({
     const checkSDStatus = async () => {
       setLoading(true);
       try {
+        // In static mode, use browser services
+        if (isStaticMode && servicesContext) {
+          const { sdCard: sdCardService } = servicesContext.services;
+          const browserSDCard = servicesContext.sdCard;
+
+          if (!browserSDCard?.handle) {
+            setSdStatus({ labels: null, games: null });
+            return;
+          }
+
+          // Check for labels.db
+          const labelsInfo = await sdCardService.getLabelsDbInfo(browserSDCard);
+          const labels = labelsInfo?.exists ? {
+            exists: true,
+            fileSize: labelsInfo.size || 0,
+            fileSizeFormatted: formatBytes(labelsInfo.size || 0),
+            entryCount: labelsInfo.entryCount || 0,
+          } : null;
+
+          // Check for games
+          const gameFolders = await sdCardService.listGameFolders(browserSDCard);
+          const games = gameFolders.length > 0 ? {
+            exists: true,
+            gameCount: gameFolders.length,
+          } : null;
+
+          setSdStatus({ labels, games });
+          return;
+        }
+
+        // Server mode - use API calls
         const [labelsRes, gamesRes] = await Promise.all([
           fetch(`/api/sync/labels/exists?sdCardPath=${encodeURIComponent(sdCardPath)}`),
           fetch(`/api/sync/games/exists?sdCardPath=${encodeURIComponent(sdCardPath)}`),
@@ -57,7 +97,7 @@ export function CartridgesEmptyState({
     };
 
     checkSDStatus();
-  }, [sdCardPath]);
+  }, [sdCardPath, servicesContext]);
 
   const isConnected = sdCardPath !== null;
   const hasLabelsOnSD = sdStatus.labels?.exists ?? false;

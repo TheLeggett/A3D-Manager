@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { useSDCard } from '../App';
+import { useSDCard, isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 import './LabelSyncIndicator.css';
 
 // Sync status states
@@ -28,6 +29,7 @@ interface LabelSyncProviderProps {
 
 export function LabelSyncProvider({ children }: LabelSyncProviderProps) {
   const { selectedSDCard } = useSDCard();
+  const servicesContext = useContext(ServicesContext);
   const [syncStatus, setSyncStatus] = useState<LabelSyncStatus>('local-only');
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
   const [labelsRefreshKey, setLabelsRefreshKey] = useState(0);
@@ -43,6 +45,45 @@ export function LabelSyncProvider({ children }: LabelSyncProviderProps) {
       return;
     }
 
+    // In static mode, use browser services to check sync status
+    if (isStaticMode && servicesContext) {
+      setSyncStatus('checking');
+      try {
+        const { storage, sdCard: sdCardService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        // Check if we have local labels in IndexedDB
+        const localLabels = await storage.getLabelsDb();
+        const hasLocalLabels = localLabels !== null;
+
+        // Check if SD card has labels.db
+        let sdHasLabels = false;
+        if (browserSDCard?.handle) {
+          sdHasLabels = await sdCardService.hasLabelsDb(browserSDCard.handle);
+        }
+
+        if (hasLocalLabels && sdHasLabels) {
+          // Both exist - would need to compare, for now mark as sync-required
+          // TODO: Implement actual comparison
+          setSyncStatus('sync-required');
+        } else if (hasLocalLabels && !sdHasLabels) {
+          // Local only
+          setSyncStatus('local-only');
+        } else if (!hasLocalLabels && sdHasLabels) {
+          // SD only
+          setSyncStatus('sd-only');
+        } else {
+          // Neither has labels
+          setSyncStatus('none');
+        }
+      } catch (err) {
+        console.error('Label sync check failed (static mode):', err);
+        setSyncStatus('local-only');
+      }
+      return;
+    }
+
+    // Server mode - use API calls
     setSyncStatus('checking');
 
     try {
@@ -85,7 +126,7 @@ export function LabelSyncProvider({ children }: LabelSyncProviderProps) {
       console.error('Label sync check failed:', err);
       setSyncStatus('local-only');
     }
-  }, [selectedSDCard]);
+  }, [selectedSDCard, servicesContext]);
 
   // Mark that local changes have been made
   const markLocalChanges = useCallback(() => {

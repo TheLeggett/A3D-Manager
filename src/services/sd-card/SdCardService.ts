@@ -219,6 +219,13 @@ export async function hasLabelsDbOnSD(sdCard: BrowserSDCard): Promise<boolean> {
 }
 
 /**
+ * Check if labels.db exists given a directory handle
+ */
+export async function hasLabelsDb(handle: FileSystemDirectoryHandle): Promise<boolean> {
+  return fileExists(handle, getLabelsDbPath());
+}
+
+/**
  * Get labels.db info from SD card without loading full data
  */
 export async function getLabelsDbInfo(sdCard: BrowserSDCard): Promise<{
