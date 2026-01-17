@@ -287,6 +287,14 @@
   margin-bottom: 0;
 }
 
+/* Data safety text */
+.data-safety-text {
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* Instructions */
 .setup-instructions {
   background: var(--color-surface-elevated);

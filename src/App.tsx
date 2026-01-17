@@ -9,6 +9,7 @@ import { LabelSyncProvider } from './components/LabelSyncIndicator';
 import { ServicesProvider, ServicesContext } from './contexts/ServicesContext';
 import { BrowserCompatibilityScreen, useCompatibilityCheck } from './components/BrowserCompatibilityScreen';
 import { SDCardOnboarding } from './components/SDCardOnboarding';
+import { DataSafetyModal, useDataSafetyModal } from './components/DataSafetyModal';
 import { InstallPrompt } from './components/InstallPrompt';
 import type { SDCard } from './types';
 import type { CartridgeSettings } from './lib/defaultSettings';
@@ -237,6 +238,7 @@ function SettingsClipboardProvider({ children }: { children: React.ReactNode }) 
 function AppContent() {
   const { showScreen: showCompatibilityScreen } = useCompatibilityCheck();
   const servicesContext = useContext(ServicesContext);
+  const { showModal: showDataSafetyModal, acknowledge: acknowledgeDataSafety } = useDataSafetyModal();
 
   // Block non-Chrome users completely (only in static mode)
   if (isStaticMode && showCompatibilityScreen) {
@@ -245,6 +247,9 @@ function AppContent() {
 
   // Show onboarding modal whenever SD card is not connected (in static mode)
   const showOnboarding = isStaticMode && !servicesContext?.isSDCardConnected;
+
+  // Show data safety modal after SD card connected but before using the app (once per session)
+  const showDataSafety = isStaticMode && servicesContext?.isSDCardConnected && showDataSafetyModal;
 
   return (
     <div className="app">
@@ -261,6 +266,8 @@ function AppContent() {
       </main>
       {/* PWA Install Prompt */}
       {isStaticMode && <InstallPrompt />}
+      {/* Data Safety Modal - shows once per session after SD card connected */}
+      {showDataSafety && <DataSafetyModal onAcknowledge={acknowledgeDataSafety} />}
       {/* SD Card Onboarding Modal */}
       {showOnboarding && <SDCardOnboarding />}
     </div>
