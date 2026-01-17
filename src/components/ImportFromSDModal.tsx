@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Modal, Button } from './ui';
+import { isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 
 interface CartridgeInfo {
   cartId: string;
@@ -46,6 +48,7 @@ export function ImportFromSDModal({
   onImportComplete,
   sdCardPath,
 }: ImportFromSDModalProps) {
+  const servicesContext = useContext(ServicesContext);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -76,6 +79,56 @@ export function ImportFromSDModal({
       setScanning(true);
       setError(null);
 
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { sdCard: sdCardService, storage } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        if (!browserSDCard) {
+          throw new Error('No SD card connected');
+        }
+
+        // Get game folders from SD card
+        const gameFolders = await sdCardService.listGameFolders(browserSDCard);
+
+        // Get owned carts from IndexedDB
+        const ownedCartIds = await storage.getOwnedCartIds();
+        const ownedSet = new Set(ownedCartIds.map(c => c.toLowerCase()));
+
+        // Build cartridge info list
+        const cartridges: CartridgeInfo[] = gameFolders.map(folder => ({
+          cartId: folder.cartId,
+          folderName: folder.folderName,
+          hasSettings: folder.hasSettings,
+          hasGamePak: folder.hasGamePak,
+          alreadyOwned: ownedSet.has(folder.cartId.toLowerCase()),
+        }));
+
+        const result: ScanResult = {
+          sdCardPath: browserSDCard.name,
+          cartridges,
+          summary: {
+            total: cartridges.length,
+            withSettings: cartridges.filter(c => c.hasSettings).length,
+            withGamePak: cartridges.filter(c => c.hasGamePak).length,
+            alreadyOwned: cartridges.filter(c => c.alreadyOwned).length,
+          },
+        };
+
+        setScanResult(result);
+
+        // Pre-select cartridges that aren't already owned
+        const newSelection = new Set<string>();
+        result.cartridges.forEach(c => {
+          if (!c.alreadyOwned) {
+            newSelection.add(c.cartId);
+          }
+        });
+        setSelectedIds(newSelection);
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch('/api/cartridges/owned/import-from-sd/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -141,6 +194,108 @@ export function ImportFromSDModal({
       setError(null);
       setProgress(null);
 
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { sdCard: sdCardService, storage } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        if (!browserSDCard) {
+          throw new Error('No SD card connected');
+        }
+
+        const cartIds = Array.from(selectedIds);
+        let added = 0;
+        let skipped = 0;
+
+        // Step 1: Add to owned carts
+        setProgress({ step: 'ownership', status: 'processing' });
+
+        const existingOwned = await storage.getOwnedCartIds();
+        const existingSet = new Set(existingOwned.map(c => c.toLowerCase()));
+
+        for (const cartId of cartIds) {
+          if (!existingSet.has(cartId.toLowerCase())) {
+            await storage.markCartOwned(cartId, 'sd-card');
+            added++;
+          } else {
+            skipped++;
+          }
+        }
+
+        setProgress({ step: 'ownership', status: 'completed', added, skipped });
+
+        // Step 2: Download settings if requested
+        if (downloadSettings) {
+          const cartsWithSettings = scanResult?.cartridges.filter(
+            c => selectedIds.has(c.cartId) && c.hasSettings
+          ) || [];
+
+          if (cartsWithSettings.length > 0) {
+            let downloaded = 0;
+            for (let i = 0; i < cartsWithSettings.length; i++) {
+              const cart = cartsWithSettings[i];
+              setProgress({
+                step: 'settings',
+                status: 'processing',
+                current: i + 1,
+                total: cartsWithSettings.length,
+                cartId: cart.cartId,
+              });
+
+              try {
+                const settings = await sdCardService.readSettingsFromSD(browserSDCard, cart.cartId);
+                if (settings) {
+                  await storage.saveSettings(cart.cartId, settings);
+                  downloaded++;
+                }
+              } catch (err) {
+                console.error(`Failed to download settings for ${cart.cartId}:`, err);
+              }
+            }
+            setProgress({ step: 'settings', status: 'completed', downloaded });
+          }
+        }
+
+        // Step 3: Download game paks if requested
+        if (downloadGamePaks) {
+          const cartsWithPaks = scanResult?.cartridges.filter(
+            c => selectedIds.has(c.cartId) && c.hasGamePak
+          ) || [];
+
+          if (cartsWithPaks.length > 0) {
+            let downloaded = 0;
+            for (let i = 0; i < cartsWithPaks.length; i++) {
+              const cart = cartsWithPaks[i];
+              setProgress({
+                step: 'gamePaks',
+                status: 'processing',
+                current: i + 1,
+                total: cartsWithPaks.length,
+                cartId: cart.cartId,
+              });
+
+              try {
+                const pakData = await sdCardService.readGamePakFromSD(browserSDCard, cart.cartId);
+                if (pakData) {
+                  await storage.saveGamePak(cart.cartId, pakData);
+                  downloaded++;
+                }
+              } catch (err) {
+                console.error(`Failed to download game pak for ${cart.cartId}:`, err);
+              }
+            }
+            setProgress({ step: 'gamePaks', status: 'completed', downloaded });
+          }
+        }
+
+        // Done!
+        setProgress({ step: 'done', status: 'completed' });
+        onImportComplete();
+        setTimeout(() => onClose(), 1500);
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch('/api/cartridges/owned/import-from-sd/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
