@@ -136,6 +136,28 @@ export function CartridgeDetailPanel({
   // Combine global and local cache busters
   const imageCacheBuster = Math.max(globalCacheBuster, localCacheBuster);
 
+  // Closing animation state
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = useCallback(() => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 200); // Match animation duration
+  }, [isClosing, onClose]);
+
+  // Close panel on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleClose]);
+
   // Check ownership status
   useEffect(() => {
     const checkOwnership = async () => {
@@ -275,8 +297,8 @@ export function CartridgeDetailPanel({
     : `/api/labels/${cartId}?v=${imageCacheBuster}`;
 
   return (
-    <div className="slide-over-overlay" onClick={onClose}>
-      <div className="slide-over-panel" onClick={(e) => e.stopPropagation()}>
+    <div className={`slide-over-overlay${isClosing ? ' closing' : ''}`} onClick={handleClose}>
+      <div className={`slide-over-panel${isClosing ? ' closing' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="slide-over-header">
           <CartridgeSprite
             artworkUrl={spriteImageUrl}
@@ -288,7 +310,7 @@ export function CartridgeDetailPanel({
             <h2>{displayName}</h2>
             <code className="text-label text-accent">{cartId}</code>
           </div>
-          <IconButton onClick={onClose} aria-label="Close panel">
+          <IconButton onClick={handleClose} aria-label="Close panel">
             &times;
           </IconButton>
         </div>

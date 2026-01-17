@@ -118,7 +118,22 @@
   height: 80%;
   object-fit: cover;
   object-position: left top;
-  margin-left:80px;
+  margin-left: 80px;
+  transform: none; /* No scale transform for cover variant */
+}
+
+/* Simple fade-in for cover variant - no translation */
+.onboarding-image-side--cover .onboarding-image.loaded {
+  animation: simpleFadeIn 0.8s ease-out forwards;
+}
+
+@keyframes simpleFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Stronger fade for cover variant */
@@ -130,11 +145,11 @@
 .led-indicator {
   position: absolute;
   /* Oval LED indicator center on the Analogue 3D console */
-  top: 53%;
+  top: 53.4%;
   left: 49.8%;
   transform: translateX(-50%);
-  width: 31px;
-  height: 13px;
+  width: 3.8%;
+  height: 3.2%;
   z-index: 2;
 }
 
@@ -154,6 +169,13 @@
   50% {
     opacity: 1;
     box-shadow: 0 0 24px 12px rgba(1, 255, 30, 0.7);
+  }
+}
+
+/* Hide LED on short viewports */
+@media (max-height: 600px) {
+  .led-indicator {
+    display: none;
   }
 }
 

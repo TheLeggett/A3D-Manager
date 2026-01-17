@@ -258,7 +258,7 @@ export function SDCardOnboarding() {
                 <h3>Instructions</h3>
                 <ol>
                   <li>Fully power off your Analogue 3D and disconnect all controllers and cables</li>
-                  <li>Leave your preinstalled SD Card in your Analogue 3D</li>
+                  <li>Leave your SD Card in your Analogue 3D.</li>
                   <li>Connect Analogue 3D's power port to your computer using the included <strong>USB-C cable</strong> and wait 5 seconds</li>
                 </ol>
               </div>

@@ -203,7 +203,7 @@ export function PasteSettingsModal({
       onClose={handleClose}
       title="Paste Settings"
       footer={footer}
-      size="sm"
+      size="md"
     >
       <div className="paste-settings-content">
         {!results ? (

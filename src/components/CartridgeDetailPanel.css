@@ -10,6 +10,10 @@
   animation: fadeIn 0.2s ease-out;
 }
 
+.slide-over-overlay.closing {
+  animation: fadeOut 0.2s ease-in forwards;
+}
+
 .slide-over-panel {
   position: fixed;
   top: 0;
@@ -21,15 +25,37 @@
   border-left: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  animation: slideIn 0.25s ease-out;
+  animation: panelSlideIn 0.25s ease-out;
 }
 
-@keyframes slideIn {
+.slide-over-panel.closing {
+  animation: panelSlideOut 0.2s ease-in forwards;
+}
+
+@keyframes panelSlideIn {
   from {
     transform: translateX(100%);
   }
   to {
     transform: translateX(0);
+  }
+}
+
+@keyframes panelSlideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 
