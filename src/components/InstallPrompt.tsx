@@ -167,7 +167,7 @@ export function InstallPrompt({ position = 'bottom' }: InstallPromptProps) {
   return (
     <div className={`install-prompt install-prompt--${position}`}>
       <div className="install-prompt__content">
-        <div className="install-prompt__icon">📱</div>
+        <img src="/icons/logo-128.png" alt="A3D Manager" className="install-prompt__icon" />
         <div className="install-prompt__text">
           <p className="install-prompt__title">Install A3D Manager</p>
           <p className="install-prompt__subtitle">
