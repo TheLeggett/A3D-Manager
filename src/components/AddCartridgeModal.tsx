@@ -1,6 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useContext } from 'react';
 import { Modal, Button } from './ui';
 import { useLabelSync } from './LabelSyncIndicator';
+import { isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 
 interface AddCartridgeModalProps {
   isOpen: boolean;
@@ -21,6 +23,7 @@ interface LookupResult {
 
 export function AddCartridgeModal({ isOpen, onClose, onAdd }: AddCartridgeModalProps) {
   const { markLocalChanges } = useLabelSync();
+  const servicesContext = useContext(ServicesContext);
   const [cartId, setCartId] = useState('');
   const [gameName, setGameName] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -56,9 +59,50 @@ export function AddCartridgeModal({ isOpen, onClose, onAdd }: AddCartridgeModalP
     try {
       setLookingUp(true);
       setError(null);
-      const response = await fetch(`/api/labels/lookup/${id.toLowerCase()}`);
-      if (!response.ok) throw new Error('Lookup failed');
-      const data: LookupResult = await response.json();
+
+      let data: LookupResult;
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { labelsDb, storage } = servicesContext.services;
+
+        // Check cart metadata
+        const metadata = await labelsDb.getCartMetadata(id);
+
+        // Check for user cart
+        const userCart = await storage.getUserCart(id);
+
+        if (metadata) {
+          data = {
+            found: true,
+            source: 'internal',
+            cartId: id,
+            name: metadata.name,
+            region: metadata.region,
+            videoMode: metadata.videoMode,
+            gameCode: metadata.gameCode,
+            languages: metadata.languages,
+          };
+        } else if (userCart) {
+          data = {
+            found: true,
+            source: 'user',
+            cartId: id,
+            name: userCart.name,
+          };
+        } else {
+          data = {
+            found: false,
+            cartId: id,
+          };
+        }
+      } else {
+        // Server mode: use API
+        const response = await fetch(`/api/labels/lookup/${id.toLowerCase()}`);
+        if (!response.ok) throw new Error('Lookup failed');
+        data = await response.json();
+      }
+
       setLookupResult(data);
 
       // Pre-fill name if found
@@ -73,7 +117,7 @@ export function AddCartridgeModal({ isOpen, onClose, onAdd }: AddCartridgeModalP
     } finally {
       setLookingUp(false);
     }
-  }, []);
+  }, [servicesContext]);
 
   // Debounced lookup when cart ID changes
   useEffect(() => {
@@ -132,6 +176,27 @@ export function AddCartridgeModal({ isOpen, onClose, onAdd }: AddCartridgeModalP
       setSaving(true);
       setError(null);
 
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { storage, labelsDb, imageProcessor } = servicesContext.services;
+
+        // If this is a new unknown cart, save the user cart entry first
+        if (!lookupResult?.found && gameName.trim()) {
+          await storage.setUserCart(cartId.toLowerCase(), gameName.trim());
+        }
+
+        // Process image and add to labels.db
+        const bgraData = await imageProcessor.prepareImageForLabelsDb(file);
+        const cartIdNum = parseInt(cartId, 16);
+        await labelsDb.addEntryToLabelsDb(cartIdNum, bgraData);
+
+        markLocalChanges();
+        onAdd();
+        onClose();
+        return;
+      }
+
+      // Server mode: use API
       // If this is a new unknown cart, save the user cart entry first
       if (!lookupResult?.found && gameName.trim()) {
         const userCartResponse = await fetch(`/api/labels/user-cart/${cartId.toLowerCase()}`, {

@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, useCallback, useRef, useLayoutEffect, useContext } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useImageCache, useSettingsClipboard } from '../App';
+import { useImageCache, useSettingsClipboard, isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 import { CartridgeCard } from './CartridgeCard';
 import { Pagination } from './Pagination';
 import { LabelsImportModal } from './LabelsImportModal';
@@ -65,6 +66,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
   const { imageCacheBuster: globalCacheBuster } = useImageCache();
   const { labelsRefreshKey } = useLabelSync();
   const { copiedSettings } = useSettingsClipboard();
+  const servicesContext = useContext(ServicesContext);
   const [localCacheBuster, setLocalCacheBuster] = useState(0);
   // Combine global and local cache busters
   const imageCacheBuster = Math.max(globalCacheBuster, localCacheBuster);
@@ -127,6 +129,24 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
 
   const fetchStatus = useCallback(async () => {
     try {
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { labelsDb, storage } = servicesContext.services;
+        const labelsStatus = await labelsDb.getLabelsDbStatus();
+        const ownedCount = await storage.getOwnedCartsCount();
+
+        const data: LabelsStatus = {
+          imported: !!labelsStatus?.exists,
+          hasLabels: !!labelsStatus?.exists,
+          hasOwnedCarts: ownedCount > 0,
+          entryCount: labelsStatus?.entryCount || 0,
+          ownedCount,
+        };
+        setStatus(data);
+        return data;
+      }
+
+      // Server mode: use API
       const response = await fetch('/api/labels/status');
       if (!response.ok) throw new Error('Failed to fetch status');
       const data: LabelsStatus = await response.json();
@@ -136,10 +156,19 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
       console.error('Error fetching status:', err);
       return null;
     }
-  }, []);
+  }, [servicesContext]);
 
   const fetchFilterOptions = useCallback(async () => {
     try {
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { labelsDb } = servicesContext.services;
+        const options = await labelsDb.getFilterOptions();
+        setFilterOptions(options);
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch('/api/labels/filter-options');
       if (!response.ok) throw new Error('Failed to fetch filter options');
       const data: FilterOptions = await response.json();
@@ -147,7 +176,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
     } catch (err) {
       console.error('Error fetching filter options:', err);
     }
-  }, []);
+  }, [servicesContext]);
 
   const fetchPage = useCallback(async (
     pageNum: number,
@@ -163,15 +192,51 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
       setLoading(true);
       setError(null);
 
-      const params = new URLSearchParams();
-      params.set('pageSize', pageSize.toString());
-
       // Add filter parameters
       const region = options?.region ?? regionFilter;
       const language = options?.language ?? languageFilter;
       const videoMode = options?.videoMode ?? videoModeFilter;
       const search = options?.search ?? searchQuery;
       const owned = options?.owned ?? ownedFilter;
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { labelsDb, storage } = servicesContext.services;
+
+        // Get owned cart IDs if filtering by owned
+        let ownedCartIds: string[] | undefined;
+        if (owned) {
+          ownedCartIds = await storage.getOwnedCartIds();
+        }
+
+        const data = await labelsDb.getLabelsDbPageEnriched(pageNum, pageSize, {
+          region: region || undefined,
+          language: language || undefined,
+          videoMode: videoMode || undefined,
+          search: search || undefined,
+          owned,
+          ownedCartIds,
+        });
+
+        if (!data || !data.imported) {
+          setEntries([]);
+          setTotalPages(0);
+          setTotalEntries(0);
+          setTotalUnfiltered(0);
+          return;
+        }
+
+        setEntries(data.entries);
+        setPage(data.page);
+        setTotalPages(data.totalPages);
+        setTotalEntries(data.totalEntries);
+        setTotalUnfiltered(data.totalUnfiltered);
+        return;
+      }
+
+      // Server mode: use API
+      const params = new URLSearchParams();
+      params.set('pageSize', pageSize.toString());
 
       if (region) params.set('region', region);
       if (language) params.set('language', language);
@@ -202,7 +267,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
     } finally {
       setLoading(false);
     }
-  }, [regionFilter, languageFilter, videoModeFilter, searchQuery, ownedFilter]);
+  }, [regionFilter, languageFilter, videoModeFilter, searchQuery, ownedFilter, servicesContext]);
 
   // Check for unowned cartridges on SD card
   const checkUnownedOnSD = useCallback(async () => {
@@ -212,6 +277,31 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
     }
 
     try {
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { sdCard: sdCardService, storage } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        if (!browserSDCard) {
+          setUnownedOnSDCount(0);
+          return;
+        }
+
+        // Get game folders from SD card
+        const gameFolders = await sdCardService.listGameFolders(browserSDCard);
+        const sdCartIds = gameFolders.map(f => f.cartId.toLowerCase());
+
+        // Get owned cart IDs
+        const ownedCartIds = await storage.getOwnedCartIds();
+        const ownedSet = new Set(ownedCartIds.map(id => id.toLowerCase()));
+
+        // Count unowned carts on SD
+        const unownedCount = sdCartIds.filter(id => !ownedSet.has(id)).length;
+        setUnownedOnSDCount(unownedCount);
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch('/api/cartridges/owned/import-from-sd/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -226,7 +316,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
     } catch {
       // Silently fail - indicator just won't show
     }
-  }, [sdCardPath]);
+  }, [sdCardPath, servicesContext]);
 
   // Run check on mount and when SD card changes
   useEffect(() => {
@@ -530,11 +620,21 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
                   disabled={selectedCartIds.size === 0}
                   onClick={async () => {
                     // Mark selected as owned
-                    for (const cartId of selectedCartIds) {
-                      await fetch(`/api/cartridges/owned/${cartId}`, { method: 'POST' });
+                    if (isStaticMode && servicesContext) {
+                      const { storage } = servicesContext.services;
+                      for (const cartId of selectedCartIds) {
+                        await storage.markCartOwned(cartId);
+                      }
+                    } else {
+                      for (const cartId of selectedCartIds) {
+                        await fetch(`/api/cartridges/owned/${cartId}`, { method: 'POST' });
+                      }
                     }
                     setSelectedCartIds(new Set());
                     setSelectionMode(false);
+                    // Refresh to update owned status
+                    await fetchStatus();
+                    await fetchPage(page);
                   }}
                 >
                   Mark Owned

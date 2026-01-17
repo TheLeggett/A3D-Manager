@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Modal, Button } from './ui';
+import { isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 
 export type LocalDataType = 'labels' | 'owned-carts' | 'user-carts' | 'game-data' | 'all';
 
@@ -52,6 +54,7 @@ export function DeleteLocalDataModal({ isOpen, onClose, onDeleted, dataType }: D
   const [confirmText, setConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const servicesContext = useContext(ServicesContext);
 
   const info = DATA_TYPE_INFO[dataType];
   const confirmWord = dataType === 'all' ? 'reset' : 'delete';
@@ -70,6 +73,37 @@ export function DeleteLocalDataModal({ isOpen, onClose, onDeleted, dataType }: D
       setDeleting(true);
       setError(null);
 
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { storage, labelsDb, settings, gamePak } = servicesContext.services;
+
+        switch (dataType) {
+          case 'labels':
+            await labelsDb.deleteLabelsDb();
+            break;
+          case 'owned-carts':
+            await storage.clearOwnedCarts();
+            break;
+          case 'user-carts':
+            await storage.clearUserCarts();
+            break;
+          case 'game-data':
+            await settings.deleteAllLocalSettings();
+            await gamePak.deleteAllLocalGamePaks();
+            await gamePak.deleteAllBackups();
+            break;
+          case 'all':
+            await storage.clearAllData();
+            break;
+        }
+
+        setConfirmText('');
+        onDeleted();
+        onClose();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(info.endpoint, {
         method: 'DELETE',
       });

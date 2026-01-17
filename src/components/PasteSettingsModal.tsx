@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useSettingsClipboard } from '../App';
+import { useState, useEffect, useContext } from 'react';
+import { useSettingsClipboard, isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 import { Modal } from './ui/Modal';
 import { Button } from './ui/Button';
 import './PasteSettingsModal.css';
@@ -22,6 +23,7 @@ export function PasteSettingsModal({
   sdCardPath,
 }: PasteSettingsModalProps) {
   const { copiedSettings } = useSettingsClipboard();
+  const servicesContext = useContext(ServicesContext);
   const [isPasting, setIsPasting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<{ success: number; failed: number } | null>(null);
@@ -51,6 +53,49 @@ export function PasteSettingsModal({
           // Priority: existing target title > system game name > fallback to "Unknown Cartridge"
           let targetTitle = 'Unknown Cartridge';
 
+          // Static mode: use browser services
+          if (isStaticMode && servicesContext) {
+            const { settings: settingsService } = servicesContext.services;
+            const browserSDCard = servicesContext.sdCard;
+
+            // First, try to get the target's existing settings
+            try {
+              const existingInfo = await settingsService.getLocalSettings(targetCartId);
+              if (existingInfo.exists && existingInfo.settings?.title &&
+                  existingInfo.settings.title !== 'Unknown Cartridge') {
+                targetTitle = existingInfo.settings.title;
+              }
+            } catch {
+              // Ignore errors fetching existing settings
+            }
+
+            // If still "Unknown Cartridge", try the system game name
+            if (targetTitle === 'Unknown Cartridge') {
+              const systemName = cartIdToName[targetCartId];
+              if (systemName && systemName !== 'Unknown Cartridge') {
+                targetTitle = systemName;
+              }
+            }
+
+            // Create settings for target cart with the appropriate title
+            const settingsForTarget = {
+              ...copiedSettings.settings,
+              title: targetTitle,
+            };
+
+            // Save settings to local
+            await settingsService.saveLocalSettings(targetCartId, settingsForTarget);
+
+            // If SD card is connected, also upload to SD
+            if (browserSDCard) {
+              await settingsService.uploadSettingsToSD(browserSDCard, targetCartId, targetTitle);
+            }
+
+            successCount++;
+            continue;
+          }
+
+          // Server mode: use API
           // First, try to get the target's existing settings
           try {
             const existingResponse = await fetch(`/api/cartridges/${targetCartId}/settings`);
