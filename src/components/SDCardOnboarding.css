@@ -165,7 +165,8 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: safe center;
+  overflow-y: auto;
   padding: 3rem;
   z-index: 1;
 }
