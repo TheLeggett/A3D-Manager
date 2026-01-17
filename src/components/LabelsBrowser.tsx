@@ -572,7 +572,13 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
             </div>
 
             <div className="filter-group filter-group-search">
-              <label htmlFor="search-input" className="text-label">Search</label>
+              <label htmlFor="search-input" className="text-label">
+                Search
+                <TooltipIcon
+                  content="Our game metadata is a work in progress and doesn't include every cartridge. When filters are active, only cartridges with known metadata will be shown."
+                  position="bottom"
+                />
+              </label>
               <div className="search-input-wrapper">
                 <input
                   id="search-input"
@@ -643,19 +649,15 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
             )}
 
             {hasClearableFilters && (
-              <button
-                className="btn-ghost filter-clear-btn"
+              <Button
+                variant="secondary"
+                size="sm"
+                className="filter-clear-btn"
                 onClick={clearAllFilters}
               >
                 Clear
-              </button>
+              </Button>
             )}
-
-            <TooltipIcon
-              content="Our game metadata is a work in progress and doesn't include every cartridge. When filters are active, only cartridges with known metadata will be shown."
-              position="bottom"
-              className="filter-info"
-            />
           </div>
 
           {/* Selection Toolbar */}

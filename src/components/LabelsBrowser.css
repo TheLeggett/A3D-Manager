@@ -260,10 +260,15 @@
 
 
 .filter-group select {
+  appearance: none;
+  -webkit-appearance: none;
   background: var(--color-bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
   color: var(--color-text);
   border: 1px solid var(--color-border);
-  padding: 0 0.75rem;
+  padding: 0 2.25rem 0 0.75rem;
   height: 36px;
   border-radius: var(--radius-sm);
   font-family: var(--font-body);
@@ -285,6 +290,12 @@
 .filter-group-search {
   flex: 1;
   min-width: 200px;
+}
+
+.filter-group-search label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .filter-group-search .search-input-wrapper input {
@@ -327,18 +338,20 @@
   color: #000000;
 }
 
-.filter-clear-btn {
+.filter-clear-btn.btn {
   font-size: 0.85rem;
   padding: 0 0.75rem;
   height: 36px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   color: var(--color-text-muted);
   align-self: flex-end;
-  display: flex;
-  align-items: center;
 }
 
-.filter-clear-btn:hover {
-  color: var(--color-accent);
+.filter-clear-btn.btn:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border);
+  color: var(--color-text);
 }
 
 /* Filter info tooltip */
