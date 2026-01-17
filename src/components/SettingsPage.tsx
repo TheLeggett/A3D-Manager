@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useImageCache, useSDCard } from '../App';
+import { useState, useEffect, useCallback, useContext } from 'react';
+import { useImageCache, useSDCard, isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { ProgressBar } from './ProgressBar';
 import { DeleteSDLabelsModal } from './DeleteSDLabelsModal';
@@ -77,6 +78,7 @@ export function SettingsPage() {
   const { invalidateImageCache, lastInvalidated } = useImageCache();
   const { selectedSDCard } = useSDCard();
   const { checkSyncStatus } = useLabelSync();
+  const servicesContext = useContext(ServicesContext);
   const isConnected = selectedSDCard !== null;
 
   const [quickResult, setQuickResult] = useState<QuickCompareResult | null>(null);
@@ -135,6 +137,52 @@ export function SettingsPage() {
 
   const fetchLocalDataStatus = useCallback(async () => {
     try {
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { storage, labelsDb, settings, gamePak } = servicesContext.services;
+
+        // Get labels status
+        const labelsStatus = await labelsDb.getLabelsDbStatus();
+
+        // Get owned carts count
+        const ownedCartIds = await storage.getOwnedCartIds();
+
+        // Get user carts count
+        const userCarts = await storage.getUserCarts();
+
+        // Get settings and game pak counts
+        const settingsCartIds = await settings.getCartIdsWithSettings();
+        const gamePakCartIds = await gamePak.getCartIdsWithGamePaks();
+
+        // Combine for unique game folder count
+        const gameDataIds = new Set([...settingsCartIds, ...gamePakCartIds]);
+
+        const data: LocalDataStatus = {
+          labels: {
+            exists: !!labelsStatus?.exists,
+            entryCount: labelsStatus?.entryCount,
+            fileSize: labelsStatus?.fileSize,
+          },
+          ownedCarts: {
+            exists: ownedCartIds.length > 0,
+            count: ownedCartIds.length,
+          },
+          userCarts: {
+            exists: userCarts.length > 0,
+            count: userCarts.length,
+          },
+          gameData: {
+            exists: gameDataIds.size > 0,
+            folderCount: gameDataIds.size,
+            totalSize: 0, // Could calculate if needed
+          },
+        };
+
+        setLocalDataStatus(data);
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch('/api/local-data/status');
       if (response.ok) {
         const data = await response.json();
@@ -143,7 +191,7 @@ export function SettingsPage() {
     } catch (err) {
       console.error('Failed to fetch local data status:', err);
     }
-  }, []);
+  }, [servicesContext]);
 
   useEffect(() => {
     fetchLocalDataStatus();

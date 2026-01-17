@@ -11,10 +11,14 @@ import { BrowserCompatibilityScreen, useCompatibilityCheck } from './components/
 import { InstallPrompt } from './components/InstallPrompt';
 import type { SDCard } from './types';
 import type { CartridgeSettings } from './lib/defaultSettings';
+import { setStaticMode as setSettingsAutoSaveStaticMode } from './lib/settingsAutoSave';
 import './App.css';
 
 // Detect if we're running in static mode (no server)
 const isStaticMode = import.meta.env.VITE_MODE === 'static' || !import.meta.env.DEV;
+
+// Set static mode for settings auto-save
+setSettingsAutoSaveStaticMode(isStaticMode);
 
 // Image Cache Context for global cache invalidation
 interface ImageCacheContextType {

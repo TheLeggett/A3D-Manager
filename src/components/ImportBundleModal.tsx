@@ -1,5 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
 import { Modal, Button } from './ui';
+import { isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 
 interface BundleManifest {
   version: number;
@@ -11,6 +13,7 @@ interface BundleManifest {
     settingsCount: number;
     gamePaksCount: number;
     gamePakBackupsCount: number;
+    labelsCount?: number;
     cartIds: string[];
   };
 }
@@ -38,6 +41,7 @@ export function ImportBundleModal({
   onClose,
   onImportComplete,
 }: ImportBundleModalProps) {
+  const servicesContext = useContext(ServicesContext);
   const [file, setFile] = useState<File | null>(null);
   const [manifest, setManifest] = useState<BundleManifest | null>(null);
   const [loading, setLoading] = useState(false);
@@ -81,23 +85,35 @@ export function ImportBundleModal({
     // Get bundle info
     try {
       setLoading(true);
-      const formData = new FormData();
-      formData.append('file', selectedFile);
 
-      const response = await fetch('/api/cartridges/bundle/info', {
-        method: 'POST',
-        body: formData,
-      });
+      let info: BundleManifest;
 
-      if (!response.ok) {
-        throw new Error('Invalid bundle file');
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { bundle } = servicesContext.services;
+        const buffer = await selectedFile.arrayBuffer();
+        info = await bundle.getBundleInfo(buffer);
+      } else {
+        // Server mode: use API
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        const response = await fetch('/api/cartridges/bundle/info', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Invalid bundle file');
+        }
+
+        info = await response.json();
       }
 
-      const info: BundleManifest = await response.json();
       setManifest(info);
 
       // Auto-set options based on what's in the bundle
-      setImportLabels(info.contents.hasLabelsDb);
+      setImportLabels(info.contents.hasLabelsDb || (info.contents.labelsCount ?? 0) > 0);
       setImportOwnership(info.contents.hasOwnedCarts);
       setImportSettings(info.contents.settingsCount > 0);
       setImportGamePaks(info.contents.gamePaksCount > 0);
@@ -117,23 +133,36 @@ export function ImportBundleModal({
       setError(null);
       setResult(null);
 
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('options', JSON.stringify({
+      const importOptions = {
         importLabels,
         importOwnership,
         importSettings,
         importGamePaks,
         importGamePakBackups,
         mergeStrategy,
-      }));
+      };
 
-      const response = await fetch('/api/cartridges/bundle/import', {
-        method: 'POST',
-        body: formData,
-      });
+      let importResult: ImportResult;
 
-      const importResult: ImportResult = await response.json();
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { bundle } = servicesContext.services;
+        const buffer = await file.arrayBuffer();
+        importResult = await bundle.importBundle(buffer, importOptions);
+      } else {
+        // Server mode: use API
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('options', JSON.stringify(importOptions));
+
+        const response = await fetch('/api/cartridges/bundle/import', {
+          method: 'POST',
+          body: formData,
+        });
+
+        importResult = await response.json();
+      }
+
       setResult(importResult);
 
       if (importResult.success) {

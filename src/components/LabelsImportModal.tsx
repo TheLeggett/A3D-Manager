@@ -1,6 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
 import { Modal, Button } from './ui';
 import { useLabelSync } from './LabelSyncIndicator';
+import { isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 
 type ImportMode = 'replace' | 'merge-overwrite' | 'merge-skip';
 
@@ -22,6 +24,7 @@ export function LabelsImportModal({
   currentStatus,
 }: LabelsImportModalProps) {
   const { markLocalChanges } = useLabelSync();
+  const servicesContext = useContext(ServicesContext);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -47,9 +50,33 @@ export function LabelsImportModal({
       setUploading(true);
       setError(null);
 
+      const mode = currentStatus?.hasLabels ? importMode : 'replace';
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { labelsDb } = servicesContext.services;
+
+        // Read the file as ArrayBuffer
+        const buffer = await file.arrayBuffer();
+
+        if (mode === 'replace') {
+          // Import replacing all existing entries
+          await labelsDb.importLabelsDbFromBuffer(buffer);
+        } else {
+          // Merge modes - pass the mode directly
+          await labelsDb.mergeLabelsDbFromBuffer(buffer, mode);
+        }
+
+        markLocalChanges();
+        onImportComplete();
+        onClose();
+        return;
+      }
+
+      // Server mode: use API
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('mode', currentStatus?.hasLabels ? importMode : 'replace');
+      formData.append('mode', mode);
 
       const response = await fetch('/api/labels/import', {
         method: 'POST',

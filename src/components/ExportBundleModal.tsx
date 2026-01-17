@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Modal, Button } from './ui';
+import { isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 
 interface ExportBundleModalProps {
   isOpen: boolean;
@@ -14,6 +16,7 @@ export function ExportBundleModal({
   onExportComplete,
   selectedCartIds,
 }: ExportBundleModalProps) {
+  const servicesContext = useContext(ServicesContext);
   const [includeLabels, setIncludeLabels] = useState(true);
   const [includeOwnership, setIncludeOwnership] = useState(true);
   const [includeSettings, setIncludeSettings] = useState(true);
@@ -41,7 +44,7 @@ export function ExportBundleModal({
       setExporting(true);
       setError(null);
 
-      const body = {
+      const exportOptions = {
         includeLabels,
         includeOwnership,
         includeSettings,
@@ -50,10 +53,26 @@ export function ExportBundleModal({
         ...(isSelectionExport && { cartIds: selectedCartIds }),
       };
 
+      // Generate filename
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = isSelectionExport
+        ? `a3d-selection-${timestamp}.a3d`
+        : `a3d-backup-${timestamp}.a3d`;
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { bundle } = servicesContext.services;
+        await bundle.downloadBundle(filename, exportOptions);
+        onExportComplete?.();
+        onClose();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch('/api/cartridges/bundle/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(exportOptions),
       });
 
       if (!response.ok) {
@@ -70,7 +89,7 @@ export function ExportBundleModal({
       // Get filename from Content-Disposition header or use default
       const disposition = response.headers.get('Content-Disposition');
       const filenameMatch = disposition?.match(/filename="(.+)"/);
-      a.download = filenameMatch?.[1] || 'a3d-backup.a3d';
+      a.download = filenameMatch?.[1] || filename;
 
       document.body.appendChild(a);
       a.click();

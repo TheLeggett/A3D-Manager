@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useSDCard } from '../App';
+import { useState, useEffect, useCallback, useContext } from 'react';
+import { useSDCard, isStaticMode } from '../App';
+import { ServicesContext } from '../contexts/ServicesContext';
 import { useLabelSync } from './LabelSyncIndicator';
 import { ProgressBar } from './ProgressBar';
 import './LabelSyncModal.css';
@@ -39,6 +40,7 @@ interface LabelSyncModalProps {
 export function LabelSyncModal({ isOpen, onClose, onSyncComplete }: LabelSyncModalProps) {
   const { selectedSDCard } = useSDCard();
   const { checkSyncStatus, triggerLabelsRefresh } = useLabelSync();
+  const servicesContext = useContext(ServicesContext);
 
   const [step, setStep] = useState<ModalStep>('loading');
   const [status, setStatus] = useState<SyncStatus | null>(null);
@@ -62,6 +64,48 @@ export function LabelSyncModal({ isOpen, onClose, onSyncComplete }: LabelSyncMod
     setError(null);
 
     try {
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { labelsDb, sdCard: sdCardService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        if (!browserSDCard) {
+          throw new Error('SD card not connected');
+        }
+
+        // Get local status
+        const localStatus = await labelsDb.getLabelsDbStatus();
+
+        // Get SD card status
+        const sdInfo = await sdCardService.getLabelsDbInfo(browserSDCard);
+
+        const formatSize = (bytes: number): string => {
+          if (bytes < 1024) return `${bytes} B`;
+          if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+          return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+        };
+
+        const data: SyncStatus = {
+          local: {
+            exists: !!localStatus?.exists,
+            entryCount: localStatus?.entryCount || 0,
+            fileSize: localStatus?.fileSize || 0,
+            fileSizeFormatted: formatSize(localStatus?.fileSize || 0),
+          },
+          sd: {
+            exists: !!sdInfo?.exists,
+            entryCount: sdInfo?.entryCount || 0,
+            fileSize: sdInfo?.size || 0,
+            fileSizeFormatted: formatSize(sdInfo?.size || 0),
+          },
+        };
+
+        setStatus(data);
+        setStep('choose');
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(
         `/api/sync/labels/status?sdCardPath=${encodeURIComponent(selectedSDCard.path)}`
       );
@@ -78,7 +122,7 @@ export function LabelSyncModal({ isOpen, onClose, onSyncComplete }: LabelSyncMod
       setError(err instanceof Error ? err.message : 'Failed to load sync status');
       setStep('error');
     }
-  }, [selectedSDCard]);
+  }, [selectedSDCard, servicesContext]);
 
   useEffect(() => {
     if (isOpen && selectedSDCard) {
@@ -104,6 +148,101 @@ export function LabelSyncModal({ isOpen, onClose, onSyncComplete }: LabelSyncMod
     setError(null);
     setProgress({ percentage: 0, bytesWritten: '', totalBytes: '', speed: '', eta: '' });
 
+    // Static mode: use browser services
+    if (isStaticMode && servicesContext) {
+      const { labelsDb, sdCard: sdCardService } = servicesContext.services;
+      const browserSDCard = servicesContext.sdCard;
+
+      if (!browserSDCard) {
+        setError('SD card not connected');
+        setStep('error');
+        return;
+      }
+
+      const formatSize = (bytes: number): string => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+      };
+
+      try {
+        if (direction === 'upload') {
+          // Upload local labels.db to SD card
+          const localData = await labelsDb.exportLabelsDb();
+          if (!localData) {
+            throw new Error('No local labels.db to upload');
+          }
+
+          const totalBytes = localData.byteLength;
+          let bytesWritten = 0;
+
+          // Simulate progress (File System Access API doesn't provide write progress)
+          setProgress({
+            percentage: 10,
+            bytesWritten: '0 B',
+            totalBytes: formatSize(totalBytes),
+            speed: '',
+            eta: '',
+          });
+
+          await sdCardService.writeLabelsDbToSD(browserSDCard, localData);
+          bytesWritten = totalBytes;
+
+          setProgress({
+            percentage: 100,
+            bytesWritten: formatSize(bytesWritten),
+            totalBytes: formatSize(totalBytes),
+            speed: '',
+            eta: '',
+          });
+
+          const localStatus = await labelsDb.getLabelsDbStatus();
+          setSyncResult({ entryCount: localStatus?.entryCount || 0, direction });
+        } else {
+          // Download labels.db from SD card to local
+          const sdInfo = await sdCardService.getLabelsDbInfo(browserSDCard);
+          if (!sdInfo?.exists) {
+            throw new Error('No labels.db found on SD card');
+          }
+
+          setProgress({
+            percentage: 10,
+            bytesWritten: '0 B',
+            totalBytes: formatSize(sdInfo.size || 0),
+            speed: '',
+            eta: '',
+          });
+
+          const sdData = await sdCardService.readLabelsDbFromSD(browserSDCard);
+          if (!sdData) {
+            throw new Error('Failed to read labels.db from SD card');
+          }
+
+          await labelsDb.importLabelsDbFromBuffer(sdData);
+
+          setProgress({
+            percentage: 100,
+            bytesWritten: formatSize(sdData.byteLength),
+            totalBytes: formatSize(sdData.byteLength),
+            speed: '',
+            eta: '',
+          });
+
+          setSyncResult({ entryCount: sdInfo.entryCount || 0, direction });
+        }
+
+        setStep('complete');
+        checkSyncStatus();
+        triggerLabelsRefresh();
+        onSyncComplete?.();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Sync failed');
+        setStep('error');
+      }
+      return;
+    }
+
+    // Server mode: use SSE streams
     const endpoint = direction === 'upload'
       ? '/api/sync/labels/upload-stream'
       : '/api/sync/labels/download-stream';

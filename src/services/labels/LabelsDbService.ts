@@ -571,14 +571,18 @@ export async function hasLocalLabelsDb(): Promise<boolean> {
 export async function getLabelsDbStatus(): Promise<{
   exists: boolean;
   entryCount: number;
+  fileSize: number;
 } | null> {
   const meta = await storage.getLabelsDbMeta();
   if (!meta) {
     return null;
   }
+  // Calculate file size: header + entry count * slot size
+  const fileSize = DATA_START + (meta.entryCount * IMAGE_SLOT_SIZE);
   return {
     exists: true,
     entryCount: meta.entryCount,
+    fileSize,
   };
 }
 
@@ -856,4 +860,196 @@ export async function exportLabelsDb(): Promise<ArrayBuffer | null> {
  */
 export async function deleteLabelsDb(): Promise<void> {
   await storage.deleteLabelsDb();
+}
+
+// =============================================================================
+// Cartridge Metadata Operations
+// =============================================================================
+
+/**
+ * Cart metadata from cart-names.json
+ */
+export interface CartMetadata {
+  id: string;
+  gameCode: string;
+  name: string;
+  region: string;
+  languages: string[];
+  videoMode: 'NTSC' | 'PAL' | 'Unknown';
+  releaseType: string;
+  revision: string | null;
+}
+
+// Cache for cart metadata
+let cartMetadataCache: CartMetadata[] | null = null;
+let cartMetadataMap: Map<string, CartMetadata> | null = null;
+
+/**
+ * Load cart metadata from JSON file
+ */
+export async function loadCartMetadata(): Promise<CartMetadata[]> {
+  if (cartMetadataCache) {
+    return cartMetadataCache;
+  }
+
+  try {
+    const response = await fetch('/data/cart-names.json');
+    if (!response.ok) {
+      console.warn('Failed to load cart metadata');
+      return [];
+    }
+    cartMetadataCache = await response.json();
+
+    // Build lookup map
+    cartMetadataMap = new Map();
+    for (const cart of cartMetadataCache!) {
+      cartMetadataMap.set(cart.id.toLowerCase(), cart);
+    }
+
+    return cartMetadataCache!;
+  } catch (err) {
+    console.error('Error loading cart metadata:', err);
+    return [];
+  }
+}
+
+/**
+ * Get cart metadata by ID
+ */
+export async function getCartMetadata(cartIdHex: string): Promise<CartMetadata | null> {
+  await loadCartMetadata();
+  return cartMetadataMap?.get(cartIdHex.toLowerCase()) || null;
+}
+
+/**
+ * Get filter options extracted from cart metadata
+ */
+export async function getFilterOptions(): Promise<{
+  regions: string[];
+  languages: string[];
+  videoModes: string[];
+}> {
+  const metadata = await loadCartMetadata();
+
+  const regionsSet = new Set<string>();
+  const languagesSet = new Set<string>();
+  const videoModesSet = new Set<string>();
+
+  for (const cart of metadata) {
+    if (cart.region) regionsSet.add(cart.region);
+    if (cart.languages) {
+      for (const lang of cart.languages) {
+        languagesSet.add(lang);
+      }
+    }
+    if (cart.videoMode) videoModesSet.add(cart.videoMode);
+  }
+
+  return {
+    regions: Array.from(regionsSet).sort(),
+    languages: Array.from(languagesSet).sort(),
+    videoModes: Array.from(videoModesSet).sort(),
+  };
+}
+
+/**
+ * Get enriched labels.db page with metadata
+ */
+export async function getLabelsDbPageEnriched(
+  page: number,
+  pageSize: number,
+  options?: {
+    region?: string;
+    language?: string;
+    videoMode?: string;
+    search?: string;
+    owned?: boolean;
+    ownedCartIds?: string[];
+  }
+): Promise<{
+  imported: boolean;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  totalEntries: number;
+  totalUnfiltered: number;
+  entries: Array<{
+    cartId: string;
+    index: number;
+    name?: string;
+    region?: string;
+    languages?: string[];
+    videoMode?: 'NTSC' | 'PAL' | 'Unknown';
+  }>;
+} | null> {
+  const data = await storage.getLabelsDb();
+  if (!data) {
+    return {
+      imported: false,
+      page: 0,
+      pageSize,
+      totalPages: 0,
+      totalEntries: 0,
+      totalUnfiltered: 0,
+      entries: [],
+    };
+  }
+
+  const db = parseLabelsDb(data);
+  await loadCartMetadata();
+
+  // Build enriched entries
+  let enrichedEntries = db.entries.map((e) => {
+    const meta = cartMetadataMap?.get(e.cartIdHex.toLowerCase());
+    return {
+      cartId: e.cartIdHex,
+      index: e.index,
+      name: meta?.name,
+      region: meta?.region,
+      languages: meta?.languages,
+      videoMode: meta?.videoMode,
+    };
+  });
+
+  const totalUnfiltered = enrichedEntries.length;
+
+  // Apply filters
+  if (options?.region) {
+    enrichedEntries = enrichedEntries.filter((e) => e.region === options.region);
+  }
+  if (options?.language) {
+    enrichedEntries = enrichedEntries.filter((e) =>
+      e.languages?.includes(options.language!)
+    );
+  }
+  if (options?.videoMode) {
+    enrichedEntries = enrichedEntries.filter((e) => e.videoMode === options.videoMode);
+  }
+  if (options?.search) {
+    const searchLower = options.search.toLowerCase();
+    enrichedEntries = enrichedEntries.filter((e) =>
+      e.cartId.toLowerCase().includes(searchLower) ||
+      e.name?.toLowerCase().includes(searchLower)
+    );
+  }
+  if (options?.owned && options?.ownedCartIds) {
+    const ownedSet = new Set(options.ownedCartIds.map(id => id.toLowerCase()));
+    enrichedEntries = enrichedEntries.filter((e) => ownedSet.has(e.cartId.toLowerCase()));
+  }
+
+  const totalFiltered = enrichedEntries.length;
+  const totalPages = Math.ceil(totalFiltered / pageSize);
+  const start = page * pageSize;
+  const end = Math.min(start + pageSize, totalFiltered);
+  const pageEntries = enrichedEntries.slice(start, end);
+
+  return {
+    imported: true,
+    page,
+    pageSize,
+    totalPages,
+    totalEntries: totalFiltered,
+    totalUnfiltered,
+    entries: pageEntries,
+  };
 }

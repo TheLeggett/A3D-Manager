@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useImageCache, useSettingsClipboard } from '../App';
+import { useState, useRef, useEffect, useCallback, useContext } from 'react';
+import { useImageCache, useSettingsClipboard, isStaticMode } from '../App';
+import { ServicesContext, type ServicesContextType } from '../contexts/ServicesContext';
 import { IconButton, OptionSelector, ToggleSwitch } from './controls';
 import { Tooltip } from './ui/Tooltip';
 import { CartridgeSprite } from './CartridgeSprite';
@@ -131,6 +132,7 @@ export function CartridgeDetailPanel({
   const [lookupResult, setLookupResult] = useState<LookupResult | null>(null);
   const { imageCacheBuster: globalCacheBuster } = useImageCache();
   const [localCacheBuster, setLocalCacheBuster] = useState(() => Date.now());
+  const servicesContext = useContext(ServicesContext);
   // Combine global and local cache busters
   const imageCacheBuster = Math.max(globalCacheBuster, localCacheBuster);
 
@@ -138,6 +140,15 @@ export function CartridgeDetailPanel({
   useEffect(() => {
     const checkOwnership = async () => {
       try {
+        // Static mode: use browser services
+        if (isStaticMode && servicesContext) {
+          const { storage } = servicesContext.services;
+          const owned = await storage.isCartOwned(cartId);
+          setIsOwned(owned);
+          return;
+        }
+
+        // Server mode: use API
         const response = await fetch('/api/cartridges/owned');
         if (response.ok) {
           const data = await response.json();
@@ -149,12 +160,48 @@ export function CartridgeDetailPanel({
       }
     };
     checkOwnership();
-  }, [cartId]);
+  }, [cartId, servicesContext]);
 
   // Look up cart info on mount
   useEffect(() => {
     const lookupCart = async () => {
       try {
+        // Static mode: use browser services
+        if (isStaticMode && servicesContext) {
+          const { labelsDb, storage } = servicesContext.services;
+
+          // Check cart metadata
+          const metadata = await labelsDb.getCartMetadata(cartId);
+
+          // Check for user cart
+          const userCart = await storage.getUserCart(cartId);
+
+          if (metadata) {
+            setLookupResult({
+              found: true,
+              source: 'internal',
+              cartId,
+              name: metadata.name,
+              region: metadata.region,
+              videoMode: metadata.videoMode,
+            });
+          } else if (userCart) {
+            setLookupResult({
+              found: true,
+              source: 'user',
+              cartId,
+              name: userCart.name,
+            });
+          } else {
+            setLookupResult({
+              found: false,
+              cartId,
+            });
+          }
+          return;
+        }
+
+        // Server mode: use API
         const response = await fetch(`/api/labels/lookup/${cartId}`);
         if (response.ok) {
           const data: LookupResult = await response.json();
@@ -165,10 +212,24 @@ export function CartridgeDetailPanel({
       }
     };
     lookupCart();
-  }, [cartId]);
+  }, [cartId, servicesContext]);
 
   const handleToggleOwned = async (newValue: boolean) => {
     try {
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { storage } = servicesContext.services;
+        if (newValue) {
+          await storage.markCartOwned(cartId);
+        } else {
+          await storage.unmarkCartOwned(cartId);
+        }
+        setIsOwned(newValue);
+        onUpdate();
+        return;
+      }
+
+      // Server mode: use API
       if (newValue) {
         await fetch(`/api/cartridges/owned/${cartId}`, { method: 'POST' });
       } else {
@@ -183,12 +244,42 @@ export function CartridgeDetailPanel({
 
   const displayName = lookupResult?.name || gameName || 'Unknown Cartridge';
 
+  // For static mode, we'll use a state for the image URL that gets loaded from IndexedDB
+  const [labelImageUrl, setLabelImageUrl] = useState<string | null>(null);
+
+  // Load label image URL for static mode
+  useEffect(() => {
+    if (!isStaticMode || !servicesContext) {
+      return;
+    }
+
+    const loadLabelImage = async () => {
+      const { labelsDb } = servicesContext.services;
+      const url = await labelsDb.getLabelsDbImageUrl(cartId);
+      setLabelImageUrl(url);
+    };
+
+    loadLabelImage();
+
+    // Cleanup URL on unmount
+    return () => {
+      if (labelImageUrl) {
+        URL.revokeObjectURL(labelImageUrl);
+      }
+    };
+  }, [cartId, servicesContext, imageCacheBuster]);
+
+  // Determine the image URL to use
+  const spriteImageUrl = isStaticMode
+    ? labelImageUrl || '/default-label.png'
+    : `/api/labels/${cartId}?v=${imageCacheBuster}`;
+
   return (
     <div className="slide-over-overlay" onClick={onClose}>
       <div className="slide-over-panel" onClick={(e) => e.stopPropagation()}>
         <div className="slide-over-header">
           <CartridgeSprite
-            artworkUrl={`/api/labels/${cartId}?v=${imageCacheBuster}`}
+            artworkUrl={spriteImageUrl}
             alt={displayName}
             color="dark"
             size="small"
@@ -246,6 +337,7 @@ export function CartridgeDetailPanel({
               onUpdate={onUpdate}
               onClose={onClose}
               onDelete={onDelete}
+              servicesContext={servicesContext}
             />
           )}
           {activeTab === 'settings' && (
@@ -253,6 +345,7 @@ export function CartridgeDetailPanel({
               cartId={cartId}
               sdCardPath={sdCardPath}
               gameName={displayName}
+              servicesContext={servicesContext}
             />
           )}
           {activeTab === 'gamepak' && (
@@ -260,6 +353,7 @@ export function CartridgeDetailPanel({
               cartId={cartId}
               sdCardPath={sdCardPath}
               gameName={displayName}
+              servicesContext={servicesContext}
             />
           )}
         </div>
@@ -281,6 +375,7 @@ interface LabelTabProps {
   onUpdate: () => void;
   onClose: () => void;
   onDelete?: () => void;
+  servicesContext: ServicesContextType | null;
 }
 
 function LabelTab({
@@ -292,6 +387,7 @@ function LabelTab({
   onUpdate,
   onClose,
   onDelete,
+  servicesContext,
 }: LabelTabProps) {
   const { markLocalChanges } = useLabelSync();
   const [file, setFile] = useState<File | null>(null);
@@ -308,6 +404,9 @@ function LabelTab({
   const [savingName, setSavingName] = useState(false);
   const [nameChanged, setNameChanged] = useState(false);
 
+  // For static mode, we'll use a state for the image URL
+  const [labelImageUrl, setLabelImageUrl] = useState<string | null>(null);
+
   // Update editable name when lookup result changes
   useEffect(() => {
     if (lookupResult?.name) {
@@ -315,7 +414,31 @@ function LabelTab({
     }
   }, [lookupResult?.name]);
 
-  const imageUrl = `/api/labels/${cartId}?v=${imageCacheBuster}`;
+  // Load label image URL for static mode
+  useEffect(() => {
+    if (!isStaticMode || !servicesContext) {
+      return;
+    }
+
+    const loadLabelImage = async () => {
+      const { labelsDb } = servicesContext.services;
+      const url = await labelsDb.getLabelsDbImageUrl(cartId);
+      setLabelImageUrl(url);
+    };
+
+    loadLabelImage();
+
+    // Cleanup URL on unmount or refresh
+    return () => {
+      if (labelImageUrl) {
+        URL.revokeObjectURL(labelImageUrl);
+      }
+    };
+  }, [cartId, servicesContext, imageCacheBuster]);
+
+  const imageUrl = isStaticMode
+    ? labelImageUrl || '/default-label.png'
+    : `/api/labels/${cartId}?v=${imageCacheBuster}`;
 
   const isUserCart = lookupResult?.source === 'user';
   const isUnknownCart = lookupResult && !lookupResult.found;
@@ -360,6 +483,17 @@ function LabelTab({
       setSavingName(true);
       setError(null);
 
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { storage } = servicesContext.services;
+        await storage.setUserCart(cartId, editableName.trim());
+        setNameChanged(false);
+        setLookupResult(prev => prev ? { ...prev, found: true, source: 'user', name: editableName.trim() } : null);
+        onUpdate();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/labels/user-cart/${cartId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -388,6 +522,26 @@ function LabelTab({
       setUploading(true);
       setError(null);
 
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { labelsDb, imageProcessor } = servicesContext.services;
+
+        // Process image to BGRA format (prepareImageForLabelsDb accepts File/Blob directly)
+        const bgraData = await imageProcessor.prepareImageForLabelsDb(file);
+
+        // Add/update entry in labels.db
+        const cartIdNum = parseInt(cartId, 16);
+        await labelsDb.updateEntryInLabelsDb(cartIdNum, bgraData);
+
+        setFile(null);
+        setPreview(null);
+        onImageUpdate();
+        onUpdate();
+        markLocalChanges();
+        return;
+      }
+
+      // Server mode: use API
       const formData = new FormData();
       formData.append('image', file);
 
@@ -422,6 +576,30 @@ function LabelTab({
       setDeleting(true);
       setError(null);
 
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { labelsDb, storage } = servicesContext.services;
+        const cartIdNum = parseInt(cartId, 16);
+
+        // Delete from labels.db
+        try {
+          await labelsDb.deleteEntryFromLabelsDb(cartIdNum);
+        } catch {
+          // Entry might not exist, continue anyway
+        }
+
+        // If it's a user cart, also delete the user cart entry
+        if (isUserCart) {
+          await storage.deleteUserCart(cartId);
+        }
+
+        markLocalChanges();
+        onDelete?.();
+        onClose();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/labels/${cartId}`, {
         method: 'DELETE',
       });
@@ -454,6 +632,24 @@ function LabelTab({
       setDeletingLabel(true);
       setError(null);
 
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { labelsDb } = servicesContext.services;
+        const cartIdNum = parseInt(cartId, 16);
+
+        try {
+          await labelsDb.deleteEntryFromLabelsDb(cartIdNum);
+        } catch {
+          // Entry might not exist
+        }
+
+        markLocalChanges();
+        onImageUpdate();
+        onUpdate();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/labels/${cartId}`, {
         method: 'DELETE',
       });
@@ -624,6 +820,7 @@ interface SettingsTabProps {
   cartId: string;
   sdCardPath?: string;
   gameName?: string;
+  servicesContext: ServicesContextType | null;
 }
 
 // Helper to compare settings objects (shallow comparison of key values)
@@ -635,7 +832,7 @@ function settingsAreDifferent(a: CartridgeSettings | undefined, b: CartridgeSett
 
 type ConflictResolution = 'pending' | 'use-local' | 'use-sd' | 'resolved';
 
-function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
+function SettingsTab({ cartId, sdCardPath, gameName, servicesContext }: SettingsTabProps) {
   const [info, setInfo] = useState<SettingsInfoResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -667,6 +864,39 @@ function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
     try {
       setLoading(true);
       setError(null);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { settings: settingsService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        const result = await settingsService.getSettingsInfo(
+          cartId,
+          browserSDCard || undefined
+        );
+
+        const data: SettingsInfoResponse = {
+          local: {
+            exists: result.local.exists,
+            source: 'local',
+            path: `local:${cartId}`,
+            lastModified: result.local.lastModified,
+            settings: result.local.settings,
+          },
+          sd: result.sd ? {
+            exists: result.sd.exists,
+            source: 'sd',
+            path: `sd:${cartId}`,
+            lastModified: result.sd.lastModified,
+            settings: result.sd.settings,
+          } : null,
+        };
+
+        setInfo(data);
+        return data;
+      }
+
+      // Server mode: use API
       const params = sdCardPath ? `?sdCardPath=${encodeURIComponent(sdCardPath)}` : '';
       const response = await fetch(`/api/cartridges/${cartId}/settings${params}`);
       if (response.ok) {
@@ -684,7 +914,7 @@ function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
     } finally {
       setLoading(false);
     }
-  }, [cartId, sdCardPath]);
+  }, [cartId, sdCardPath, servicesContext]);
 
   // Initial load and auto-import logic
   useEffect(() => {
@@ -700,13 +930,26 @@ function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
         setAutoImported(true);
         setSyncing(true);
         try {
-          const response = await fetch(`/api/cartridges/${cartId}/settings/download`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sdCardPath }),
-          });
-          if (response.ok) {
-            await fetchInfo();
+          // Static mode: use browser services
+          if (isStaticMode && servicesContext) {
+            const { settings: settingsService } = servicesContext.services;
+            const browserSDCard = servicesContext.sdCard;
+            if (browserSDCard) {
+              const result = await settingsService.downloadSettingsFromSD(browserSDCard, cartId);
+              if (result.success) {
+                await fetchInfo();
+              }
+            }
+          } else {
+            // Server mode: use API
+            const response = await fetch(`/api/cartridges/${cartId}/settings/download`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sdCardPath }),
+            });
+            if (response.ok) {
+              await fetchInfo();
+            }
           }
         } catch (err) {
           console.error('Auto-import failed:', err);
@@ -729,7 +972,7 @@ function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
     };
 
     loadAndCheck();
-  }, [cartId, sdCardPath, autoImported, fetchInfo]);
+  }, [cartId, sdCardPath, autoImported, fetchInfo, servicesContext]);
 
   const handleResolveConflict = async (choice: 'use-local' | 'use-sd') => {
     if (!sdCardPath) return;
@@ -737,6 +980,33 @@ function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
     setError(null);
 
     try {
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { settings: settingsService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        if (!browserSDCard) {
+          throw new Error('SD card not connected');
+        }
+
+        if (choice === 'use-local') {
+          const result = await settingsService.uploadSettingsToSD(browserSDCard, cartId, gameName || 'Unknown');
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to sync to SD card');
+          }
+        } else {
+          const result = await settingsService.downloadSettingsFromSD(browserSDCard, cartId);
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to sync from SD card');
+          }
+        }
+
+        setConflictState('resolved');
+        await fetchInfo();
+        return;
+      }
+
+      // Server mode: use API
       if (choice === 'use-local') {
         // Upload local to SD
         const response = await fetch(`/api/cartridges/${cartId}/settings/upload`, {
@@ -776,6 +1046,16 @@ function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
 
     try {
       const defaultSettings = createDefaultSettings();
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { settings: settingsService } = servicesContext.services;
+        await settingsService.saveLocalSettings(cartId, defaultSettings);
+        await fetchInfo();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/cartridges/${cartId}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -798,6 +1078,28 @@ function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
   const handleImportFile = async (file: File) => {
     try {
       setError(null);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { settings: settingsService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        const result = await settingsService.importSettingsFromFile(cartId, file);
+        if (!result.success) {
+          throw new Error(result.error || 'Import failed');
+        }
+
+        // If connected, also upload to SD
+        if (browserSDCard) {
+          await settingsService.uploadSettingsToSD(browserSDCard, cartId, gameName || 'Unknown');
+        }
+
+        await fetchInfo();
+        setConflictState('resolved');
+        return;
+      }
+
+      // Server mode: use API
       const formData = new FormData();
       formData.append('settings', file);
       const response = await fetch(`/api/cartridges/${cartId}/settings/import`, {
@@ -827,12 +1129,25 @@ function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
 
   const handleExport = async () => {
     try {
-      const response = await fetch(`/api/cartridges/${cartId}/settings/export`);
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Export failed');
+      let blob: Blob | null = null;
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { settings: settingsService } = servicesContext.services;
+        blob = await settingsService.exportSettingsToBlob(cartId);
+        if (!blob) {
+          throw new Error('No settings to export');
+        }
+      } else {
+        // Server mode: use API
+        const response = await fetch(`/api/cartridges/${cartId}/settings/export`);
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Export failed');
+        }
+        blob = await response.blob();
       }
-      const blob = await response.blob();
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -852,6 +1167,24 @@ function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
     try {
       setError(null);
       const defaultSettings = createDefaultSettings(gameName);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { settings: settingsService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        await settingsService.saveLocalSettings(cartId, defaultSettings);
+
+        // If SD card connected, also sync to SD
+        if (browserSDCard) {
+          await settingsService.uploadSettingsToSD(browserSDCard, cartId, gameName || 'Unknown');
+        }
+
+        await fetchInfo();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/cartridges/${cartId}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -962,6 +1295,7 @@ function SettingsTab({ cartId, sdCardPath, gameName }: SettingsTabProps) {
             cartId={cartId}
             settings={info.local.settings}
             sdCardPath={sdCardPath}
+            servicesContext={servicesContext}
             onSettingsChange={(newSettings) => {
               // Update local info so copy settings uses current values
               setInfo(prev => prev ? {
@@ -1052,12 +1386,13 @@ interface SettingsEditorProps {
   cartId: string;
   settings: CartridgeSettings;
   sdCardPath?: string;
+  servicesContext: ServicesContextType | null;
   onSettingsChange?: (settings: CartridgeSettings) => void;
 }
 
 type SettingsEditorTab = 'display' | 'hardware';
 
-function SettingsEditor({ cartId, settings: initialSettings, sdCardPath, onSettingsChange }: SettingsEditorProps) {
+function SettingsEditor({ cartId, settings: initialSettings, sdCardPath, servicesContext, onSettingsChange }: SettingsEditorProps) {
   const [activeTab, setActiveTab] = useState<SettingsEditorTab>('display');
   const [settings, setSettings] = useState<CartridgeSettings>(initialSettings);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1092,11 +1427,19 @@ function SettingsEditor({ cartId, settings: initialSettings, sdCardPath, onSetti
     const currentJson = JSON.stringify(settings);
     // Only queue save if settings differ from initial/last-saved state
     if (currentJson !== initialSettingsJson.current) {
-      queueSettingsSave(cartId, settings, sdCardPath);
+      // Pass browser services for static mode
+      if (isStaticMode && servicesContext) {
+        const browserServices = {
+          settings: servicesContext.services.settings,
+        };
+        queueSettingsSave(cartId, settings, sdCardPath, browserServices, servicesContext.sdCard || undefined);
+      } else {
+        queueSettingsSave(cartId, settings, sdCardPath);
+      }
       // Notify parent of settings change so copy uses current settings
       onSettingsChange?.(settings);
     }
-  }, [cartId, settings, sdCardPath, onSettingsChange]);
+  }, [cartId, settings, sdCardPath, servicesContext, onSettingsChange]);
 
   // Helper to update display settings
   const updateDisplayMode = (mode: DisplayMode) => {
@@ -1378,11 +1721,12 @@ interface GamePakTabProps {
   cartId: string;
   sdCardPath?: string;
   gameName?: string;
+  servicesContext: ServicesContextType | null;
 }
 
 type GamePakConflictResolution = 'pending' | 'use-local' | 'use-sd' | 'resolved';
 
-export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
+export function GamePakTab({ cartId, sdCardPath, gameName, servicesContext }: GamePakTabProps) {
   const [info, setInfo] = useState<GamePakInfoResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1416,6 +1760,47 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
     try {
       setLoading(true);
       setError(null);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        const result = await gamePakService.getGamePakInfo(
+          cartId,
+          browserSDCard || undefined,
+          true // includeHash
+        );
+
+        const data: GamePakInfoResponse = {
+          local: {
+            exists: result.local.exists,
+            source: 'local',
+            path: `local:${cartId}`,
+            size: result.local.size,
+            lastModified: result.local.lastModified,
+            isValidSize: result.local.isValidSize,
+            saveInfo: result.local.saveInfo,
+            md5Hash: result.local.md5Hash,
+          },
+          sd: result.sd ? {
+            exists: result.sd.exists,
+            source: 'sd',
+            path: `sd:${cartId}`,
+            size: result.sd.size,
+            lastModified: result.sd.lastModified,
+            isValidSize: result.sd.isValidSize,
+            saveInfo: result.sd.saveInfo,
+            md5Hash: result.sd.md5Hash,
+          } : null,
+          syncStatus: result.syncStatus,
+        };
+
+        setInfo(data);
+        return;
+      }
+
+      // Server mode: use API
       const params = new URLSearchParams();
       if (sdCardPath) params.set('sdCardPath', sdCardPath);
       params.set('includeHash', 'true');
@@ -1431,7 +1816,7 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
     } finally {
       setLoading(false);
     }
-  }, [cartId, sdCardPath]);
+  }, [cartId, sdCardPath, servicesContext]);
 
   useEffect(() => {
     fetchInfo();
@@ -1441,6 +1826,16 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
   const fetchBackups = useCallback(async () => {
     try {
       setBackupsLoading(true);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        const backupsList = await gamePakService.listBackups(cartId);
+        setBackups(backupsList);
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/cartridges/${cartId}/game-pak/backups`);
       if (response.ok) {
         const data = await response.json();
@@ -1451,7 +1846,7 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
     } finally {
       setBackupsLoading(false);
     }
-  }, [cartId]);
+  }, [cartId, servicesContext]);
 
   useEffect(() => {
     fetchBackups();
@@ -1462,6 +1857,26 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
     try {
       setDownloading(true);
       setError(null);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        if (!browserSDCard) {
+          throw new Error('SD card not connected');
+        }
+
+        const result = await gamePakService.downloadGamePakFromSD(browserSDCard, cartId);
+        if (!result.success) {
+          throw new Error(result.error || 'Download failed');
+        }
+
+        await fetchInfo();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/cartridges/${cartId}/game-pak/download`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1484,6 +1899,26 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
     try {
       setUploading(true);
       setError(null);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        if (!browserSDCard) {
+          throw new Error('SD card not connected');
+        }
+
+        const result = await gamePakService.uploadGamePakToSD(browserSDCard, cartId, gameName || 'Unknown');
+        if (!result.success) {
+          throw new Error(result.error || 'Upload failed');
+        }
+
+        await fetchInfo();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/cartridges/${cartId}/game-pak/upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1504,6 +1939,19 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
   const handleImportFile = async (file: File) => {
     try {
       setError(null);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        const result = await gamePakService.importGamePakFromFile(cartId, file);
+        if (!result.success) {
+          throw new Error(result.error || 'Import failed');
+        }
+        await fetchInfo();
+        return;
+      }
+
+      // Server mode: use API
       const formData = new FormData();
       formData.append('file', file);
       const response = await fetch(`/api/cartridges/${cartId}/game-pak/import`, {
@@ -1522,12 +1970,25 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
 
   const handleExport = async () => {
     try {
-      const response = await fetch(`/api/cartridges/${cartId}/game-pak/export`);
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Export failed');
+      let blob: Blob | null = null;
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        blob = await gamePakService.exportGamePakToBlob(cartId);
+        if (!blob) {
+          throw new Error('No game pak to export');
+        }
+      } else {
+        // Server mode: use API
+        const response = await fetch(`/api/cartridges/${cartId}/game-pak/export`);
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Export failed');
+        }
+        blob = await response.blob();
       }
-      const blob = await response.blob();
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -1545,6 +2006,16 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
     if (!confirm('Delete local game pak? This cannot be undone.')) return;
     try {
       setError(null);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        await gamePakService.deleteLocalGamePak(cartId);
+        await fetchInfo();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/cartridges/${cartId}/game-pak`, { method: 'DELETE' });
       if (!response.ok) {
         const data = await response.json();
@@ -1562,6 +2033,33 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
     setError(null);
 
     try {
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        if (!browserSDCard) {
+          throw new Error('SD card not connected');
+        }
+
+        if (choice === 'use-local') {
+          const result = await gamePakService.uploadGamePakToSD(browserSDCard, cartId, gameName || 'Unknown');
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to sync to SD card');
+          }
+        } else {
+          const result = await gamePakService.downloadGamePakFromSD(browserSDCard, cartId);
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to sync from SD card');
+          }
+        }
+
+        setConflictState('resolved');
+        await fetchInfo();
+        return;
+      }
+
+      // Server mode: use API
       if (choice === 'use-local') {
         // Upload local to SD
         const response = await fetch(`/api/cartridges/${cartId}/game-pak/upload`, {
@@ -1600,6 +2098,23 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
     try {
       setCreatingBackup(true);
       setError(null);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        await gamePakService.createBackup(
+          cartId,
+          newBackupName || undefined,
+          newBackupDescription || undefined
+        );
+        setNewBackupName('');
+        setNewBackupDescription('');
+        setShowBackupForm(false);
+        await fetchBackups();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/cartridges/${cartId}/game-pak/backups`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1627,6 +2142,23 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
   const handleUpdateBackup = async (backupId: string) => {
     try {
       setError(null);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        const success = await gamePakService.updateBackup(backupId, {
+          name: editBackupName,
+          description: editBackupDescription,
+        });
+        if (!success) {
+          throw new Error('Failed to update backup');
+        }
+        setEditingBackupId(null);
+        await fetchBackups();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/cartridges/${cartId}/game-pak/backups/${backupId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -1650,6 +2182,19 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
     if (!confirm(`Delete backup "${backupName}"? This cannot be undone.`)) return;
     try {
       setError(null);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        const success = await gamePakService.deleteBackup(backupId);
+        if (!success) {
+          throw new Error('Failed to delete backup');
+        }
+        await fetchBackups();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/cartridges/${cartId}/game-pak/backups/${backupId}`, {
         method: 'DELETE',
       });
@@ -1672,6 +2217,23 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
 
     try {
       setError(null);
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        await gamePakService.restoreBackup(
+          backupId,
+          syncToSD ? browserSDCard || undefined : undefined,
+          gameName
+        );
+
+        await fetchInfo();
+        return;
+      }
+
+      // Server mode: use API
       const response = await fetch(`/api/cartridges/${cartId}/game-pak/backups/${backupId}/restore`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1693,12 +2255,26 @@ export function GamePakTab({ cartId, sdCardPath, gameName }: GamePakTabProps) {
 
   const handleExportBackup = async (backupId: string, backupName: string) => {
     try {
-      const response = await fetch(`/api/cartridges/${cartId}/game-pak/backups/${backupId}`);
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Export failed');
+      let blob: Blob | null = null;
+
+      // Static mode: use browser services
+      if (isStaticMode && servicesContext) {
+        const { gamePak: gamePakService } = servicesContext.services;
+        const data = await gamePakService.getBackupData(backupId);
+        if (!data) {
+          throw new Error('Backup not found');
+        }
+        blob = new Blob([data], { type: 'application/octet-stream' });
+      } else {
+        // Server mode: use API
+        const response = await fetch(`/api/cartridges/${cartId}/game-pak/backups/${backupId}`);
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Export failed');
+        }
+        blob = await response.blob();
       }
-      const blob = await response.blob();
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
