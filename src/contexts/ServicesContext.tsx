@@ -53,7 +53,8 @@ export interface ServicesContextType {
 // Context
 // =============================================================================
 
-const ServicesContext = createContext<ServicesContextType | null>(null);
+// Export the context so components can use useContext directly if needed
+export const ServicesContext = createContext<ServicesContextType | null>(null);
 
 /**
  * Hook to access services context

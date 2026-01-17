@@ -10,8 +10,51 @@
   gap: 0.75rem;
 }
 
+.sd-card-status--clickable {
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  margin: -0.5rem -0.75rem;
+}
+
+.sd-card-status--clickable:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sd-card-status--clickable:focus {
+  outline: 2px solid #00FA04;
+  outline-offset: 2px;
+}
+
+.sd-card-status--clickable:active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
 .sd-card-label {
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.sd-card-disconnect-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1;
+  border-radius: 2px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.sd-card-disconnect-btn:hover {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.sd-card-disconnect-btn:focus {
+  outline: 1px solid #ef4444;
+  outline-offset: 1px;
 }
