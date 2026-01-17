@@ -166,6 +166,17 @@ export function LabelSyncModal({ isOpen, onClose, onSyncComplete }: LabelSyncMod
       };
 
       try {
+        // Progress callback for real-time updates
+        const handleProgress = (progress: { bytesWritten: number; totalBytes: number; percentage: number }) => {
+          setProgress({
+            percentage: progress.percentage,
+            bytesWritten: formatSize(progress.bytesWritten),
+            totalBytes: formatSize(progress.totalBytes),
+            speed: '',
+            eta: '',
+          });
+        };
+
         if (direction === 'upload') {
           // Upload local labels.db to SD card
           const localData = await labelsDb.exportLabelsDb();
@@ -173,28 +184,17 @@ export function LabelSyncModal({ isOpen, onClose, onSyncComplete }: LabelSyncMod
             throw new Error('No local labels.db to upload');
           }
 
-          const totalBytes = localData.byteLength;
-          let bytesWritten = 0;
-
-          // Simulate progress (File System Access API doesn't provide write progress)
+          // Initial progress
           setProgress({
-            percentage: 10,
+            percentage: 0,
             bytesWritten: '0 B',
-            totalBytes: formatSize(totalBytes),
+            totalBytes: formatSize(localData.byteLength),
             speed: '',
             eta: '',
           });
 
-          await sdCardService.writeLabelsDbToSD(browserSDCard, localData);
-          bytesWritten = totalBytes;
-
-          setProgress({
-            percentage: 100,
-            bytesWritten: formatSize(bytesWritten),
-            totalBytes: formatSize(totalBytes),
-            speed: '',
-            eta: '',
-          });
+          // Write with progress tracking
+          await sdCardService.writeLabelsDbToSD(browserSDCard, localData, handleProgress);
 
           const localStatus = await labelsDb.getLabelsDbStatus();
           setSyncResult({ entryCount: localStatus?.entryCount || 0, direction });
@@ -205,18 +205,29 @@ export function LabelSyncModal({ isOpen, onClose, onSyncComplete }: LabelSyncMod
             throw new Error('No labels.db found on SD card');
           }
 
+          // Initial progress
           setProgress({
-            percentage: 10,
+            percentage: 0,
             bytesWritten: '0 B',
             totalBytes: formatSize(sdInfo.size || 0),
             speed: '',
             eta: '',
           });
 
-          const sdData = await sdCardService.readLabelsDbFromSD(browserSDCard);
+          // Read with progress tracking
+          const sdData = await sdCardService.readLabelsDbFromSD(browserSDCard, handleProgress);
           if (!sdData) {
             throw new Error('Failed to read labels.db from SD card');
           }
+
+          // Show importing phase
+          setProgress({
+            percentage: 95,
+            bytesWritten: formatSize(sdData.byteLength),
+            totalBytes: formatSize(sdData.byteLength),
+            speed: '',
+            eta: '',
+          });
 
           await labelsDb.importLabelsDbFromBuffer(sdData);
 

@@ -253,16 +253,60 @@ export async function getLabelsDbInfo(sdCard: BrowserSDCard): Promise<{
 }
 
 /**
- * Read labels.db from SD card
+ * Read labels.db from SD card with optional progress callback
  */
-export async function readLabelsDbFromSD(sdCard: BrowserSDCard): Promise<ArrayBuffer | null> {
+export async function readLabelsDbFromSD(
+  sdCard: BrowserSDCard,
+  onProgress?: ProgressCallback
+): Promise<ArrayBuffer | null> {
   const fileHandle = await getFile(sdCard.handle, getLabelsDbPath());
   if (!fileHandle) {
     return null;
   }
 
   const file = await fileHandle.getFile();
-  return file.arrayBuffer();
+  const totalBytes = file.size;
+
+  // If no progress callback, just read the whole file
+  if (!onProgress) {
+    return file.arrayBuffer();
+  }
+
+  // Read with progress using stream API
+  const reader = file.stream().getReader();
+  const chunks: Uint8Array[] = [];
+  let bytesRead = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      chunks.push(value);
+      bytesRead += value.byteLength;
+
+      onProgress({
+        bytesWritten: bytesRead,
+        totalBytes,
+        percentage: Math.round((bytesRead / totalBytes) * 100),
+      });
+    }
+
+    // Combine all chunks into a single ArrayBuffer
+    const result = new Uint8Array(bytesRead);
+    let offset = 0;
+    for (const chunk of chunks) {
+      result.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+
+    return result.buffer;
+  } finally {
+    reader.releaseLock();
+  }
 }
 
 /**

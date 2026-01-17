@@ -9,6 +9,8 @@ interface CartridgeCardProps {
   selectionMode: boolean;
   isSelected: boolean;
   imageCacheBuster?: number;
+  imageUrl?: string; // Optional override for static mode
+  isStaticMode?: boolean; // Whether we're in browser-only mode
   onClick: () => void;
 }
 
@@ -20,11 +22,26 @@ export function CartridgeCard({
   selectionMode,
   isSelected,
   imageCacheBuster,
+  imageUrl: imageUrlProp,
+  isStaticMode: isStaticModeProp,
   onClick,
 }: CartridgeCardProps) {
-  const imageUrl = hasLabel
-    ? `/api/labels/${cartId}${imageCacheBuster ? `?v=${imageCacheBuster}` : ''}`
-    : '/cart-placeholder.png';
+  // Determine the image URL to use
+  // In static mode: use provided URL or placeholder (never API)
+  // In server mode: use API URL
+  let imageUrl: string;
+  if (isStaticModeProp) {
+    // Static mode: use blob URL if provided, otherwise placeholder
+    imageUrl = imageUrlProp || '/cart-placeholder.png';
+  } else if (imageUrlProp) {
+    // Server mode with override
+    imageUrl = imageUrlProp;
+  } else {
+    // Server mode: use API URL
+    imageUrl = hasLabel
+      ? `/api/labels/${cartId}${imageCacheBuster ? `?v=${imageCacheBuster}` : ''}`
+      : '/cart-placeholder.png';
+  }
 
   return (
     <div

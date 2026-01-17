@@ -102,6 +102,9 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
   // Unowned cartridges indicator
   const [unownedOnSDCount, setUnownedOnSDCount] = useState(0);
 
+  // Static mode: blob URLs for label images
+  const [labelImageUrls, setLabelImageUrls] = useState<Map<string, string>>(new Map());
+
   const pageSize = 48;
   const hasActiveFilters = regionFilter || languageFilter || videoModeFilter || searchQuery || ownedFilter;
   const hasClearableFilters = regionFilter || languageFilter || videoModeFilter || searchQuery;
@@ -399,6 +402,66 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
     });
   }, [entries]);
 
+  // Static mode: load blob URLs for label images
+  useEffect(() => {
+    if (!isStaticMode || !servicesContext) return;
+    if (entries.length === 0) {
+      setLabelImageUrls(new Map());
+      return;
+    }
+
+    const { labelsDb } = servicesContext.services;
+    let cancelled = false;
+
+    // Load blob URLs for all entries with labels
+    async function loadImageUrls() {
+      const newUrls = new Map<string, string>();
+
+      // Load in parallel for better performance
+      const promises = entries
+        .filter(entry => entry.index >= 0) // Only entries with labels
+        .map(async (entry) => {
+          try {
+            const url = await labelsDb.getLabelsDbImageUrl(entry.cartId);
+            if (url && !cancelled) {
+              newUrls.set(entry.cartId, url);
+            }
+          } catch {
+            // Ignore errors for individual images
+          }
+        });
+
+      await Promise.all(promises);
+
+      if (!cancelled) {
+        // Revoke old blob URLs to prevent memory leaks
+        labelImageUrls.forEach((url) => {
+          if (url.startsWith('blob:')) {
+            URL.revokeObjectURL(url);
+          }
+        });
+        setLabelImageUrls(newUrls);
+      }
+    }
+
+    loadImageUrls();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [entries, servicesContext, imageCacheBuster]);
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      labelImageUrls.forEach((url) => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, []);
+
   // Debounced refetch when filters or search change (but not on mount)
   const initialFetchDoneRef = useRef(false);
   useEffect(() => {
@@ -687,6 +750,8 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
                     selectionMode={selectionMode}
                     isSelected={selectedCartIds.has(entry.cartId)}
                     imageCacheBuster={imageCacheBuster}
+                    imageUrl={isStaticMode ? labelImageUrls.get(entry.cartId) : undefined}
+                    isStaticMode={isStaticMode}
                     onClick={() => {
                       if (selectionMode) {
                         const newSelection = new Set(selectedCartIds);
