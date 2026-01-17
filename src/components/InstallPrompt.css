@@ -1,0 +1,138 @@
+.install-prompt {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 1rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+.install-prompt--top {
+  top: 0;
+}
+
+.install-prompt--bottom {
+  bottom: 0;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.install-prompt__content {
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--bg-secondary, #1a1a1a);
+  border: 1px solid var(--border-color, #333);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.install-prompt__icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.install-prompt__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.install-prompt__title {
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  margin: 0 0 0.25rem;
+  font-size: 0.9375rem;
+}
+
+.install-prompt__subtitle {
+  color: var(--text-secondary, #a0a0a0);
+  font-size: 0.8125rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.install-prompt__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.install-prompt__btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+
+.install-prompt__btn--primary {
+  background: var(--color-primary, #3b82f6);
+  color: white;
+}
+
+.install-prompt__btn--primary:hover {
+  background: var(--color-primary-hover, #2563eb);
+}
+
+.install-prompt__btn--secondary {
+  background: transparent;
+  color: var(--text-secondary, #a0a0a0);
+}
+
+.install-prompt__btn--secondary:hover {
+  color: var(--text-primary, #fff);
+}
+
+.install-prompt__close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-tertiary, #666);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.install-prompt__close:hover {
+  opacity: 1;
+}
+
+/* Mobile adjustments */
+@media (max-width: 500px) {
+  .install-prompt__content {
+    flex-wrap: wrap;
+  }
+
+  .install-prompt__text {
+    flex-basis: calc(100% - 3.5rem);
+  }
+
+  .install-prompt__actions {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .install-prompt__btn {
+    flex: 1;
+  }
+}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="64" fill="#1a1a1a"/>
+  <g fill="#3b82f6">
+    <!-- N64 cartridge shape -->
+    <rect x="96" y="144" width="320" height="280" rx="16" fill="#2a2a2a"/>
+    <rect x="112" y="160" width="288" height="208" rx="8" fill="#333"/>
+
+    <!-- "A3D" text -->
+    <text x="256" y="290" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#3b82f6" text-anchor="middle">A3D</text>
+
+    <!-- Bottom label area -->
+    <rect x="144" y="380" width="224" height="32" rx="4" fill="#3b82f6"/>
+  </g>
+</svg>

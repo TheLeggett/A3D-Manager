@@ -10,10 +10,13 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:client": "vite",
     "dev:server": "tsx watch server/index.ts",
+    "dev:static": "VITE_MODE=static vite",
     "build": "tsc -b && vite build",
+    "build:static": "tsc -b && VITE_MODE=static vite build",
     "start": "NODE_ENV=production node --import tsx server/index.ts",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:static": "VITE_MODE=static vite preview"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
@@ -22,12 +25,17 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "fast-xml-parser": "^5.3.3",
+    "idb": "^8.0.3",
+    "jszip": "^3.10.1",
     "multer": "^1.4.5-lts.1",
+    "pica": "^9.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.11.0",
     "sharp": "^0.33.5",
-    "tsx": "^4.19.4"
+    "tsx": "^4.19.4",
+    "vite-plugin-pwa": "^1.2.0",
+    "workbox-window": "^7.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -37,6 +45,7 @@
     "@types/express": "^5.0.2",
     "@types/multer": "^1.4.12",
     "@types/node": "^24.10.1",
+    "@types/pica": "^9.0.5",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",

@@ -6,9 +6,15 @@ import { HelpPage } from './components/HelpPage';
 import { SettingsPage } from './components/SettingsPage';
 import { ComponentTestPage } from './components/ComponentTestPage';
 import { LabelSyncProvider } from './components/LabelSyncIndicator';
+import { ServicesProvider } from './contexts/ServicesContext';
+import { BrowserCompatibilityScreen, useCompatibilityCheck } from './components/BrowserCompatibilityScreen';
+import { InstallPrompt } from './components/InstallPrompt';
 import type { SDCard } from './types';
 import type { CartridgeSettings } from './lib/defaultSettings';
 import './App.css';
+
+// Detect if we're running in static mode (no server)
+const isStaticMode = import.meta.env.VITE_MODE === 'static' || !import.meta.env.DEV;
 
 // Image Cache Context for global cache invalidation
 interface ImageCacheContextType {
@@ -76,6 +82,12 @@ function SDCardProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
 
   const detectSDCards = useCallback(async (isPolling = false) => {
+    // In static mode, SD card selection is handled by ServicesContext
+    // This provider is kept for backward compatibility with server mode
+    if (isStaticMode) {
+      return;
+    }
+
     try {
       // Only show loading indicator for manual refreshes, not polling
       if (!isPolling) {
@@ -119,13 +131,19 @@ function SDCardProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Initial detection
+  // Initial detection (only in server mode)
   useEffect(() => {
-    detectSDCards();
+    if (!isStaticMode) {
+      detectSDCards();
+    }
   }, [detectSDCards]);
 
-  // Poll for SD card changes every 5 seconds
+  // Poll for SD card changes every 5 seconds (only in server mode)
   useEffect(() => {
+    if (isStaticMode) {
+      return;
+    }
+
     const pollInterval = setInterval(() => {
       detectSDCards(true); // Pass true to indicate this is a polling call
     }, 5000);
@@ -187,6 +205,13 @@ function SettingsClipboardProvider({ children }: { children: React.ReactNode }) 
 }
 
 function AppContent() {
+  const { showScreen: showCompatibilityScreen, dismissScreen } = useCompatibilityCheck();
+
+  // Show compatibility screen if needed (only in static mode)
+  if (isStaticMode && showCompatibilityScreen) {
+    return <BrowserCompatibilityScreen allowContinue onContinue={dismissScreen} />;
+  }
+
   return (
     <div className="app">
       <Navbar />
@@ -200,24 +225,41 @@ function AppContent() {
           <Route path="/component-test" element={<ComponentTestPage />} />
         </Routes>
       </main>
+      {/* PWA Install Prompt */}
+      {isStaticMode && <InstallPrompt />}
     </div>
+  );
+}
+
+function AppWithProviders() {
+  return (
+    <ImageCacheProvider>
+      <SDCardProvider>
+        <SettingsClipboardProvider>
+          <LabelSyncProvider>
+            <AppContent />
+          </LabelSyncProvider>
+        </SettingsClipboardProvider>
+      </SDCardProvider>
+    </ImageCacheProvider>
   );
 }
 
 function App() {
   return (
     <BrowserRouter>
-      <ImageCacheProvider>
-        <SDCardProvider>
-          <SettingsClipboardProvider>
-            <LabelSyncProvider>
-              <AppContent />
-            </LabelSyncProvider>
-          </SettingsClipboardProvider>
-        </SDCardProvider>
-      </ImageCacheProvider>
+      {isStaticMode ? (
+        <ServicesProvider>
+          <AppWithProviders />
+        </ServicesProvider>
+      ) : (
+        <AppWithProviders />
+      )}
     </BrowserRouter>
   );
 }
 
 export default App;
+
+// Export the static mode flag for use in other components
+export { isStaticMode };

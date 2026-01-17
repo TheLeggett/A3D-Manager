@@ -1,0 +1,57 @@
+{
+  "name": "A3D Manager",
+  "short_name": "A3D Manager",
+  "description": "Manage your Analogue 3D cartridge labels, settings, and saves",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#3b82f6",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["utilities", "games"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Browse Cartridges",
+      "short_name": "Cartridges",
+      "description": "Browse your cartridge collection",
+      "url": "/cartridges",
+      "icons": []
+    },
+    {
+      "name": "Settings",
+      "short_name": "Settings",
+      "description": "App settings and data management",
+      "url": "/settings",
+      "icons": []
+    }
+  ],
+  "prefer_related_applications": false
+}
