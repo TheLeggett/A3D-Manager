@@ -10,167 +10,124 @@
 }
 
 .compatibility-content {
-  max-width: 500px;
+  max-width: 480px;
   width: 100%;
   text-align: center;
 }
 
 .compatibility-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  color: #ef4444;
+  margin-bottom: 1.5rem;
+}
+
+.compatibility-icon svg {
+  width: 64px;
+  height: 64px;
 }
 
 .compatibility-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 2rem;
+  font-weight: 700;
   color: var(--text-primary, #fff);
   margin: 0 0 1rem;
 }
 
 .compatibility-message {
   color: var(--text-secondary, #a0a0a0);
-  line-height: 1.6;
+  line-height: 1.7;
   margin-bottom: 2rem;
+  font-size: 1rem;
+}
+
+.compatibility-message strong {
+  color: var(--text-primary, #fff);
 }
 
 .compatibility-details {
   background: var(--bg-secondary, #1a1a1a);
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   margin-bottom: 2rem;
-  text-align: left;
 }
 
-.compatibility-details h2 {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-secondary, #a0a0a0);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 0.75rem;
-}
-
-.browser-info {
+.detected-browser {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
 }
 
-.browser-name {
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: var(--text-primary, #fff);
-}
-
-.browser-version {
+.detected-label {
   color: var(--text-tertiary, #666);
   font-size: 0.875rem;
 }
 
-.missing-features h3 {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-warning, #f59e0b);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 1rem 0 0.5rem;
+.detected-name {
+  color: var(--text-primary, #fff);
+  font-weight: 500;
 }
 
-.missing-features ul {
-  margin: 0;
-  padding-left: 1.25rem;
-}
-
-.missing-features li {
-  color: var(--text-secondary, #a0a0a0);
-  font-size: 0.875rem;
-  margin-bottom: 0.25rem;
-}
-
-.recommended-browsers {
+.chrome-download {
   margin-bottom: 2rem;
 }
 
-.recommended-browsers h2 {
-  font-size: 1rem;
+.chrome-download h2 {
+  font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-primary, #fff);
   margin: 0 0 0.5rem;
 }
 
-.recommended-subtitle {
+.chrome-download p {
   color: var(--text-secondary, #a0a0a0);
   font-size: 0.875rem;
   margin-bottom: 1rem;
 }
 
-.browser-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.browser-link {
-  display: flex;
+.chrome-download-btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  background: var(--bg-secondary, #1a1a1a);
-  padding: 0.875rem 1rem;
-  border-radius: 8px;
-  color: var(--text-primary, #fff);
-  text-decoration: none;
-  transition: background-color 0.15s;
-}
-
-.browser-link:hover {
-  background: var(--bg-tertiary, #252525);
-}
-
-.browser-link-name {
-  font-weight: 500;
-}
-
-.browser-link-arrow {
-  color: var(--text-tertiary, #666);
-}
-
-.compatibility-actions {
-  display: flex;
-  flex-direction: column;
   gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.compatibility-actions .btn {
-  padding: 0.875rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  transition: all 0.15s;
-}
-
-.compatibility-actions .btn-primary {
-  background: var(--color-primary, #3b82f6);
+  background: #4285f4;
   color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.15s, transform 0.15s;
 }
 
-.compatibility-actions .btn-primary:hover {
-  background: var(--color-primary-hover, #2563eb);
+.chrome-download-btn:hover {
+  background: #3367d6;
+  transform: translateY(-1px);
 }
 
-.compatibility-actions .btn-secondary {
+.chrome-download-btn:active {
+  transform: translateY(0);
+}
+
+.chrome-download-btn svg {
+  flex-shrink: 0;
+}
+
+.compatibility-why {
   background: var(--bg-secondary, #1a1a1a);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+}
+
+.compatibility-why h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
   color: var(--text-secondary, #a0a0a0);
+  margin: 0 0 0.5rem;
 }
 
-.compatibility-actions .btn-secondary:hover {
-  background: var(--bg-tertiary, #252525);
-}
-
-.compatibility-note {
-  font-size: 0.8125rem;
+.compatibility-why p {
   color: var(--text-tertiary, #666);
-  font-style: italic;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  margin: 0;
 }

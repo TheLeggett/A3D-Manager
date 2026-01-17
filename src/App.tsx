@@ -205,11 +205,11 @@ function SettingsClipboardProvider({ children }: { children: React.ReactNode }) 
 }
 
 function AppContent() {
-  const { showScreen: showCompatibilityScreen, dismissScreen } = useCompatibilityCheck();
+  const { showScreen: showCompatibilityScreen } = useCompatibilityCheck();
 
-  // Show compatibility screen if needed (only in static mode)
+  // Block non-Chrome users completely (only in static mode)
   if (isStaticMode && showCompatibilityScreen) {
-    return <BrowserCompatibilityScreen allowContinue onContinue={dismissScreen} />;
+    return <BrowserCompatibilityScreen />;
   }
 
   return (
