@@ -1,0 +1,503 @@
+/**
+ * SD Card Onboarding Styles
+ * Modal overlay with immersive split-screen design
+ */
+
+/* Overlay backdrop */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  padding: 5vh 5vw;
+  animation: overlayFadeIn 0.4s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal container */
+.onboarding-modal {
+  width: 90vw;
+  height: 90vh;
+  max-width: 1300px;
+  max-height: 800px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  animation: modalFadeIn 0.4s ease-out both;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Split layout container */
+.onboarding-split {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+/* Image side - takes up most of the screen */
+.onboarding-image-side {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding-left: 2rem;
+}
+
+.onboarding-image-side::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, transparent 50%, var(--color-bg) 100%);
+  pointer-events: none;
+}
+
+/* Wrapper to position LED relative to the image */
+.onboarding-image-wrapper {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.onboarding-image {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+
+/* Ken Burns style fade-in for images */
+.onboarding-image-side .onboarding-image,
+.onboarding-image-wrapper .onboarding-image {
+  animation: kenBurnsFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes kenBurnsFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Cover variant - image fills from top, crops bottom */
+.onboarding-image-side--cover {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.onboarding-image-side--cover .onboarding-image {
+  width: 95%;
+  height: 85%;
+  object-fit: cover;
+  object-position: left top;
+}
+
+/* Stronger fade for cover variant */
+.onboarding-image-side--cover::after {
+  background: linear-gradient(to right, transparent 50%, var(--color-bg) 95%);
+}
+
+/* LED indicator - positioned as percentage of the image */
+.led-indicator {
+  position: absolute;
+  /* Oval LED indicator center on the Analogue 3D console */
+  top: 53%;
+  left: 49.8%;
+  transform: translateX(-50%);
+  width: 31px;
+  height: 13px;
+  z-index: 2;
+}
+
+.led-dot {
+  width: 100%;
+  height: 100%;
+  background: #00e248;
+  border-radius: 100px;
+  animation: ledPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes ledPulse {
+  0%, 100% {
+    opacity: 0.6;
+    box-shadow: 0 0 8px 4px rgba(0, 255, 30, 0.4);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 24px 12px rgba(1, 255, 30, 0.7);
+  }
+}
+
+/* Content side */
+.onboarding-content-side {
+  position: relative;
+  width: 520px;
+  min-width: 460px;
+  margin-left: -120px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem;
+  z-index: 1;
+}
+
+/* Step indicator */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border);
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.step-dot.active {
+  background: var(--color-accent);
+  transform: scale(1.25);
+}
+
+.step-dot.completed {
+  background: var(--color-text-muted);
+}
+
+/* Typography */
+.onboarding-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.75rem;
+  line-height: 1.2;
+}
+
+.onboarding-subtitle {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  margin: 0 0 2rem;
+  line-height: 1.6;
+}
+
+/* Welcome screen animations */
+.welcome-animate {
+  opacity: 0;
+  transform: translateY(36px);
+  animation: welcomeFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.welcome-animate-1 {
+  animation-delay: 0.3s;
+}
+
+.welcome-animate-2 {
+  animation-delay: 0.5s;
+}
+
+.welcome-animate-3 {
+  animation-delay: 0.7s;
+}
+
+@keyframes welcomeFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Welcome screen specific styles */
+.welcome-tagline {
+  color: var(--color-text-muted);
+  font-size: 1.0625rem;
+  margin: 0 0 2rem;
+  line-height: 1.5;
+}
+
+.welcome-footer {
+  margin-top: 1.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-subtle);
+  line-height: 1.6;
+  text-align: center;
+}
+
+.welcome-footer a {
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.welcome-footer a:hover {
+  color: var(--color-accent);
+}
+
+/* Welcome features list (inside setup-instructions) */
+.setup-instructions ul.welcome-features {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.setup-instructions ul.welcome-features li {
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.setup-instructions ul.welcome-features li strong {
+  color: var(--color-accent);
+}
+
+.setup-instructions ul.welcome-features li:last-child {
+  margin-bottom: 0;
+}
+
+/* Instructions */
+.setup-instructions {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.setup-instructions h3 {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 1rem;
+}
+
+.setup-instructions ol {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.setup-instructions li {
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.setup-instructions li:last-child {
+  margin-bottom: 0;
+}
+
+.setup-instructions li strong {
+  color: var(--color-accent);
+}
+
+/* Buttons */
+.onboarding-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.onboarding-link {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  padding: 0.5rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+
+.onboarding-link:hover {
+  color: var(--color-text);
+}
+
+/* Error state */
+.onboarding-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.onboarding-error-text {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* ============================================================================
+   Centered layouts (choose method, sd-reader)
+   ============================================================================ */
+
+.onboarding-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+}
+
+.onboarding-centered-content {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Connection method cards */
+.connection-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.connection-card {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s, transform 0.15s;
+}
+
+.connection-card:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+}
+
+.connection-card:active {
+  transform: scale(0.98);
+}
+
+.connection-card-icon {
+  color: var(--color-text-muted);
+  margin-bottom: 1rem;
+}
+
+.connection-card-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.connection-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.25rem;
+}
+
+.connection-card-desc {
+  font-size: 0.8125rem;
+  color: var(--color-text-subtle);
+  margin: 0;
+}
+
+/* SD Reader icon */
+.onboarding-icon {
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.onboarding-icon svg {
+  width: 64px;
+  height: 64px;
+}
+
+/* ============================================================================
+   Mobile responsive
+   ============================================================================ */
+
+@media (max-width: 900px) {
+  .onboarding-overlay {
+    padding: 2vh 2vw;
+  }
+
+  .onboarding-modal {
+    width: 96vw;
+    height: 96vh;
+    border-radius: var(--radius-lg);
+  }
+
+  .onboarding-split {
+    flex-direction: column;
+  }
+
+  .onboarding-image-side {
+    flex: none;
+    height: 35vh;
+    min-height: 180px;
+  }
+
+  .onboarding-image-side::after {
+    background: linear-gradient(to bottom, transparent 50%, var(--color-bg) 100%);
+  }
+
+  .onboarding-content-side {
+    width: 100%;
+    min-width: 0;
+    padding: 1.5rem;
+    flex: 1;
+    justify-content: flex-start;
+    overflow-y: auto;
+  }
+
+  .onboarding-title {
+    font-size: 1.5rem;
+  }
+
+  .connection-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .onboarding-content-side {
+    padding: 1rem;
+  }
+
+  .setup-instructions {
+    padding: 1rem;
+  }
+
+  .setup-instructions li {
+    font-size: 0.875rem;
+  }
+
+  .onboarding-centered {
+    padding: 1rem;
+  }
+}

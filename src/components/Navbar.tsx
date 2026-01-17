@@ -7,7 +7,9 @@ export function Navbar() {
 
   return (
     <header className="app-header">
-      <h1><strong>A3D</strong> Manager</h1>
+      <Link to="/cartridges" className="app-title-link">
+        <h1><strong>A3D</strong> Manager</h1>
+      </Link>
       <nav className="app-nav">
         <Link
           to="/cartridges"

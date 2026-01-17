@@ -8,6 +8,7 @@ import { ComponentTestPage } from './components/ComponentTestPage';
 import { LabelSyncProvider } from './components/LabelSyncIndicator';
 import { ServicesProvider, ServicesContext } from './contexts/ServicesContext';
 import { BrowserCompatibilityScreen, useCompatibilityCheck } from './components/BrowserCompatibilityScreen';
+import { SDCardOnboarding } from './components/SDCardOnboarding';
 import { InstallPrompt } from './components/InstallPrompt';
 import type { SDCard } from './types';
 import type { CartridgeSettings } from './lib/defaultSettings';
@@ -235,11 +236,15 @@ function SettingsClipboardProvider({ children }: { children: React.ReactNode }) 
 
 function AppContent() {
   const { showScreen: showCompatibilityScreen } = useCompatibilityCheck();
+  const servicesContext = useContext(ServicesContext);
 
   // Block non-Chrome users completely (only in static mode)
   if (isStaticMode && showCompatibilityScreen) {
     return <BrowserCompatibilityScreen />;
   }
+
+  // Show onboarding modal whenever SD card is not connected (in static mode)
+  const showOnboarding = isStaticMode && !servicesContext?.isSDCardConnected;
 
   return (
     <div className="app">
@@ -256,6 +261,8 @@ function AppContent() {
       </main>
       {/* PWA Install Prompt */}
       {isStaticMode && <InstallPrompt />}
+      {/* SD Card Onboarding Modal */}
+      {showOnboarding && <SDCardOnboarding />}
     </div>
   );
 }
