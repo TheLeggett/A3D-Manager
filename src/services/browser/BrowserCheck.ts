@@ -189,7 +189,16 @@ export function hasFileSystemAccessAPI(): boolean {
     // First check: must be in a secure context
     // File System Access API is only available in secure contexts
     if (!isSecureContext()) {
+      console.log('[BrowserCheck] Not in secure context');
       return false;
+    }
+
+    // For Chromium-based browsers in a secure context, the API should be available
+    // Trust the browser detection over feature detection since some privacy features
+    // can affect how 'in' operator works
+    if (isChromiumBased()) {
+      console.log('[BrowserCheck] Chromium detected in secure context, assuming File System Access API is available');
+      return true;
     }
 
     // Primary check: showDirectoryPicker on window
@@ -198,21 +207,20 @@ export function hasFileSystemAccessAPI(): boolean {
     }
 
     // Secondary check: Check if the function exists on the window object
-    // Some browsers/environments may not report it via 'in' operator
     // @ts-expect-error - showDirectoryPicker may not be in Window type in all TS versions
     if (typeof window.showDirectoryPicker === 'function') {
       return true;
     }
 
     // Tertiary check: Check for FileSystemDirectoryHandle
-    // If this exists, the API is likely supported
     if ('FileSystemDirectoryHandle' in window) {
       return true;
     }
 
+    console.log('[BrowserCheck] File System Access API not detected');
     return false;
-  } catch {
-    // If any check throws, assume not supported
+  } catch (err) {
+    console.error('[BrowserCheck] Error checking File System Access API:', err);
     return false;
   }
 }

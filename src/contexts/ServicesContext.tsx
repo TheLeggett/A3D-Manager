@@ -146,23 +146,37 @@ export function ServicesProvider({ children }: ServicesProviderProps) {
 
   // Select SD card via directory picker
   const selectSDCard = useCallback(async (): Promise<BrowserSDCard | null> => {
-    if (!compatibility.browser.hasFileSystemAccess) {
-      throw new Error('File System Access API is not supported');
-    }
+    // Try to use the API directly - the browser will throw if it's not available
+    // This is more reliable than feature detection which can be affected by privacy settings
+    try {
+      const selected = await sdCardService.selectSDCardDirectory();
 
-    const selected = await sdCardService.selectSDCardDirectory();
+      if (selected) {
+        sdCardService.setLastSelectedHandle(selected.handle);
+        setSDCard(selected);
 
-    if (selected) {
-      sdCardService.setLastSelectedHandle(selected.handle);
-      setSDCard(selected);
-
-      if (!selected.isValid) {
-        console.warn('Selected directory is not a valid Analogue 3D SD card');
+        if (!selected.isValid) {
+          console.warn('Selected directory is not a valid Analogue 3D SD card');
+        }
       }
-    }
 
-    return selected;
-  }, [compatibility.browser.hasFileSystemAccess]);
+      return selected;
+    } catch (err) {
+      // Check if this is a "not supported" error vs user cancellation
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          // User cancelled - just return null
+          return null;
+        }
+        if (err.message.includes('showDirectoryPicker') || err.name === 'TypeError') {
+          throw new Error(
+            'File System Access API is not available. Please use Chrome, Edge, Brave, or Arc browser with HTTPS.'
+          );
+        }
+      }
+      throw err;
+    }
+  }, []);
 
   // Disconnect SD card
   const disconnectSDCard = useCallback(() => {

@@ -29,19 +29,18 @@ export function SDCardSelector() {
   const handleSDCardClick = useCallback(async () => {
     if (!isStaticMode || !servicesContext) return;
 
-    // Check if File System Access API is available
-    if (!servicesContext.isFullySupported) {
-      alert('SD card access requires Chrome, Edge, Brave, or Arc browser with HTTPS.');
-      return;
-    }
-
     setIsSelecting(true);
     try {
+      // Try to select SD card - the API will throw if not supported
       await servicesContext.selectSDCard();
     } catch (err) {
-      // User cancelled the picker or an error occurred
-      if (err instanceof Error && err.name !== 'AbortError') {
-        console.error('Error selecting SD card:', err);
+      if (err instanceof Error) {
+        // Show user-friendly error for API not available
+        if (err.message.includes('File System Access API')) {
+          alert(err.message);
+        } else {
+          console.error('Error selecting SD card:', err);
+        }
       }
     } finally {
       setIsSelecting(false);
