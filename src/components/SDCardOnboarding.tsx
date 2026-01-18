@@ -329,6 +329,7 @@ export function SDCardOnboarding() {
                   <li>Press and hold the <strong>reset button</strong> (button on the right)</li>
                   <li>While holding reset, press and hold the <strong>power switch</strong> on the left</li>
                   <li>Hold both until the <strong>Power LED turns green</strong>, then release</li>
+                  <li>Click <strong>"Select SD Card"</strong> below and choose your Analogue 3D</li>
                 </ol>
               </div>
 
