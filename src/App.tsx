@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { CartridgesPage } from './components/CartridgesPage';
 import { Navbar } from './components/Navbar';
+import { Footer } from './components/Footer';
 import { HelpPage } from './components/HelpPage';
 import { SettingsPage } from './components/SettingsPage';
 import { ComponentTestPage } from './components/ComponentTestPage';
@@ -264,6 +265,7 @@ function AppContent() {
           <Route path="/component-test" element={<ComponentTestPage />} />
         </Routes>
       </main>
+      <Footer />
       {/* PWA Install Prompt */}
       {isStaticMode && <InstallPrompt />}
       {/* Data Safety Modal - shows once per session after SD card connected */}
