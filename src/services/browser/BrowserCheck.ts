@@ -28,6 +28,10 @@ export interface BrowserInfo {
   missingFeatures: string[];
   /** Whether we're in a secure context (HTTPS or localhost) */
   isSecureContext: boolean;
+  /** Mobile OS if on mobile device */
+  mobileOS: 'iOS' | 'Android' | null;
+  /** Whether this is a mobile device */
+  isMobile: boolean;
 }
 
 export type SupportLevel = 'full' | 'partial' | 'unsupported';
@@ -74,50 +78,111 @@ function isBraveBrowserSync(): boolean {
 }
 
 /**
+ * Detect mobile OS from user agent
+ */
+function detectMobileOS(): 'iOS' | 'Android' | null {
+  const ua = navigator.userAgent;
+
+  // iOS detection (iPhone, iPad, iPod)
+  if (/iPad|iPhone|iPod/.test(ua) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+    return 'iOS';
+  }
+
+  // Android detection
+  if (/Android/.test(ua)) {
+    return 'Android';
+  }
+
+  return null;
+}
+
+/**
  * Parse user agent to get browser name and version
  */
-function parseUserAgent(): { name: string; version: string } {
+function parseUserAgent(): { name: string; version: string; mobileOS: 'iOS' | 'Android' | null } {
   const ua = navigator.userAgent;
+  const mobileOS = detectMobileOS();
+
+  // On iOS, all browsers use Safari's WebKit engine
+  // Detect the browser UI being used, but note it's Safari underneath
+  if (mobileOS === 'iOS') {
+    // Check for specific iOS browsers
+    if (ua.includes('CriOS/')) {
+      const match = ua.match(/CriOS\/(\d+[\d.]*)/);
+      return { name: 'Chrome on iOS', version: match?.[1] || 'unknown', mobileOS };
+    }
+    if (ua.includes('FxiOS/')) {
+      const match = ua.match(/FxiOS\/(\d+[\d.]*)/);
+      return { name: 'Firefox on iOS', version: match?.[1] || 'unknown', mobileOS };
+    }
+    if (ua.includes('EdgiOS/')) {
+      const match = ua.match(/EdgiOS\/(\d+[\d.]*)/);
+      return { name: 'Edge on iOS', version: match?.[1] || 'unknown', mobileOS };
+    }
+    // Default to Safari on iOS
+    const match = ua.match(/Version\/(\d+[\d.]*)/);
+    return { name: 'Safari on iOS', version: match?.[1] || 'unknown', mobileOS };
+  }
+
+  // On Android, browsers use their own engines
+  if (mobileOS === 'Android') {
+    if (ua.includes('Chrome/')) {
+      const match = ua.match(/Chrome\/(\d+[\d.]*)/);
+      return { name: 'Chrome on Android', version: match?.[1] || 'unknown', mobileOS };
+    }
+    if (ua.includes('Firefox/')) {
+      const match = ua.match(/Firefox\/(\d+[\d.]*)/);
+      return { name: 'Firefox on Android', version: match?.[1] || 'unknown', mobileOS };
+    }
+    if (ua.includes('Samsung')) {
+      const match = ua.match(/SamsungBrowser\/(\d+[\d.]*)/);
+      return { name: 'Samsung Browser', version: match?.[1] || 'unknown', mobileOS };
+    }
+  }
 
   // Check for Brave first using its API (Brave doesn't identify itself in UA)
   if (isBraveBrowserSync()) {
     const match = ua.match(/Chrome\/(\d+[\d.]*)/);
-    return { name: 'Brave', version: match?.[1] || 'unknown' };
+    return { name: 'Brave', version: match?.[1] || 'unknown', mobileOS };
   }
 
   // Check specific browsers in order of specificity
   if (ua.includes('Arc/')) {
     const match = ua.match(/Arc\/(\d+[\d.]*)/);
-    return { name: 'Arc', version: match?.[1] || 'unknown' };
+    return { name: 'Arc', version: match?.[1] || 'unknown', mobileOS };
   }
 
   if (ua.includes('Edg/')) {
     const match = ua.match(/Edg\/(\d+[\d.]*)/);
-    return { name: 'Edge', version: match?.[1] || 'unknown' };
+    return { name: 'Edge', version: match?.[1] || 'unknown', mobileOS };
   }
 
   if (ua.includes('OPR/') || ua.includes('Opera/')) {
     const match = ua.match(/(?:OPR|Opera)\/(\d+[\d.]*)/);
-    return { name: 'Opera', version: match?.[1] || 'unknown' };
+    return { name: 'Opera', version: match?.[1] || 'unknown', mobileOS };
   }
 
   if (ua.includes('Chrome/')) {
     const match = ua.match(/Chrome\/(\d+[\d.]*)/);
-    return { name: 'Chrome', version: match?.[1] || 'unknown' };
+    return { name: 'Chrome', version: match?.[1] || 'unknown', mobileOS };
   }
 
   if (ua.includes('Safari/') && !ua.includes('Chrome')) {
     const match = ua.match(/Version\/(\d+[\d.]*)/);
-    return { name: 'Safari', version: match?.[1] || 'unknown' };
+    return { name: 'Safari', version: match?.[1] || 'unknown', mobileOS };
   }
 
   if (ua.includes('Firefox/')) {
     const match = ua.match(/Firefox\/(\d+[\d.]*)/);
-    return { name: 'Firefox', version: match?.[1] || 'unknown' };
+    return { name: 'Firefox', version: match?.[1] || 'unknown', mobileOS };
   }
 
-  return { name: 'Unknown', version: 'unknown' };
+  return { name: 'Unknown', version: 'unknown', mobileOS };
 }
+
+// Export for use in other modules
+export { detectMobileOS };
 
 // Export for use in async contexts
 export { isBraveBrowser };
@@ -265,18 +330,23 @@ export function hasServiceWorkerSupport(): boolean {
  * Get complete browser information
  */
 export function getBrowserInfo(): BrowserInfo {
-  const { name, version } = parseUserAgent();
+  const { name, version, mobileOS } = parseUserAgent();
   const isChromium = isChromiumBased();
   const secureContext = isSecureContext();
-  const hasFileSystemAccess = hasFileSystemAccessAPI();
+  const isMobile = mobileOS !== null;
+
+  // File System Access API is NOT supported on mobile (iOS or Android)
+  // Even Chrome on Android doesn't support showDirectoryPicker
+  const hasFileSystemAccess = isMobile ? false : hasFileSystemAccessAPI();
   const hasIndexedDB = hasIndexedDBSupport();
   const hasServiceWorker = hasServiceWorkerSupport();
 
   const missingFeatures: string[] = [];
 
   if (!hasFileSystemAccess) {
-    // Check if the issue is secure context vs browser support
-    if (!secureContext && wouldSupportFileSystemAccessInSecureContext()) {
+    if (isMobile) {
+      missingFeatures.push('File System Access API (not available on mobile devices)');
+    } else if (!secureContext && wouldSupportFileSystemAccessInSecureContext()) {
       missingFeatures.push('File System Access API (requires HTTPS or localhost - please access via secure URL)');
     } else {
       missingFeatures.push('File System Access API (required for SD card access)');
@@ -292,8 +362,8 @@ export function getBrowserInfo(): BrowserInfo {
   }
 
   // Full support requires File System Access and IndexedDB
-  // Service workers are nice to have but not critical
-  const isFullySupported = hasFileSystemAccess && hasIndexedDB;
+  // Mobile devices cannot have full support due to lack of File System Access API
+  const isFullySupported = hasFileSystemAccess && hasIndexedDB && !isMobile;
 
   return {
     name,
@@ -305,6 +375,8 @@ export function getBrowserInfo(): BrowserInfo {
     isFullySupported,
     missingFeatures,
     isSecureContext: secureContext,
+    mobileOS,
+    isMobile,
   };
 }
 
