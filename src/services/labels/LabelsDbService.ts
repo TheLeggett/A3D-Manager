@@ -998,13 +998,21 @@ export async function getLabelsDbPageEnriched(
   const db = parseLabelsDb(data);
   await loadCartMetadata();
 
-  // Build enriched entries
+  // Load user-defined custom cart names
+  const userCarts = await storage.getUserCarts();
+  const userCartMap = new Map<string, string>();
+  for (const uc of userCarts) {
+    userCartMap.set(uc.cartId.toLowerCase(), uc.name);
+  }
+
+  // Build enriched entries (user names take priority over system names)
   let enrichedEntries = db.entries.map((e) => {
     const meta = cartMetadataMap?.get(e.cartIdHex.toLowerCase());
+    const userCustomName = userCartMap.get(e.cartIdHex.toLowerCase());
     return {
       cartId: e.cartIdHex,
       index: e.index,
-      name: meta?.name,
+      name: userCustomName || meta?.name,
       region: meta?.region,
       languages: meta?.languages,
       videoMode: meta?.videoMode,
