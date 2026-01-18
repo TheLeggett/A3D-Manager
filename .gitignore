@@ -39,6 +39,7 @@ notes.md
 
 # For debugging / testing / benchmarking
 labels.db
+/cart-ids
 
 # Test output directories
 tests/*/output/
