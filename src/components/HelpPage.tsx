@@ -122,6 +122,16 @@ export function HelpPage() {
           <h2>Credits &amp; Community Resources</h2>
           <ul className="credits-list">
             <li>
+              <a href="https://github.com/theleggett" target="_blank" rel="noopener noreferrer">
+                David Leggett
+              </a>
+              {' '}@{' '}
+              <a href="https://blackairplane.com" target="_blank" rel="noopener noreferrer">
+                Black Airplane
+              </a>
+              {' '}— Creator
+            </li>
+            <li>
               <a href="https://github.com/retrogamecorps/Analogue-3D-Images" target="_blank" rel="noopener noreferrer">
                 Retro Game Corps
               </a>
@@ -132,6 +142,12 @@ export function HelpPage() {
                 mroach
               </a>
               {' '}— ROM database for cart title lookups
+            </li>
+            <li>
+              <a href="https://www.reddit.com/r/AnalogueInc/" target="_blank" rel="noopener noreferrer">
+                r/AnalogueInc
+              </a>
+              {' '}— Special thanks to the amazing community on r/AnalogueInc
             </li>
           </ul>
         </section>
