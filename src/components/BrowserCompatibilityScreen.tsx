@@ -66,22 +66,14 @@ export function BrowserCompatibilityScreen() {
           </svg>
         </div>
 
-        <h1 className="compatibility-title">
-          {isMobile ? 'Desktop Required' : 'Chrome Required'}
-        </h1>
+        <h1 className="compatibility-title">Chrome Desktop Required</h1>
 
-        {isMobile ? (
-          <p className="compatibility-message">
-            A3D Manager requires a <strong>desktop computer</strong> with <strong>Google Chrome</strong> to
-            access your SD card. The File System Access API needed for SD card access is not available
-            on mobile devices (iOS or Android).
-          </p>
-        ) : (
-          <p className="compatibility-message">
-            A3D Manager requires <strong>Google Chrome</strong> to access your SD card directly from the browser.
-            Unfortunately, other browsers (including Brave, Edge, and Firefox) don't support this feature reliably.
-          </p>
-        )}
+        <p className="compatibility-message">
+          A3D Manager only works on <strong>Google Chrome</strong> on a <strong>desktop computer</strong> (Windows, macOS, or Linux).
+          {isMobile
+            ? " Mobile browsers don't support the features needed to access your SD card."
+            : " Other browsers don't support the File System Access API reliably."}
+        </p>
 
         <div className="compatibility-details">
           <div className="detected-browser">
@@ -90,45 +82,32 @@ export function BrowserCompatibilityScreen() {
           </div>
         </div>
 
-        {isMobile ? (
-          <div className="compatibility-why">
-            <h3>Why desktop only?</h3>
-            <p>
-              A3D Manager uses the File System Access API to read and write directly to your
-              Analogue 3D's SD card. This API is only available on desktop browsers—it's not
-              supported on iOS (any browser) or Android. Please visit this site on a desktop
-              computer with Google Chrome.
-            </p>
+        {!isMobile && (
+          <div className="chrome-download">
+            <h2>Get Google Chrome</h2>
+            <p>Download Chrome for your desktop to use A3D Manager:</p>
+            <a
+              href="https://www.google.com/chrome/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="chrome-download-btn"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+              </svg>
+              Download Chrome
+            </a>
           </div>
-        ) : (
-          <>
-            <div className="chrome-download">
-              <h2>Get Google Chrome</h2>
-              <p>Download Chrome to use A3D Manager:</p>
-              <a
-                href="https://www.google.com/chrome/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="chrome-download-btn"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                </svg>
-                Download Chrome
-              </a>
-            </div>
-
-            <div className="compatibility-why">
-              <h3>Why Chrome only?</h3>
-              <p>
-                A3D Manager uses the File System Access API to read and write directly to your
-                Analogue 3D's SD card. While this API exists in other Chromium browsers,
-                it doesn't work reliably due to privacy restrictions. Chrome provides the
-                most consistent experience.
-              </p>
-            </div>
-          </>
         )}
+
+        <div className="compatibility-why">
+          <h3>Why Chrome Desktop only?</h3>
+          <p>
+            A3D Manager uses the File System Access API to read and write directly to your
+            Analogue 3D's SD card. This API is only available in Chrome on desktop computers—not
+            on mobile devices, and not reliably in other browsers like Edge, Brave, or Firefox.
+          </p>
+        </div>
       </div>
     </div>
   );
