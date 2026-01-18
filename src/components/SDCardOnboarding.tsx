@@ -61,9 +61,14 @@ type OnboardingStep =
   | 'choose-method'
   | 'analogue-setup-1'
   | 'analogue-setup-2'
-  | 'sd-reader-select';
+  | 'sd-reader-select'
+  | 'offline-mode';
 
-export function SDCardOnboarding() {
+interface SDCardOnboardingProps {
+  onSkip?: () => void;
+}
+
+export function SDCardOnboarding({ onSkip }: SDCardOnboardingProps) {
   const { selectSDCard } = useServices();
   const [step, setStep] = useState<OnboardingStep>(() => {
     // Show welcome screen only on first visit
@@ -133,6 +138,11 @@ export function SDCardOnboarding() {
     setStep('choose-method');
     setConnectionMethod(null);
     setError(null);
+  };
+
+  const handleContinueWithoutSD = () => {
+    trackOnboardingCompleted('offline');
+    onSkip?.();
   };
 
   // Welcome screen (first visit only)
@@ -241,6 +251,10 @@ export function SDCardOnboarding() {
                   </button>
                 </div>
               </div>
+
+              <button className="onboarding-skip-link" onClick={() => setStep('offline-mode')}>
+                Continue without SD card
+              </button>
             </div>
           </div>
         </div>
@@ -402,6 +416,64 @@ export function SDCardOnboarding() {
                 </Button>
                 <button className="onboarding-link" onClick={handleStartOver}>
                   Start Over
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Offline mode - continue without SD card
+  if (step === 'offline-mode') {
+    return (
+      <div className="onboarding-overlay">
+        <div className="onboarding-modal">
+          <div className="onboarding-split">
+            <div className="onboarding-image-side">
+              <OnboardingImage
+                src="/explode.png"
+                alt="Exploded view of N64 cartridge"
+                className="onboarding-image"
+              />
+            </div>
+
+            <div className="onboarding-content-side">
+              <h1 className="onboarding-title">Continue Without SD Card</h1>
+
+              <div className="setup-instructions">
+                <h3>What you can do</h3>
+                <ul className="offline-features">
+                  <li>Import labels.db file from your computer</li>
+                  <li>Browse and manage your cartridge collection</li>
+                  <li>Edit per-game display and performance settings</li>
+                  <li>Manage controller pak data locally</li>
+                  <li>Export/import complete data bundles</li>
+                  <li>Add custom cartridge names for unknown titles</li>
+                </ul>
+              </div>
+
+              <div className="setup-instructions">
+                <h3>Requires SD card</h3>
+                <ul className="offline-limitations">
+                  <li>Sync labels directly to/from SD card</li>
+                  <li>Import owned cartridges from SD card</li>
+                  <li>Push settings changes to SD card</li>
+                  <li>Push game pak saves to SD card</li>
+                </ul>
+              </div>
+
+              <div className="onboarding-buttons">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={handleContinueWithoutSD}
+                >
+                  Continue to App
+                </Button>
+                <button className="onboarding-link" onClick={handleStartOver}>
+                  Go Back
                 </button>
               </div>
             </div>

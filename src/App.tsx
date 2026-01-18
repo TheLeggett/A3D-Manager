@@ -241,6 +241,7 @@ function AppContent() {
   const { showScreen: showCompatibilityScreen } = useCompatibilityCheck();
   const servicesContext = useContext(ServicesContext);
   const { showModal: showDataSafetyModal, acknowledge: acknowledgeDataSafety } = useDataSafetyModal();
+  const [onboardingSkipped, setOnboardingSkipped] = useState(false);
 
   // Block non-Chrome users completely (only in static mode)
   if (isStaticMode && showCompatibilityScreen) {
@@ -248,7 +249,8 @@ function AppContent() {
   }
 
   // Show onboarding modal whenever SD card is not connected (in static mode)
-  const showOnboarding = isStaticMode && !servicesContext?.isSDCardConnected;
+  // Also check if user chose to skip onboarding
+  const showOnboarding = isStaticMode && !servicesContext?.isSDCardConnected && !onboardingSkipped;
 
   // Show data safety modal after SD card connected but before using the app (once per session)
   const showDataSafety = isStaticMode && servicesContext?.isSDCardConnected && showDataSafetyModal;
@@ -272,7 +274,7 @@ function AppContent() {
       {/* Data Safety Modal - shows once per session after SD card connected */}
       {showDataSafety && <DataSafetyModal onAcknowledge={acknowledgeDataSafety} />}
       {/* SD Card Onboarding Modal */}
-      {showOnboarding && <SDCardOnboarding />}
+      {showOnboarding && <SDCardOnboarding onSkip={() => setOnboardingSkipped(true)} />}
     </div>
   );
 }

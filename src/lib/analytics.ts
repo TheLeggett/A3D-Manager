@@ -155,7 +155,7 @@ export function trackOnboardingStarted(): void {
   trackEvent('onboarding_started');
 }
 
-export function trackOnboardingCompleted(method: 'analogue-3d' | 'sd-reader'): void {
+export function trackOnboardingCompleted(method: 'analogue-3d' | 'sd-reader' | 'offline'): void {
   trackEvent('onboarding_completed', {
     connection_method: method,
   });
