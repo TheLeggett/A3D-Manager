@@ -6,7 +6,7 @@ import { Tooltip } from './ui/Tooltip';
 import { CartridgeSprite } from './CartridgeSprite';
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { useLabelSync } from './LabelSyncIndicator';
-import { queueSettingsSave, onSaveStatus } from '../lib/settingsAutoSave';
+import { queueSettingsSave, onSaveStatus, flushPendingSaves } from '../lib/settingsAutoSave';
 import { trackLabelUploaded, trackLabelDeleted, trackSettingsCopied } from '../lib/analytics';
 import {
   createDefaultSettings,
@@ -142,6 +142,8 @@ export function CartridgeDetailPanel({
 
   const handleClose = useCallback(() => {
     if (isClosing) return;
+    // Flush any pending settings saves before closing
+    flushPendingSaves();
     setIsClosing(true);
     setTimeout(() => {
       onClose();
@@ -158,6 +160,13 @@ export function CartridgeDetailPanel({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleClose]);
+
+  // Flush pending saves when component unmounts (e.g., user navigates away)
+  useEffect(() => {
+    return () => {
+      flushPendingSaves();
+    };
+  }, []);
 
   // Check ownership status
   useEffect(() => {
