@@ -366,6 +366,7 @@
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 1rem;
   min-height: 100vh;
+  align-content: start;
 }
 
 /* Label Editor */
