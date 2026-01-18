@@ -391,7 +391,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Trigger animation when entries change
+  // Trigger animation when entries change or selection mode toggles
   useEffect(() => {
     if (entries.length === 0) return;
 
@@ -408,7 +408,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
         });
       });
     });
-  }, [entries]);
+  }, [entries, selectionMode]);
 
   // Static mode: load blob URLs for label images
   useEffect(() => {

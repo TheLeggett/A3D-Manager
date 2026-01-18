@@ -142,6 +142,7 @@
 
 .cartridge-card.selected {
   background: var(--color-accent);
+  opacity: 1;
 }
 
 .cartridge-card.selected .cartridge-card-name,
