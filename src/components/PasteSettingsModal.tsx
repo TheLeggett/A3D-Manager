@@ -3,6 +3,7 @@ import { useSettingsClipboard, isStaticMode } from '../App';
 import { ServicesContext } from '../contexts/ServicesContext';
 import { Modal } from './ui/Modal';
 import { Button } from './ui/Button';
+import { trackSettingsPasted } from '../lib/analytics';
 import './PasteSettingsModal.css';
 
 interface PasteSettingsModalProps {
@@ -152,6 +153,11 @@ export function PasteSettingsModal({
       }
 
       setResults({ success: successCount, failed: failCount });
+
+      // Track successful paste
+      if (successCount > 0) {
+        trackSettingsPasted(successCount);
+      }
 
       // If all succeeded, auto-close after a brief delay
       if (failCount === 0) {

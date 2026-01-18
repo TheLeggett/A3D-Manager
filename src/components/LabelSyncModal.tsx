@@ -3,6 +3,7 @@ import { useSDCard, isStaticMode } from '../App';
 import { ServicesContext } from '../contexts/ServicesContext';
 import { useLabelSync } from './LabelSyncIndicator';
 import { ProgressBar } from './ProgressBar';
+import { trackLabelsSynced } from '../lib/analytics';
 import './LabelSyncModal.css';
 
 interface SyncStatus {
@@ -197,7 +198,10 @@ export function LabelSyncModal({ isOpen, onClose, onSyncComplete }: LabelSyncMod
           await sdCardService.writeLabelsDbToSD(browserSDCard, localData, handleProgress);
 
           const localStatus = await labelsDb.getLabelsDbStatus();
-          setSyncResult({ entryCount: localStatus?.entryCount || 0, direction });
+          const syncedCount = localStatus?.entryCount || 0;
+          setSyncResult({ entryCount: syncedCount, direction });
+          setStep('complete');
+          trackLabelsSynced(syncedCount);
         } else {
           // Download labels.db from SD card to local
           const sdInfo = await sdCardService.getLabelsDbInfo(browserSDCard);
@@ -239,10 +243,12 @@ export function LabelSyncModal({ isOpen, onClose, onSyncComplete }: LabelSyncMod
             eta: '',
           });
 
-          setSyncResult({ entryCount: sdInfo.entryCount || 0, direction });
+          const syncedCount = sdInfo.entryCount || 0;
+          setSyncResult({ entryCount: syncedCount, direction });
+          setStep('complete');
+          trackLabelsSynced(syncedCount);
         }
 
-        setStep('complete');
         checkSyncStatus();
         triggerLabelsRefresh();
         onSyncComplete?.();
@@ -290,6 +296,7 @@ export function LabelSyncModal({ isOpen, onClose, onSyncComplete }: LabelSyncMod
           case 'complete':
             setSyncResult({ entryCount: data.entryCount, direction });
             setStep('complete');
+            trackLabelsSynced(data.entryCount);
             eventSource.close();
             // Update the sync status indicator
             checkSyncStatus();

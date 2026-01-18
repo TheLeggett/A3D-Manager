@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
+import { trackPageView } from './lib/analytics';
 import { CartridgesPage } from './components/CartridgesPage';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -290,9 +291,23 @@ function AppWithProviders() {
   );
 }
 
+// Track page views on route changes for analytics
+function PageViewTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Extract page name from path
+    const pageName = location.pathname === '/' ? 'home' : location.pathname.slice(1);
+    trackPageView(pageName);
+  }, [location]);
+
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <PageViewTracker />
       {isStaticMode ? (
         <ServicesProvider>
           <AppWithProviders />

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSDCard } from '../App';
 import { LabelsBrowser } from './LabelsBrowser';
 import { CartridgeDetailPanel } from './CartridgeDetailPanel';
+import { trackCartridgeOpened } from '../lib/analytics';
 
 export function CartridgesPage() {
   const { selectedSDCard } = useSDCard();
@@ -12,7 +13,10 @@ export function CartridgesPage() {
     <>
       <LabelsBrowser
         sdCardPath={selectedSDCard?.path}
-        onSelectLabel={(cartId, name) => setSelectedCartridge({ cartId, name })}
+        onSelectLabel={(cartId, name) => {
+          trackCartridgeOpened(cartId, !!name);
+          setSelectedCartridge({ cartId, name });
+        }}
         refreshKey={refreshKey}
       />
       {selectedCartridge && (

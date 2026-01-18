@@ -12,6 +12,7 @@ import { PasteSettingsModal } from './PasteSettingsModal';
 import { CartridgesEmptyState } from './CartridgesEmptyState';
 import { useLabelSync } from './LabelSyncIndicator';
 import { TooltipIcon, Tooltip, Button } from './ui';
+import { trackFilterUsed, trackSearch } from '../lib/analytics';
 import './LabelsBrowser.css';
 
 interface LabelEntry {
@@ -364,6 +365,13 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
     if (type === 'language') setLanguageFilter(value as string);
     if (type === 'videoMode') setVideoModeFilter(value as string);
     if (type === 'owned') setOwnedFilter(value as boolean);
+
+    // Track filter/search usage
+    if (type === 'search' && value) {
+      trackSearch(value as string);
+    } else if (type !== 'search' && value) {
+      trackFilterUsed(type, String(value));
+    }
 
     updateURL(0, newFilters);
   };

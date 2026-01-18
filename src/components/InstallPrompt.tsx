@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { trackPWAInstallPromptShown, trackPWAInstalled, trackPWAInstallDismissed } from '../lib/analytics';
 import './InstallPrompt.css';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -107,6 +108,7 @@ export function InstallPrompt({ position = 'bottom' }: InstallPromptProps) {
       // Show our custom prompt after a delay
       setTimeout(() => {
         setShowPrompt(true);
+        trackPWAInstallPromptShown();
       }, 3000); // Show after 3 seconds
     };
 
@@ -143,6 +145,9 @@ export function InstallPrompt({ position = 'bottom' }: InstallPromptProps) {
 
     if (outcome === 'accepted') {
       setIsInstalled(true);
+      trackPWAInstalled();
+    } else {
+      trackPWAInstallDismissed();
     }
 
     // Clear the deferred prompt

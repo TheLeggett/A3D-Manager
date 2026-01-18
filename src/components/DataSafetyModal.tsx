@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from './ui/Button';
+import { trackDataSafetyAcknowledged } from '../lib/analytics';
 import './SDCardOnboarding.css';
 
 const SESSION_KEY = 'a3d-data-safety-acknowledged';
@@ -44,6 +45,7 @@ interface DataSafetyModalProps {
 export function DataSafetyModal({ onAcknowledge }: DataSafetyModalProps) {
   const handleContinue = () => {
     sessionStorage.setItem(SESSION_KEY, 'true');
+    trackDataSafetyAcknowledged();
     onAcknowledge();
   };
 

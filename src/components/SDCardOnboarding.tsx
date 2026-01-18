@@ -5,9 +5,10 @@
  * Displays as a modal overlay until an SD card is connected.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useServices } from '../contexts/ServicesContext';
 import { Button } from './ui/Button';
+import { trackOnboardingStarted, trackOnboardingCompleted, trackSDCardConnected } from '../lib/analytics';
 import './SDCardOnboarding.css';
 
 // Image component that waits for load before animating
@@ -71,9 +72,18 @@ export function SDCardOnboarding() {
     }
     return 'choose-method';
   });
-  const [, setConnectionMethod] = useState<ConnectionMethod>(null);
+  const [connectionMethod, setConnectionMethod] = useState<ConnectionMethod>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSelecting, setIsSelecting] = useState(false);
+  const hasTrackedStart = useRef(false);
+
+  // Track onboarding started (once)
+  useEffect(() => {
+    if (!hasTrackedStart.current) {
+      trackOnboardingStarted();
+      hasTrackedStart.current = true;
+    }
+  }, []);
 
   const handleWelcomeContinue = () => {
     localStorage.setItem(WELCOME_SEEN_KEY, 'true');
@@ -108,7 +118,10 @@ export function SDCardOnboarding() {
         return;
       }
 
-      // Success - component will unmount when isSDCardConnected becomes true
+      // Success - track and component will unmount when isSDCardConnected becomes true
+      const method = connectionMethod || 'sd-reader';
+      trackSDCardConnected(method);
+      trackOnboardingCompleted(method);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to select SD card';
       setError(message);

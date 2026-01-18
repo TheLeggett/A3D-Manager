@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { Modal, Button } from './ui';
 import { isStaticMode } from '../App';
 import { ServicesContext } from '../contexts/ServicesContext';
+import { trackBundleExported } from '../lib/analytics';
 
 interface ExportBundleModalProps {
   isOpen: boolean;
@@ -63,6 +64,7 @@ export function ExportBundleModal({
       if (isStaticMode && servicesContext) {
         const { bundle } = servicesContext.services;
         await bundle.downloadBundle(filename, exportOptions);
+        trackBundleExported(includeLabels, includeSettings, includeGamePaks);
         onExportComplete?.();
         onClose();
         return;
@@ -96,6 +98,7 @@ export function ExportBundleModal({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      trackBundleExported(includeLabels, includeSettings, includeGamePaks);
       onExportComplete?.();
       onClose();
     } catch (err) {

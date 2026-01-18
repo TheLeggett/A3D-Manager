@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useContext } from 'react';
 import { Modal, Button } from './ui';
 import { isStaticMode } from '../App';
 import { ServicesContext } from '../contexts/ServicesContext';
+import { trackBundleImported } from '../lib/analytics';
 
 interface BundleManifest {
   version: number;
@@ -166,6 +167,7 @@ export function ImportBundleModal({
       setResult(importResult);
 
       if (importResult.success) {
+        trackBundleImported();
         onImportComplete();
       } else {
         setError(importResult.errors.join(', ') || 'Import failed');

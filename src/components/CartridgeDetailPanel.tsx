@@ -7,6 +7,7 @@ import { CartridgeSprite } from './CartridgeSprite';
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { useLabelSync } from './LabelSyncIndicator';
 import { queueSettingsSave, onSaveStatus } from '../lib/settingsAutoSave';
+import { trackLabelUploaded, trackLabelDeleted, trackSettingsCopied } from '../lib/analytics';
 import {
   createDefaultSettings,
   type BeamConvergence,
@@ -560,6 +561,7 @@ function LabelTab({
         onImageUpdate();
         onUpdate();
         markLocalChanges();
+        trackLabelUploaded(cartId);
         return;
       }
 
@@ -582,6 +584,7 @@ function LabelTab({
       onImageUpdate();
       onUpdate();
       markLocalChanges(); // Mark that local labels have changed
+      trackLabelUploaded(cartId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
@@ -616,6 +619,7 @@ function LabelTab({
         }
 
         markLocalChanges();
+        trackLabelDeleted(cartId);
         onDelete?.();
         onClose();
         return;
@@ -636,6 +640,7 @@ function LabelTab({
       }
 
       markLocalChanges(); // Mark that local labels have changed
+      trackLabelDeleted(cartId);
       onDelete?.();
       onClose();
     } catch (err) {
@@ -1236,6 +1241,7 @@ function SettingsTab({ cartId, sdCardPath, gameName, servicesContext }: Settings
   const handleCopySettings = () => {
     if (!info?.local?.settings) return;
     copyToClipboard(cartId, gameName || 'Unknown', info.local.settings);
+    trackSettingsCopied(cartId);
     setShowCopiedMessage(true);
     setTimeout(() => setShowCopiedMessage(false), 3000);
   };
