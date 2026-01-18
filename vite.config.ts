@@ -11,11 +11,18 @@ export default defineConfig({
     // Only enable PWA in static build mode
     isStaticBuild && VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icons/*.png', 'data/*.json'],
+      includeAssets: [
+        'favicon.ico',
+        'icons/*.png',
+        'data/*.json',
+        '*.png',  // Root level images (welcome, onboarding, etc.)
+      ],
       manifest: false, // We use our own manifest.json in public/
       workbox: {
-        // Cache all static assets
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        // Cache all static assets including images
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
+        // Increase limit to cache larger onboarding images
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
         // Cache the cart-names.json database
         runtimeCaching: [
           {
