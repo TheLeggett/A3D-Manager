@@ -3,16 +3,18 @@
   inset: 0;
   background: var(--bg-primary, #0f0f0f);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 9999;
-  padding: 1rem;
+  padding: 2rem 1rem;
+  overflow-y: auto;
 }
 
 .compatibility-content {
   max-width: 480px;
   width: 100%;
   text-align: center;
+  margin: auto 0;
 }
 
 .compatibility-icon {
