@@ -131,3 +131,66 @@
   line-height: 1.6;
   margin: 0;
 }
+
+/* Continue Anyway section */
+.compatibility-continue-anyway {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+}
+
+.continue-anyway-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.continue-anyway-divider::before,
+.continue-anyway-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color, #333);
+}
+
+.continue-anyway-divider span {
+  color: var(--text-tertiary, #666);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.continue-anyway-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--text-secondary, #a0a0a0);
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border-color, #333);
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.continue-anyway-btn:hover {
+  background: var(--bg-secondary, #1a1a1a);
+  color: var(--text-primary, #fff);
+  border-color: var(--text-tertiary, #666);
+}
+
+.continue-anyway-warning {
+  color: var(--text-tertiary, #666);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  margin-top: 1rem;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.continue-anyway-warning strong {
+  color: #f59e0b;
+}

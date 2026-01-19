@@ -9,7 +9,7 @@ import { SettingsPage } from './components/SettingsPage';
 import { ComponentTestPage } from './components/ComponentTestPage';
 import { LabelSyncProvider } from './components/LabelSyncIndicator';
 import { ServicesProvider, ServicesContext } from './contexts/ServicesContext';
-import { BrowserCompatibilityScreen, useCompatibilityCheck } from './components/BrowserCompatibilityScreen';
+import { BrowserCompatibilityScreen, BrowserCompatibilityProvider, useBrowserCompatibility } from './components/BrowserCompatibilityScreen';
 import { SDCardOnboarding } from './components/SDCardOnboarding';
 import { DataSafetyModal, useDataSafetyModal } from './components/DataSafetyModal';
 import { InstallPrompt } from './components/InstallPrompt';
@@ -238,12 +238,12 @@ function SettingsClipboardProvider({ children }: { children: React.ReactNode }) 
 }
 
 function AppContent() {
-  const { showScreen: showCompatibilityScreen } = useCompatibilityCheck();
+  const { showCompatibilityScreen } = useBrowserCompatibility();
   const servicesContext = useContext(ServicesContext);
   const { showModal: showDataSafetyModal, acknowledge: acknowledgeDataSafety } = useDataSafetyModal();
   const [onboardingSkipped, setOnboardingSkipped] = useState(false);
 
-  // Block non-Chrome users completely (only in static mode)
+  // Show browser compatibility screen (only in static mode)
   if (isStaticMode && showCompatibilityScreen) {
     return <BrowserCompatibilityScreen />;
   }
@@ -281,15 +281,17 @@ function AppContent() {
 
 function AppWithProviders() {
   return (
-    <ImageCacheProvider>
-      <SDCardProvider>
-        <SettingsClipboardProvider>
-          <LabelSyncProvider>
-            <AppContent />
-          </LabelSyncProvider>
-        </SettingsClipboardProvider>
-      </SDCardProvider>
-    </ImageCacheProvider>
+    <BrowserCompatibilityProvider>
+      <ImageCacheProvider>
+        <SDCardProvider>
+          <SettingsClipboardProvider>
+            <LabelSyncProvider>
+              <AppContent />
+            </LabelSyncProvider>
+          </SettingsClipboardProvider>
+        </SDCardProvider>
+      </ImageCacheProvider>
+    </BrowserCompatibilityProvider>
   );
 }
 

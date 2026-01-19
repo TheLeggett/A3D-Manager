@@ -5,7 +5,7 @@
  * File System Access API which only works on Chrome desktop.
  */
 
-import { useState } from 'react';
+import { useState, createContext, useContext, useCallback, type ReactNode } from 'react';
 import { getBrowserInfo } from '../services/browser/BrowserCheck';
 import './BrowserCompatibilityScreen.css';
 
@@ -44,8 +44,61 @@ function isGoogleChromeDesktop(): boolean {
   return true;
 }
 
+// Context for browser compatibility state
+interface BrowserCompatibilityContextType {
+  isUnsupportedBrowser: boolean;
+  hasDismissedWarning: boolean;
+  showCompatibilityScreen: boolean;
+  dismissWarning: () => void;
+  showWarningScreen: () => void;
+}
+
+const BrowserCompatibilityContext = createContext<BrowserCompatibilityContextType | null>(null);
+
+export function BrowserCompatibilityProvider({ children }: { children: ReactNode }) {
+  const [isUnsupported] = useState(() => !isGoogleChromeDesktop());
+  const [hasDismissed, setHasDismissed] = useState(false);
+  const [forceShowScreen, setForceShowScreen] = useState(false);
+
+  const dismissWarning = useCallback(() => {
+    setHasDismissed(true);
+    setForceShowScreen(false);
+  }, []);
+
+  const showWarningScreen = useCallback(() => {
+    setForceShowScreen(true);
+  }, []);
+
+  // Show screen if: unsupported AND (not dismissed OR force showing)
+  const showCompatibilityScreen = isUnsupported && (!hasDismissed || forceShowScreen);
+
+  return (
+    <BrowserCompatibilityContext.Provider
+      value={{
+        isUnsupportedBrowser: isUnsupported,
+        hasDismissedWarning: hasDismissed,
+        showCompatibilityScreen,
+        dismissWarning,
+        showWarningScreen,
+      }}
+    >
+      {children}
+    </BrowserCompatibilityContext.Provider>
+  );
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function useBrowserCompatibility() {
+  const context = useContext(BrowserCompatibilityContext);
+  if (!context) {
+    throw new Error('useBrowserCompatibility must be used within BrowserCompatibilityProvider');
+  }
+  return context;
+}
+
 export function BrowserCompatibilityScreen() {
   const [browserInfo] = useState(() => getBrowserInfo());
+  const { dismissWarning, hasDismissedWarning } = useBrowserCompatibility();
   const isChromeDesktop = isGoogleChromeDesktop();
 
   // If Chrome desktop, don't show this screen at all
@@ -108,19 +161,39 @@ export function BrowserCompatibilityScreen() {
             on mobile devices, and not reliably in other browsers like Edge, Brave, or Firefox.
           </p>
         </div>
+
+        {!isMobile && (
+          <div className="compatibility-continue-anyway">
+            <div className="continue-anyway-divider">
+              <span>or</span>
+            </div>
+            <button
+              className="continue-anyway-btn"
+              onClick={dismissWarning}
+            >
+              {hasDismissedWarning ? 'Return to App' : 'Continue Anyway'}
+            </button>
+            <p className="continue-anyway-warning">
+              <strong>Warning:</strong> The app will likely not function correctly.
+              Features like connecting to your SD card may fail or behave unexpectedly.
+              Use this option only if you want to explore the interface.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 /**
- * Hook to check if user can access the app
+ * Hook to check if user can access the app (legacy - use useBrowserCompatibility instead)
+ * @deprecated Use useBrowserCompatibility from BrowserCompatibilityProvider instead
  */
 export function useCompatibilityCheck() {
   const [isAllowed] = useState(() => isGoogleChromeDesktop());
 
   return {
     showScreen: !isAllowed,
-    dismissScreen: () => {} // No dismissing allowed
+    dismissScreen: () => {}
   };
 }
