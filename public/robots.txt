@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://a3dmanager.com/sitemap.xml
+
+# Disallow dev/test routes
+Disallow: /component-test

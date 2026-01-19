@@ -10,6 +10,7 @@ import { AddCartridgeModal } from './AddCartridgeModal';
 import { LabelsImportModal } from './LabelsImportModal';
 import { useLabelSync } from './LabelSyncIndicator';
 import { Button } from './ui';
+import { usePageTitle, SEO_TITLES } from '../lib/seo';
 import './SettingsPage.css';
 
 interface QuickCompareResult {
@@ -44,6 +45,7 @@ interface LocalDataStatus {
 }
 
 export function SettingsPage() {
+  usePageTitle(SEO_TITLES.settings);
   const { invalidateImageCache, lastInvalidated } = useImageCache();
   const { selectedSDCard } = useSDCard();
   const { checkSyncStatus } = useLabelSync();

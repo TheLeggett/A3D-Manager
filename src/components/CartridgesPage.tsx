@@ -3,8 +3,10 @@ import { useSDCard } from '../App';
 import { LabelsBrowser } from './LabelsBrowser';
 import { CartridgeDetailPanel } from './CartridgeDetailPanel';
 import { trackCartridgeOpened } from '../lib/analytics';
+import { usePageTitle, SEO_TITLES } from '../lib/seo';
 
 export function CartridgesPage() {
+  usePageTitle(SEO_TITLES.cartridges);
   const { selectedSDCard } = useSDCard();
   const [selectedCartridge, setSelectedCartridge] = useState<{ cartId: string; name?: string } | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);

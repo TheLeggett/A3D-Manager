@@ -1,6 +1,8 @@
+import { usePageTitle, SEO_TITLES } from '../lib/seo';
 import './HelpPage.css';
 
 export function HelpPage() {
+  usePageTitle(SEO_TITLES.help);
   return (
     <div className="help-page">
       <div className="help-content">
