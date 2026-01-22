@@ -439,6 +439,7 @@ router.get('/lookup/:cartId', async (req, res) => {
         source: 'internal',
         cartId,
         name: internalEntry.name,
+        color: internalEntry.color,
         region: internalEntry.region,
         languages: internalEntry.languages,
         videoMode: internalEntry.videoMode,
