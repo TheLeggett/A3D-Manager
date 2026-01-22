@@ -4,6 +4,7 @@ import './CartridgeCard.css';
 interface CartridgeCardProps {
   cartId: string;
   name?: string;
+  color: string;
   gridIndex: number;
   hasLabel: boolean;
   selectionMode: boolean;
@@ -15,6 +16,7 @@ interface CartridgeCardProps {
 export function CartridgeCard({
   cartId,
   name,
+  color,
   gridIndex,
   hasLabel,
   selectionMode,
@@ -37,16 +39,9 @@ export function CartridgeCard({
         <CartridgeSprite
           artworkUrl={imageUrl}
           alt={name || cartId}
-          color="dark"
+          color={ color }
           size="large"
           className="cart-sprite-base"
-        />
-        <CartridgeSprite
-          artworkUrl={imageUrl}
-          alt={name || cartId}
-          color="black"
-          size="large"
-          className="cart-sprite-hover"
         />
       </div>
       <div className="cartridge-card-info">

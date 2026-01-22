@@ -39,6 +39,7 @@ interface LookupResult {
   source?: 'internal' | 'user';
   cartId: string;
   name?: string;
+  color?: string;
   region?: string;
   videoMode?: string;
 }
@@ -190,7 +191,7 @@ export function CartridgeDetailPanel({
           <CartridgeSprite
             artworkUrl={`/api/labels/${cartId}?v=${imageCacheBuster}`}
             alt={displayName}
-            color="dark"
+            color="green"
             size="small"
           />
           <div className="slide-over-title">
@@ -543,7 +544,7 @@ function LabelTab({
           <CartridgeSprite
             artworkUrl={imageUrl}
             alt="Current label"
-            color="dark"
+            color="green"
             size="large"
           />
         </div>

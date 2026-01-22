@@ -38,6 +38,7 @@ interface CartNameEntry {
   id: string;
   gameCode: string;
   name: string;
+  color: string;
   region: string;
   languages: string[];
   videoMode: 'NTSC' | 'PAL' | 'Unknown';
@@ -115,6 +116,7 @@ function getCartMetadata(cartId: string): Partial<CartNameEntry> {
   const entry = cartNameMap.get(cartId.toLowerCase());
   if (!entry) return {};
   return {
+    color: entry.color,
     region: entry.region,
     languages: entry.languages,
     videoMode: entry.videoMode,
@@ -296,6 +298,7 @@ interface EnhancedEntry {
   cartId: string;
   index: number;
   name: string;
+  color?: string;
   region?: string;
   languages?: string[];
   videoMode?: 'NTSC' | 'PAL' | 'Unknown';
@@ -322,6 +325,7 @@ async function getSortedEntries(): Promise<EnhancedEntry[] | null> {
     return {
       ...e,
       name: getCartName(e.cartId),
+      color: meta.color,
       region: meta.region,
       languages: meta.languages,
       videoMode: meta.videoMode,
@@ -593,6 +597,7 @@ router.get('/page/:page', async (req, res) => {
             cartId,
             index: -1, // No label index
             name: getCartName(cartId),
+            color: meta.color,
             region: meta.region,
             languages: meta.languages,
             videoMode: meta.videoMode,
@@ -619,6 +624,7 @@ router.get('/page/:page', async (req, res) => {
           cartId,
           index: -1,
           name: getCartName(cartId),
+          color: meta.color,
           region: meta.region,
           languages: meta.languages,
           videoMode: meta.videoMode,

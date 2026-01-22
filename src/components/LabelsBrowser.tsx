@@ -17,6 +17,7 @@ interface LabelEntry {
   cartId: string;
   index: number;
   name?: string;
+  color?: string;
   region?: string;
   languages?: string[];
   videoMode?: 'NTSC' | 'PAL' | 'Unknown';
@@ -582,6 +583,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
                     key={entry.cartId}
                     cartId={entry.cartId}
                     name={entry.name}
+                    color={entry.color || 'gray'}
                     gridIndex={i}
                     hasLabel={entry.index >= 0}
                     selectionMode={selectionMode}
