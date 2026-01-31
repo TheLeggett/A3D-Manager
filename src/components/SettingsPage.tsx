@@ -9,8 +9,12 @@ import { ImportBundleModal } from './ImportBundleModal';
 import { AddCartridgeModal } from './AddCartridgeModal';
 import { LabelsImportModal } from './LabelsImportModal';
 import { useLabelSync } from './LabelSyncIndicator';
+import { useLibrarySync } from './LibrarySyncIndicator';
+import { ToggleSwitch } from './controls/ToggleSwitch';
 import { Button } from './ui';
 import { usePageTitle, SEO_TITLES } from '../lib/seo';
+import { LIBRARY_DB_EPOCH_UNIX } from '../services/library/LibraryDbService';
+import type { LibraryEntry } from '../types/library';
 import './SettingsPage.css';
 
 interface QuickCompareResult {
@@ -39,6 +43,7 @@ interface DetailedCompareResult {
 
 interface LocalDataStatus {
   labels: { exists: boolean; entryCount?: number; fileSize?: number };
+  library: { exists: boolean; entryCount?: number; fileSize?: number };
   ownedCarts: { exists: boolean; count: number };
   userCarts: { exists: boolean; count: number };
   gameData: { exists: boolean; folderCount: number; totalSize: number };
@@ -49,6 +54,7 @@ export function SettingsPage() {
   const { invalidateImageCache, lastInvalidated } = useImageCache();
   const { selectedSDCard } = useSDCard();
   const { checkSyncStatus } = useLabelSync();
+  const { checkSyncStatus: checkLibrarySyncStatus } = useLibrarySync();
   const servicesContext = useContext(ServicesContext);
   const isConnected = selectedSDCard !== null;
 
@@ -73,6 +79,63 @@ export function SettingsPage() {
   // Advanced settings visibility
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
+  // Developer settings
+  const [disableStartupModals, setDisableStartupModals] = useState(() => {
+    return localStorage.getItem('dev:disableStartupModals') === 'true';
+  });
+
+  const handleToggleStartupModals = () => {
+    const newValue = !disableStartupModals;
+    setDisableStartupModals(newValue);
+    localStorage.setItem('dev:disableStartupModals', newValue.toString());
+  };
+
+  // Library.db viewer state
+  const [libraryDbEntries, setLibraryDbEntries] = useState<LibraryEntry[] | null>(null);
+  const [libraryDbSource, setLibraryDbSource] = useState<'sd' | 'local' | null>(null);
+  const [libraryDbLoading, setLibraryDbLoading] = useState(false);
+  const [libraryDbError, setLibraryDbError] = useState<string | null>(null);
+
+  const loadLibraryDb = async (source: 'sd' | 'local') => {
+    setLibraryDbLoading(true);
+    setLibraryDbError(null);
+    setLibraryDbEntries(null);
+    setLibraryDbSource(source);
+
+    try {
+      if (isStaticMode && servicesContext) {
+        const { libraryDb, sdCard: sdCardService } = servicesContext.services;
+        const browserSDCard = servicesContext.sdCard;
+
+        if (source === 'sd') {
+          if (!browserSDCard) {
+            throw new Error('SD card not connected');
+          }
+          const sdData = await sdCardService.readLibraryDbFromSD(browserSDCard);
+          if (!sdData) {
+            throw new Error('No library.db found on SD card');
+          }
+          const parsed = libraryDb.parseLibraryDb(sdData);
+          setLibraryDbEntries(parsed.entries);
+        } else {
+          const localData = await libraryDb.getLocalLibraryDb();
+          if (!localData) {
+            throw new Error('No local library.db found');
+          }
+          const parsed = libraryDb.parseLibraryDb(localData);
+          setLibraryDbEntries(parsed.entries);
+        }
+      } else {
+        // Server mode - would need API endpoints
+        throw new Error('Library.db viewer only available in static mode');
+      }
+    } catch (err) {
+      setLibraryDbError(err instanceof Error ? err.message : 'Failed to load library.db');
+    } finally {
+      setLibraryDbLoading(false);
+    }
+  };
+
   // Local data state
   const [localDataStatus, setLocalDataStatus] = useState<LocalDataStatus | null>(null);
   const [showDeleteLocalDataModal, setShowDeleteLocalDataModal] = useState(false);
@@ -82,10 +145,22 @@ export function SettingsPage() {
     try {
       // Static mode: use browser services
       if (isStaticMode && servicesContext) {
-        const { storage, labelsDb, settings, gamePak } = servicesContext.services;
+        const { storage, labelsDb, libraryDb, settings, gamePak } = servicesContext.services;
 
         // Get labels status
         const labelsStatus = await labelsDb.getLabelsDbStatus();
+
+        // Get library status
+        const libraryData = await libraryDb.getLocalLibraryDb();
+        let libraryStatus = { exists: false, entryCount: 0, fileSize: 0 };
+        if (libraryData) {
+          const parsed = libraryDb.parseLibraryDb(libraryData);
+          libraryStatus = {
+            exists: true,
+            entryCount: parsed.entryCount,
+            fileSize: libraryData.byteLength,
+          };
+        }
 
         // Get owned carts count
         const ownedCartIds = await storage.getOwnedCartIds();
@@ -106,6 +181,7 @@ export function SettingsPage() {
             entryCount: labelsStatus?.entryCount,
             fileSize: labelsStatus?.fileSize,
           },
+          library: libraryStatus,
           ownedCarts: {
             exists: ownedCartIds.length > 0,
             count: ownedCartIds.length,
@@ -213,8 +289,8 @@ export function SettingsPage() {
             <div className="setting-info">
               <h3>Export Bundle</h3>
               <p className="setting-description">
-                Create a backup file containing your labels, owned cartridge list, per-game settings,
-                and controller pak saves. Use this to back up your data or transfer it to another computer.
+                Create a backup file containing your labels, play statistics, owned cartridge list,
+                per-game settings, and controller pak saves. Use this to back up your data or transfer it to another computer.
               </p>
             </div>
             <Button variant="primary" onClick={() => setShowExportBundleModal(true)}>
@@ -226,8 +302,9 @@ export function SettingsPage() {
             <div className="setting-info">
               <h3>Import Bundle</h3>
               <p className="setting-description">
-                Restore data from a previously exported <span className="text-code">.a3d</span> bundle file.
-                You can choose which data to import and how to handle conflicts with existing data.
+                Restore data from a previously exported <span className="text-code">.a3d</span> bundle file,
+                including labels, play statistics, settings, and saves. You can choose which data to import
+                and how to handle conflicts with existing data.
               </p>
             </div>
             <Button variant="secondary" onClick={() => setShowImportBundleModal(true)}>
@@ -323,6 +400,29 @@ export function SettingsPage() {
                   variant="danger"
                   onClick={() => handleDeleteLocalData('labels')}
                   disabled={!localDataStatus.labels.exists}
+                >
+                  Delete
+                </Button>
+              </div>
+
+              <div className="setting-row setting-row--danger">
+                <div className="setting-info">
+                  <h3>Library Database</h3>
+                  <p className="setting-description">
+                    Your local <span className="text-code">library.db</span> containing play statistics.
+                  </p>
+                  {localDataStatus.library.exists ? (
+                    <p className="setting-meta">
+                      {localDataStatus.library.entryCount} games ({formatBytes(localDataStatus.library.fileSize || 0)})
+                    </p>
+                  ) : (
+                    <p className="setting-meta">No library database</p>
+                  )}
+                </div>
+                <Button
+                  variant="danger"
+                  onClick={() => handleDeleteLocalData('library')}
+                  disabled={!localDataStatus.library.exists}
                 >
                   Delete
                 </Button>
@@ -443,6 +543,106 @@ export function SettingsPage() {
 
         {showAdvancedSettings && (
           <>
+            {/* Developer Settings */}
+            <section className="settings-section">
+              <h2>Developer Settings</h2>
+              <p>
+                Options for development and debugging. These settings are stored in your browser.
+              </p>
+
+              <div className="dev-settings-row">
+                <ToggleSwitch
+                  label="Disable Startup Modals"
+                  checked={disableStartupModals}
+                  onChange={handleToggleStartupModals}
+                />
+                <p className="setting-description" style={{ marginTop: '0.5rem', marginLeft: 0 }}>
+                  Skip the onboarding and data safety modals when the app loads.
+                  Useful during development to avoid closing modals after every hot reload.
+                </p>
+              </div>
+            </section>
+
+            {/* Library.db Viewer */}
+            <section className="settings-section">
+              <h2>Library.db Viewer</h2>
+              <p>
+                View the raw contents of your library.db file for debugging timestamp and data issues.
+              </p>
+
+              <div className="setting-row">
+                <div className="setting-info">
+                  <p className="setting-description">
+                    Load and inspect the raw entries from library.db. Shows cart IDs, raw timestamps,
+                    play time, and session counts.
+                  </p>
+                </div>
+                <div className="button-group">
+                  <Button
+                    variant="secondary"
+                    onClick={() => loadLibraryDb('sd')}
+                    disabled={!servicesContext?.isSDCardConnected || libraryDbLoading}
+                  >
+                    {libraryDbLoading && libraryDbSource === 'sd' ? 'Loading...' : 'Load from SD'}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => loadLibraryDb('local')}
+                    disabled={libraryDbLoading}
+                  >
+                    {libraryDbLoading && libraryDbSource === 'local' ? 'Loading...' : 'Load from Local'}
+                  </Button>
+                </div>
+              </div>
+
+              {libraryDbError && (
+                <div className="compare-error">{libraryDbError}</div>
+              )}
+
+              {libraryDbEntries && (
+                <div className="library-db-viewer">
+                  <h4>
+                    {libraryDbSource === 'sd' ? 'SD Card' : 'Local'} library.db - {libraryDbEntries.length} entries
+                  </h4>
+                  <p className="setting-meta">
+                    Epoch Unix: {LIBRARY_DB_EPOCH_UNIX} (Feb 23, 2025 22:43:27 UTC)
+                  </p>
+                  <div className="library-db-table-container">
+                    <table className="library-db-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Cart ID</th>
+                          <th>addedTime (raw)</th>
+                          <th>Converted Date (UTC)</th>
+                          <th>playTime (s)</th>
+                          <th>sessions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {libraryDbEntries.map((entry, idx) => {
+                          const unixTimestamp = entry.addedTime + LIBRARY_DB_EPOCH_UNIX;
+                          const dateUtc = new Date(unixTimestamp * 1000);
+                          return (
+                            <tr key={entry.cartIdHex}>
+                              <td>{idx + 1}</td>
+                              <td className="text-mono">{entry.cartIdHex}</td>
+                              <td className="text-mono">{entry.addedTime}</td>
+                              <td className="text-mono" title={`Unix: ${unixTimestamp}`}>
+                                {dateUtc.toISOString()}
+                              </td>
+                              <td className="text-mono">{entry.playTime}</td>
+                              <td className="text-mono">{entry.sessions}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </section>
+
             {/* Add Cartridge Manually */}
             <section className="settings-section">
               <h2>Add Cartridge Manually</h2>
@@ -620,7 +820,8 @@ export function SettingsPage() {
         onClose={() => setShowDeleteLocalDataModal(false)}
         onDeleted={() => {
           fetchLocalDataStatus();
-          checkSyncStatus(); // Update sync indicator
+          checkSyncStatus();
+          checkLibrarySyncStatus();
         }}
         dataType={deleteDataType}
       />
@@ -636,6 +837,7 @@ export function SettingsPage() {
         onImportComplete={() => {
           fetchLocalDataStatus();
           checkSyncStatus();
+          checkLibrarySyncStatus();
         }}
       />
 

@@ -473,3 +473,65 @@
 .settings-page::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* Developer Settings */
+.dev-settings-row {
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+/* Library.db Viewer */
+.library-db-viewer {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.library-db-viewer h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+.library-db-table-container {
+  margin-top: 1rem;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.library-db-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.library-db-table th,
+.library-db-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.library-db-table th {
+  background: var(--color-surface-elevated);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.library-db-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.library-db-table .text-mono {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}

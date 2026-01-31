@@ -10,7 +10,10 @@ interface BundleManifest {
   appVersion: string;
   contents: {
     hasLabelsDb: boolean;
+    hasLibraryDb?: boolean;
     hasOwnedCarts: boolean;
+    hasUserCarts?: boolean;
+    userCartsCount?: number;
     settingsCount: number;
     gamePaksCount: number;
     gamePakBackupsCount: number;
@@ -22,7 +25,9 @@ interface BundleManifest {
 interface ImportResult {
   success: boolean;
   labelsImported: boolean;
+  libraryImported?: boolean;
   ownershipMerged: { added: number; skipped: number };
+  userCartsImported: { added: number; skipped: number; overwritten: number };
   settingsImported: { added: number; skipped: number; overwritten: number };
   gamePaksImported: { added: number; skipped: number; overwritten: number };
   gamePakBackupsImported: { added: number; skipped: number; merged: number };
@@ -53,7 +58,9 @@ export function ImportBundleModal({
 
   // Import options
   const [importLabels, setImportLabels] = useState(true);
+  const [importLibrary, setImportLibrary] = useState(true);
   const [importOwnership, setImportOwnership] = useState(true);
+  const [importUserCarts, setImportUserCarts] = useState(true);
   const [importSettings, setImportSettings] = useState(true);
   const [importGamePaks, setImportGamePaks] = useState(true);
   const [importGamePakBackups, setImportGamePakBackups] = useState(true);
@@ -69,7 +76,9 @@ export function ImportBundleModal({
       setError(null);
       setDragActive(false);
       setImportLabels(true);
+      setImportLibrary(true);
       setImportOwnership(true);
+      setImportUserCarts(true);
       setImportSettings(true);
       setImportGamePaks(true);
       setImportGamePakBackups(true);
@@ -136,7 +145,9 @@ export function ImportBundleModal({
 
       const importOptions = {
         importLabels,
+        importLibrary,
         importOwnership,
+        importUserCarts,
         importSettings,
         importGamePaks,
         importGamePakBackups,
@@ -203,7 +214,7 @@ export function ImportBundleModal({
             <Button
               variant="primary"
               onClick={handleImport}
-              disabled={importing || (!importLabels && !importOwnership && !importSettings && !importGamePaks && !importGamePakBackups)}
+              disabled={importing || (!importLabels && !importLibrary && !importOwnership && !importUserCarts && !importSettings && !importGamePaks && !importGamePakBackups)}
               loading={importing}
             >
               Import
@@ -243,9 +254,19 @@ export function ImportBundleModal({
             {result.labelsImported && (
               <div className="result-item">Labels database imported</div>
             )}
+            {result.libraryImported && (
+              <div className="result-item">Library database imported</div>
+            )}
             {(result.ownershipMerged.added > 0 || result.ownershipMerged.skipped > 0) && (
               <div className="result-item">
                 Ownership: {result.ownershipMerged.added} added, {result.ownershipMerged.skipped} skipped
+              </div>
+            )}
+            {(result.userCartsImported.added > 0 || result.userCartsImported.skipped > 0 || result.userCartsImported.overwritten > 0) && (
+              <div className="result-item">
+                Custom Names: {result.userCartsImported.added} added
+                {result.userCartsImported.overwritten > 0 && `, ${result.userCartsImported.overwritten} updated`}
+                {result.userCartsImported.skipped > 0 && `, ${result.userCartsImported.skipped} skipped`}
               </div>
             )}
             {(result.settingsImported.added > 0 || result.settingsImported.skipped > 0 || result.settingsImported.overwritten > 0) && (
@@ -294,10 +315,22 @@ export function ImportBundleModal({
                   <span>Included</span>
                 </div>
               )}
+              {manifest.contents.hasLibraryDb && (
+                <div className="detail-row">
+                  <span>Library Database:</span>
+                  <span>Included</span>
+                </div>
+              )}
               {manifest.contents.hasOwnedCarts && (
                 <div className="detail-row">
                   <span>Ownership Data:</span>
                   <span>Included</span>
+                </div>
+              )}
+              {manifest.contents.hasUserCarts && (
+                <div className="detail-row">
+                  <span>Custom Cart Names:</span>
+                  <span>{manifest.contents.userCartsCount} names</span>
                 </div>
               )}
               {manifest.contents.settingsCount > 0 && (
@@ -334,6 +367,16 @@ export function ImportBundleModal({
               <span>Labels Database</span>
             </label>
 
+            <label className={`import-option ${!manifest.contents.hasLibraryDb ? 'disabled' : ''}`}>
+              <input
+                type="checkbox"
+                checked={importLibrary}
+                onChange={(e) => setImportLibrary(e.target.checked)}
+                disabled={importing || !manifest.contents.hasLibraryDb}
+              />
+              <span>Library Database (Play Stats)</span>
+            </label>
+
             <label className={`import-option ${!manifest.contents.hasOwnedCarts ? 'disabled' : ''}`}>
               <input
                 type="checkbox"
@@ -342,6 +385,16 @@ export function ImportBundleModal({
                 disabled={importing || !manifest.contents.hasOwnedCarts}
               />
               <span>Ownership Data</span>
+            </label>
+
+            <label className={`import-option ${!manifest.contents.hasUserCarts ? 'disabled' : ''}`}>
+              <input
+                type="checkbox"
+                checked={importUserCarts}
+                onChange={(e) => setImportUserCarts(e.target.checked)}
+                disabled={importing || !manifest.contents.hasUserCarts}
+              />
+              <span>Custom Cart Names ({manifest.contents.userCartsCount || 0})</span>
             </label>
 
             <label className={`import-option ${manifest.contents.settingsCount === 0 ? 'disabled' : ''}`}>

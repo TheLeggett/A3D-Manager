@@ -6,6 +6,7 @@ import { mkdir } from 'fs/promises';
 
 import syncRouter from './routes/sync.js';
 import labelsRouter from './routes/labels.js';
+import libraryRouter from './routes/library.js';
 import cartridgesRouter from './routes/cartridges.js';
 import sdCardRouter from './routes/sd-card.js';
 import localDataRouter from './routes/local-data.js';
@@ -27,6 +28,7 @@ async function ensureLocalDirs() {
 // Routes
 app.use('/api/sync', syncRouter);
 app.use('/api/labels', labelsRouter);
+app.use('/api/library', libraryRouter);
 app.use('/api/cartridges', cartridgesRouter);
 app.use('/api/sd-card', sdCardRouter);
 app.use('/api/local-data', localDataRouter);

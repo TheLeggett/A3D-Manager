@@ -90,6 +90,17 @@ interface A3DManagerDBSchema extends DBSchema {
     };
   };
 
+  // Store the entire library.db as a single blob
+  libraryDb: {
+    key: 'library.db';
+    value: {
+      key: 'library.db';
+      data: ArrayBuffer;
+      lastModified: string;
+      entryCount: number;
+    };
+  };
+
   // Owned cartridges
   ownedCarts: {
     key: string; // cartId
@@ -146,7 +157,7 @@ interface A3DManagerDBSchema extends DBSchema {
 // =============================================================================
 
 const DB_NAME = 'a3d-manager';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbInstance: IDBPDatabase<A3DManagerDBSchema> | null = null;
 
@@ -163,6 +174,11 @@ export async function getDb(): Promise<IDBPDatabase<A3DManagerDBSchema>> {
       // Labels database store
       if (!db.objectStoreNames.contains('labelsDb')) {
         db.createObjectStore('labelsDb', { keyPath: 'key' });
+      }
+
+      // Library database store (v2)
+      if (!db.objectStoreNames.contains('libraryDb')) {
+        db.createObjectStore('libraryDb', { keyPath: 'key' });
       }
 
       // Owned carts store
@@ -270,6 +286,62 @@ export async function hasLabelsDb(): Promise<boolean> {
 export async function deleteLabelsDb(): Promise<void> {
   const db = await getDb();
   await db.delete('labelsDb', 'labels.db');
+}
+
+// =============================================================================
+// Library Database Operations
+// =============================================================================
+
+/**
+ * Get the stored library.db data
+ */
+export async function getLibraryDb(): Promise<ArrayBuffer | null> {
+  const db = await getDb();
+  const record = await db.get('libraryDb', 'library.db');
+  return record?.data || null;
+}
+
+/**
+ * Get library.db metadata without loading the full data
+ */
+export async function getLibraryDbMeta(): Promise<{ lastModified: string; entryCount: number } | null> {
+  const db = await getDb();
+  const record = await db.get('libraryDb', 'library.db');
+  if (!record) return null;
+  return {
+    lastModified: record.lastModified,
+    entryCount: record.entryCount,
+  };
+}
+
+/**
+ * Store the library.db data
+ */
+export async function setLibraryDb(data: ArrayBuffer, entryCount: number): Promise<void> {
+  const db = await getDb();
+  await db.put('libraryDb', {
+    key: 'library.db',
+    data,
+    lastModified: new Date().toISOString(),
+    entryCount,
+  });
+}
+
+/**
+ * Check if library.db exists
+ */
+export async function hasLibraryDb(): Promise<boolean> {
+  const db = await getDb();
+  const record = await db.get('libraryDb', 'library.db');
+  return !!record;
+}
+
+/**
+ * Delete library.db
+ */
+export async function deleteLibraryDb(): Promise<void> {
+  const db = await getDb();
+  await db.delete('libraryDb', 'library.db');
 }
 
 // =============================================================================
@@ -615,6 +687,7 @@ export async function clearAllData(): Promise<void> {
   const db = await getDb();
   await Promise.all([
     db.clear('labelsDb'),
+    db.clear('libraryDb'),
     db.clear('ownedCarts'),
     db.clear('settings'),
     db.clear('gamePaks'),
@@ -630,6 +703,8 @@ export async function clearAllData(): Promise<void> {
 export async function getStorageStats(): Promise<{
   hasLabelsDb: boolean;
   labelsEntryCount: number;
+  hasLibraryDb: boolean;
+  libraryEntryCount: number;
   ownedCartsCount: number;
   settingsCount: number;
   gamePaksCount: number;
@@ -638,8 +713,9 @@ export async function getStorageStats(): Promise<{
 }> {
   const db = await getDb();
 
-  const [labelsDbMeta, ownedCartsCount, settingsCount, gamePaksCount, backupsCount, userCartsCount] = await Promise.all([
+  const [labelsDbMeta, libraryDbMeta, ownedCartsCount, settingsCount, gamePaksCount, backupsCount, userCartsCount] = await Promise.all([
     getLabelsDbMeta(),
+    getLibraryDbMeta(),
     db.count('ownedCarts'),
     db.count('settings'),
     db.count('gamePaks'),
@@ -650,6 +726,8 @@ export async function getStorageStats(): Promise<{
   return {
     hasLabelsDb: !!labelsDbMeta,
     labelsEntryCount: labelsDbMeta?.entryCount || 0,
+    hasLibraryDb: !!libraryDbMeta,
+    libraryEntryCount: libraryDbMeta?.entryCount || 0,
     ownedCartsCount,
     settingsCount,
     gamePaksCount,
@@ -663,6 +741,7 @@ export async function getStorageStats(): Promise<{
  */
 export async function exportAllData(): Promise<{
   labelsDb: ArrayBuffer | null;
+  libraryDb: ArrayBuffer | null;
   ownedCarts: OwnedCartridge[];
   settings: StoredSettings[];
   gamePaks: StoredGamePak[];
@@ -671,8 +750,9 @@ export async function exportAllData(): Promise<{
 }> {
   const db = await getDb();
 
-  const [labelsDb, ownedCarts, settings, gamePaks, backups, userCarts] = await Promise.all([
+  const [labelsDb, libraryDb, ownedCarts, settings, gamePaks, backups, userCarts] = await Promise.all([
     getLabelsDb(),
+    getLibraryDb(),
     db.getAll('ownedCarts'),
     db.getAll('settings'),
     db.getAll('gamePaks'),
@@ -680,5 +760,5 @@ export async function exportAllData(): Promise<{
     db.getAll('userCarts'),
   ]);
 
-  return { labelsDb, ownedCarts, settings, gamePaks, backups, userCarts };
+  return { labelsDb, libraryDb, ownedCarts, settings, gamePaks, backups, userCarts };
 }

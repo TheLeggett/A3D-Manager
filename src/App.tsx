@@ -2,12 +2,14 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { trackPageView } from './lib/analytics';
 import { CartridgesPage } from './components/CartridgesPage';
+import { StatsPage } from './components/StatsPage';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { HelpPage } from './components/HelpPage';
 import { SettingsPage } from './components/SettingsPage';
 import { ComponentTestPage } from './components/ComponentTestPage';
 import { LabelSyncProvider } from './components/LabelSyncIndicator';
+import { LibrarySyncProvider } from './components/LibrarySyncIndicator';
 import { ServicesProvider, ServicesContext } from './contexts/ServicesContext';
 import { BrowserCompatibilityScreen, BrowserCompatibilityProvider, useBrowserCompatibility } from './components/BrowserCompatibilityScreen';
 import { SDCardOnboarding } from './components/SDCardOnboarding';
@@ -243,17 +245,20 @@ function AppContent() {
   const { showModal: showDataSafetyModal, acknowledge: acknowledgeDataSafety } = useDataSafetyModal();
   const [onboardingSkipped, setOnboardingSkipped] = useState(false);
 
+  // Check if startup modals are disabled (developer setting)
+  const startupModalsDisabled = localStorage.getItem('dev:disableStartupModals') === 'true';
+
   // Show browser compatibility screen (only in static mode)
   if (isStaticMode && showCompatibilityScreen) {
     return <BrowserCompatibilityScreen />;
   }
 
   // Show onboarding modal whenever SD card is not connected (in static mode)
-  // Also check if user chose to skip onboarding
-  const showOnboarding = isStaticMode && !servicesContext?.isSDCardConnected && !onboardingSkipped;
+  // Also check if user chose to skip onboarding or if modals are disabled
+  const showOnboarding = isStaticMode && !servicesContext?.isSDCardConnected && !onboardingSkipped && !startupModalsDisabled;
 
   // Show data safety modal after SD card connected but before using the app (once per session)
-  const showDataSafety = isStaticMode && servicesContext?.isSDCardConnected && showDataSafetyModal;
+  const showDataSafety = isStaticMode && servicesContext?.isSDCardConnected && showDataSafetyModal && !startupModalsDisabled;
 
   return (
     <div className="app">
@@ -262,6 +267,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Navigate to="/cartridges" replace />} />
           <Route path="/cartridges" element={<CartridgesPage />} />
+          <Route path="/stats" element={<StatsPage />} />
           <Route path="/labels" element={<Navigate to="/cartridges" replace />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/help" element={<HelpPage />} />
@@ -286,7 +292,9 @@ function AppWithProviders() {
         <SDCardProvider>
           <SettingsClipboardProvider>
             <LabelSyncProvider>
-              <AppContent />
+              <LibrarySyncProvider>
+                <AppContent />
+              </LibrarySyncProvider>
             </LabelSyncProvider>
           </SettingsClipboardProvider>
         </SDCardProvider>

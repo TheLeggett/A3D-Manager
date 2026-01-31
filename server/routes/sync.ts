@@ -18,6 +18,14 @@ import {
   getLocalLabelsDbPath,
   getLabelsDbStatus,
 } from '../lib/labels-db-core.js';
+import {
+  hasLocalLibraryDb,
+  getLocalLibraryDbPath,
+  getLocalLibraryDbInfo,
+  hasSDLibraryDb,
+  getSDLibraryDbInfo,
+} from '../lib/library-db-core.js';
+import { compareQuick as compareLibraryQuick } from '../lib/library-db-compare.js';
 
 const router = Router();
 
@@ -344,6 +352,185 @@ router.get('/labels/download-stream', async (req: Request, res: Response) => {
     // Copy from SD to local with progress
     await copyFileWithProgress(
       sdLabelsPath,
+      localPath,
+      (progress) => sendProgress(formatProgressEvent(progress)),
+      50
+    );
+
+    sendProgress({
+      type: 'complete',
+      success: true,
+      entryCount,
+      fileSize: sdStats.size,
+    });
+  } catch (error) {
+    sendProgress({
+      type: 'error',
+      error: `Download failed: ${error}`,
+    });
+  }
+
+  res.end();
+});
+
+// =============================================================================
+// Library.db Sync Routes
+// =============================================================================
+
+/**
+ * Get the library.db path on an SD card
+ */
+function getSDLibraryPath(sdCardPath: string): string {
+  return path.join(sdCardPath, 'Library', 'N64', 'library.db');
+}
+
+// GET /api/sync/library/exists - Fast check if library.db exists on SD card
+router.get('/library/exists', async (req, res) => {
+  try {
+    const sdCardPath = req.query.sdCardPath as string;
+
+    if (!(await validateSDCardPath(sdCardPath, res))) return;
+
+    const exists = hasSDLibraryDb(sdCardPath);
+    const info = exists ? getSDLibraryDbInfo(sdCardPath) : null;
+
+    res.json({
+      exists: exists && (info?.fileSize ?? 0) > 0,
+      fileSize: info?.fileSize ?? 0,
+      fileSizeFormatted: formatBytes(info?.fileSize ?? 0),
+      entryCount: info?.entryCount ?? 0,
+    });
+  } catch (error) {
+    console.error('Error checking SD library existence:', error);
+    res.status(500).json({ error: 'Failed to check SD library.db' });
+  }
+});
+
+// GET /api/sync/library/status - Get sync status for library.db (local vs SD)
+router.get('/library/status', async (req, res) => {
+  try {
+    const sdCardPath = req.query.sdCardPath as string;
+
+    if (!(await validateSDCardPath(sdCardPath, res))) return;
+
+    const status = compareLibraryQuick(sdCardPath);
+
+    res.json({
+      local: {
+        exists: status.local.exists,
+        entryCount: status.local.entryCount,
+        fileSize: status.local.fileSize,
+        fileSizeFormatted: formatBytes(status.local.fileSize),
+        lastModified: status.local.lastModified?.toISOString(),
+      },
+      sd: {
+        exists: status.sd.exists,
+        entryCount: status.sd.entryCount,
+        fileSize: status.sd.fileSize,
+        fileSizeFormatted: formatBytes(status.sd.fileSize),
+        lastModified: status.sd.lastModified?.toISOString(),
+      },
+      newerVersion: status.newerVersion,
+    });
+  } catch (error) {
+    console.error('Error getting library sync status:', error);
+    res.status(500).json({ error: 'Failed to get library sync status' });
+  }
+});
+
+// GET /api/sync/library/upload-stream - Upload library.db to SD with SSE progress
+router.get('/library/upload-stream', async (req: Request, res: Response) => {
+  const sdCardPath = req.query.sdCardPath as string;
+
+  if (!(await validateSDCardPath(sdCardPath, res))) return;
+
+  const hasLibrary = hasLocalLibraryDb();
+  if (!hasLibrary) {
+    res.status(400).json({ error: 'No local library.db to upload' });
+    return;
+  }
+
+  setupSSE(res);
+  const sendProgress = createProgressSender(res);
+  const sdLibraryPath = getSDLibraryPath(sdCardPath);
+
+  try {
+    const localInfo = getLocalLibraryDbInfo();
+    const entryCount = localInfo?.entryCount ?? 0;
+    const fileSize = localInfo?.fileSize ?? 0;
+
+    sendProgress({
+      type: 'start',
+      direction: 'upload',
+      entryCount,
+      totalBytes: fileSize,
+    });
+
+    const localPath = getLocalLibraryDbPath();
+
+    // Ensure target directory exists
+    await mkdir(path.dirname(sdLibraryPath), { recursive: true });
+
+    // Copy from local to SD with progress
+    await copyFileWithProgress(
+      localPath,
+      sdLibraryPath,
+      (progress) => sendProgress(formatProgressEvent(progress)),
+      50
+    );
+
+    sendProgress({
+      type: 'complete',
+      success: true,
+      entryCount,
+      fileSize,
+    });
+  } catch (error) {
+    sendProgress({
+      type: 'error',
+      error: `Upload failed: ${error}`,
+    });
+  }
+
+  res.end();
+});
+
+// GET /api/sync/library/download-stream - Download library.db from SD with SSE progress
+router.get('/library/download-stream', async (req: Request, res: Response) => {
+  const sdCardPath = req.query.sdCardPath as string;
+
+  if (!(await validateSDCardPath(sdCardPath, res))) return;
+
+  const sdLibraryPath = getSDLibraryPath(sdCardPath);
+
+  if (!(await fileExists(sdLibraryPath))) {
+    res.status(400).json({ error: 'No library.db on SD card' });
+    return;
+  }
+
+  setupSSE(res);
+  const sendProgress = createProgressSender(res);
+  const localPath = getLocalLibraryDbPath();
+
+  try {
+    // Get SD file info
+    const sdStats = await stat(sdLibraryPath);
+    const sdInfo = getSDLibraryDbInfo(sdCardPath);
+    const entryCount = sdInfo?.entryCount ?? 0;
+
+    sendProgress({
+      type: 'start',
+      direction: 'download',
+      entryCount,
+      totalBytes: sdStats.size,
+    });
+
+    // Ensure local directory exists
+    await mkdir(path.dirname(localPath), { recursive: true });
+
+    // Copy from SD to local with progress
+    await copyFileWithProgress(
+      sdLibraryPath,
       localPath,
       (progress) => sendProgress(formatProgressEvent(progress)),
       50

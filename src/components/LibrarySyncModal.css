@@ -1,0 +1,39 @@
+/* Library Sync Modal Styles */
+/* Reuses most styles from LabelSyncModal.css */
+
+.library-sync-modal {
+  max-width: 500px;
+}
+
+.library-sync-modal .sync-status-date {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.library-sync-modal .sync-recommendation {
+  text-align: center;
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--accent-color);
+}
+
+.library-sync-modal .sync-direction-btn.recommended {
+  border-color: var(--accent-color);
+}
+
+.library-sync-modal .recommended-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: var(--accent-color);
+  color: white;
+  font-size: 10px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
+}

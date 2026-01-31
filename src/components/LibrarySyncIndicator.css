@@ -1,0 +1,99 @@
+/* Library Sync Indicator */
+.library-sync-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.library-sync-label {
+  color: var(--text-secondary);
+}
+
+.library-sync-light {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.library-sync-button {
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 10px;
+  transition: background 0.2s;
+}
+
+.library-sync-button:hover {
+  background: var(--accent-color-hover);
+}
+
+/* Status-specific styles */
+.library-sync-indicator.synced .library-sync-light {
+  background: #4caf50;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+}
+
+.library-sync-indicator.synced .library-sync-label {
+  color: #4caf50;
+}
+
+.library-sync-indicator.sync-required .library-sync-light {
+  background: #ff9800;
+  box-shadow: 0 0 6px rgba(255, 152, 0, 0.5);
+  animation: pulse-orange 2s infinite;
+}
+
+.library-sync-indicator.sync-required .library-sync-label {
+  color: #ff9800;
+}
+
+.library-sync-indicator.sd-only .library-sync-light {
+  background: #2196f3;
+  box-shadow: 0 0 6px rgba(33, 150, 243, 0.5);
+}
+
+.library-sync-indicator.sd-only .library-sync-label {
+  color: #2196f3;
+}
+
+.library-sync-indicator.local-only .library-sync-light {
+  background: var(--text-muted);
+}
+
+.library-sync-indicator.none .library-sync-light {
+  background: var(--text-muted);
+  opacity: 0.5;
+}
+
+.library-sync-indicator.checking .library-sync-light {
+  background: var(--text-muted);
+  animation: pulse-check 1s infinite;
+}
+
+@keyframes pulse-orange {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes pulse-check {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}

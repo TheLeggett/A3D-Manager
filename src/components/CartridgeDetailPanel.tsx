@@ -6,6 +6,7 @@ import { Tooltip } from './ui/Tooltip';
 import { CartridgeSprite } from './CartridgeSprite';
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { useLabelSync } from './LabelSyncIndicator';
+import { useLibrarySync } from './LibrarySyncIndicator';
 import { queueSettingsSave, onSaveStatus, flushPendingSaves } from '../lib/settingsAutoSave';
 import { trackLabelUploaded, trackLabelDeleted, trackSettingsCopied } from '../lib/analytics';
 import {
@@ -31,6 +32,7 @@ interface CartridgeDetailPanelProps {
   cartId: string;
   gameName?: string;
   sdCardPath?: string;
+  initialTab?: TabId;
   onClose: () => void;
   onUpdate: () => void;
   onDelete?: () => void;
@@ -118,17 +120,18 @@ interface GamePakBackup {
   size: number;
 }
 
-type TabId = 'label' | 'settings' | 'gamepak';
+type TabId = 'label' | 'settings' | 'gamepak' | 'stats';
 
 export function CartridgeDetailPanel({
   cartId,
   gameName,
   sdCardPath,
+  initialTab = 'label',
   onClose,
   onUpdate,
   onDelete,
 }: CartridgeDetailPanelProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('label');
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
   const [isOwned, setIsOwned] = useState(false);
   const [lookupResult, setLookupResult] = useState<LookupResult | null>(null);
   const { imageCacheBuster: globalCacheBuster } = useImageCache();
@@ -346,6 +349,12 @@ export function CartridgeDetailPanel({
             >
               Game Pak
             </button>
+            <button
+              className={`tab-btn ${activeTab === 'stats' ? 'active' : ''}`}
+              onClick={() => setActiveTab('stats')}
+            >
+              Stats
+            </button>
           </div>
           <div className="ownership-toggle">
             <ToggleSwitch
@@ -385,6 +394,12 @@ export function CartridgeDetailPanel({
               cartId={cartId}
               sdCardPath={sdCardPath}
               gameName={displayName}
+              servicesContext={servicesContext}
+            />
+          )}
+          {activeTab === 'stats' && (
+            <StatsTab
+              cartId={cartId}
               servicesContext={servicesContext}
             />
           )}
@@ -894,7 +909,10 @@ function SettingsTab({ cartId, sdCardPath, gameName, servicesContext }: Settings
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showExportImportMenu]);
 
-  const isConnected = !!sdCardPath;
+  // Check SD card connection - in static mode, use servicesContext; in server mode, use sdCardPath
+  const isConnected = isStaticMode
+    ? !!servicesContext?.sdCard
+    : !!sdCardPath;
 
   const fetchInfo = useCallback(async () => {
     try {
@@ -950,7 +968,8 @@ function SettingsTab({ cartId, sdCardPath, gameName, servicesContext }: Settings
     } finally {
       setLoading(false);
     }
-  }, [cartId, sdCardPath, servicesContext]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartId, sdCardPath, servicesContext?.sdCard]);
 
   // Initial load and auto-import logic
   useEffect(() => {
@@ -962,7 +981,8 @@ function SettingsTab({ cartId, sdCardPath, gameName, servicesContext }: Settings
       const hasSD = data.sd?.exists;
 
       // Auto-import from SD if no local settings but SD has them
-      if (!hasLocal && hasSD && sdCardPath && !autoImported) {
+      const sdConnected = isStaticMode ? !!servicesContext?.sdCard : !!sdCardPath;
+      if (!hasLocal && hasSD && sdConnected && !autoImported) {
         setAutoImported(true);
         setSyncing(true);
         try {
@@ -1008,10 +1028,14 @@ function SettingsTab({ cartId, sdCardPath, gameName, servicesContext }: Settings
     };
 
     loadAndCheck();
-  }, [cartId, sdCardPath, autoImported, fetchInfo, servicesContext]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartId, sdCardPath, autoImported]);
 
   const handleResolveConflict = async (choice: 'use-local' | 'use-sd') => {
-    if (!sdCardPath) return;
+    // Check SD card connection - in static mode use servicesContext, in server mode use sdCardPath
+    const hasSDConnection = isStaticMode ? !!servicesContext?.sdCard : !!sdCardPath;
+    if (!hasSDConnection) return;
+
     setSyncing(true);
     setError(null);
 
@@ -1264,7 +1288,6 @@ function SettingsTab({ cartId, sdCardPath, gameName, servicesContext }: Settings
   }
 
   const hasLocal = info?.local?.exists;
-  const hasSD = info?.sd?.exists;
 
   return (
     <div className="tab-content settings-tab">
@@ -1305,11 +1328,11 @@ function SettingsTab({ cartId, sdCardPath, gameName, servicesContext }: Settings
         </div>
       )}
 
-      {/* No settings - show create option */}
-      {!hasLocal && !hasSD && conflictState === 'resolved' && (
+      {/* No local settings - show create option */}
+      {!hasLocal && conflictState === 'resolved' && (
         <div className="no-settings">
           <p className="empty-message">
-            No settings found for this cartridge.
+            No local settings found for this cartridge.
           </p>
           <div className="create-settings-options">
             <button className="btn-primary" onClick={handleCreateDefaults}>
@@ -1432,8 +1455,7 @@ type SettingsEditorTab = 'display' | 'hardware';
 function SettingsEditor({ cartId, settings: initialSettings, sdCardPath, servicesContext, onSettingsChange }: SettingsEditorProps) {
   const [activeTab, setActiveTab] = useState<SettingsEditorTab>('display');
   const [settings, setSettings] = useState<CartridgeSettings>(initialSettings);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_saveStatus, setSaveStatus] = useState<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
 
   // Track the initial settings JSON to detect actual changes
@@ -1451,32 +1473,39 @@ function SettingsEditor({ cartId, settings: initialSettings, sdCardPath, service
           setError(errorMsg || 'Save failed');
         } else if (status === 'saved') {
           setError(null);
-          // Update our baseline so we know current state is saved
-          initialSettingsJson.current = JSON.stringify(settings);
         }
       }
     });
     return unsubscribe;
-  }, [cartId, settings]);
+  }, [cartId]);
+
+  // Stable refs for callbacks and services
+  const onSettingsChangeRef = useRef(onSettingsChange);
+  const servicesContextRef = useRef(servicesContext);
+  onSettingsChangeRef.current = onSettingsChange;
+  servicesContextRef.current = servicesContext;
 
   // Auto-save when settings actually change from initial/saved state
   useEffect(() => {
     const currentJson = JSON.stringify(settings);
     // Only queue save if settings differ from initial/last-saved state
     if (currentJson !== initialSettingsJson.current) {
+      // Update baseline to prevent repeated saves of the same settings
+      initialSettingsJson.current = currentJson;
+
       // Pass browser services for static mode
-      if (isStaticMode && servicesContext) {
+      if (isStaticMode && servicesContextRef.current) {
         const browserServices = {
-          settings: servicesContext.services.settings,
+          settings: servicesContextRef.current.services.settings,
         };
-        queueSettingsSave(cartId, settings, sdCardPath, browserServices, servicesContext.sdCard || undefined);
+        queueSettingsSave(cartId, settings, sdCardPath, browserServices, servicesContextRef.current.sdCard || undefined);
       } else {
         queueSettingsSave(cartId, settings, sdCardPath);
       }
       // Notify parent of settings change so copy uses current settings
-      onSettingsChange?.(settings);
+      onSettingsChangeRef.current?.(settings);
     }
-  }, [cartId, settings, sdCardPath, servicesContext, onSettingsChange]);
+  }, [cartId, settings, sdCardPath]);
 
   // Helper to update display settings
   const updateDisplayMode = (mode: DisplayMode) => {
@@ -1567,6 +1596,13 @@ function SettingsEditor({ cartId, settings: initialSettings, sdCardPath, service
         >
           Hardware
         </button>
+        {saveStatus !== 'idle' && (
+          <span className={`save-status-indicator ${saveStatus}`}>
+            {saveStatus === 'saving' && 'Saving...'}
+            {saveStatus === 'saved' && 'Saved'}
+            {saveStatus === 'pending' && 'Pending...'}
+          </span>
+        )}
       </div>
 
       {error && <div className="error-message">{error}</div>}
@@ -1859,11 +1895,13 @@ export function GamePakTab({ cartId, sdCardPath, gameName, servicesContext }: Ga
     } finally {
       setLoading(false);
     }
-  }, [cartId, sdCardPath, servicesContext]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartId, sdCardPath, servicesContext?.sdCard]);
 
   useEffect(() => {
     fetchInfo();
-  }, [fetchInfo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartId, sdCardPath]);
 
   // Fetch backups
   const fetchBackups = useCallback(async () => {
@@ -2071,7 +2109,10 @@ export function GamePakTab({ cartId, sdCardPath, gameName, servicesContext }: Ga
   };
 
   const handleResolveConflict = async (choice: 'use-local' | 'use-sd') => {
-    if (!sdCardPath) return;
+    // Check SD card connection - in static mode use servicesContext, in server mode use sdCardPath
+    const hasSDConnection = isStaticMode ? !!servicesContext?.sdCard : !!sdCardPath;
+    if (!hasSDConnection) return;
+
     setSyncing(true);
     setError(null);
 
@@ -2632,6 +2673,343 @@ export function GamePakTab({ cartId, sdCardPath, gameName, servicesContext }: Ga
           Game Paks are 32KB controller pak save files (controller_pak.img).
           These contain save data for games that use the Controller Pak accessory.
           The N64 Controller Pak has 123 user-accessible pages for save data.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Stats Tab
+// ============================================================================
+
+interface StatsTabProps {
+  cartId: string;
+  servicesContext: ServicesContextType | null;
+}
+
+interface LibraryStats {
+  hasStats: boolean;
+  playTime: number;
+  sessions: number;
+  addedTime: number;
+  addedDate?: Date;
+}
+
+function StatsTab({ cartId, servicesContext }: StatsTabProps) {
+  const { markLocalChanges } = useLibrarySync();
+  const [stats, setStats] = useState<LibraryStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // Editable form state
+  const [playTimeHours, setPlayTimeHours] = useState(0);
+  const [playTimeMinutes, setPlayTimeMinutes] = useState(0);
+  const [playTimeSeconds, setPlayTimeSeconds] = useState(0);
+  const [sessions, setSessions] = useState(0);
+  const [addedDate, setAddedDate] = useState('');
+
+  // Track if form has been modified
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Load stats
+  useEffect(() => {
+    async function loadStats() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        if (isStaticMode && servicesContext) {
+          const { libraryDb } = servicesContext.services;
+          const cartStats = await libraryDb.getCartridgeStats(cartId);
+
+          if (cartStats.hasStats) {
+            const data: LibraryStats = {
+              hasStats: true,
+              playTime: cartStats.playTime || 0,
+              sessions: cartStats.sessions || 0,
+              addedTime: cartStats.addedTime || 0,
+              addedDate: cartStats.addedDate,
+            };
+            setStats(data);
+
+            // Initialize form state
+            const hours = Math.floor(data.playTime / 3600);
+            const minutes = Math.floor((data.playTime % 3600) / 60);
+            const seconds = data.playTime % 60;
+            setPlayTimeHours(hours);
+            setPlayTimeMinutes(minutes);
+            setPlayTimeSeconds(seconds);
+            setSessions(data.sessions);
+
+            // Format datetime for input (datetime-local expects YYYY-MM-DDTHH:mm)
+            // Note: The Analogue stores naive local time, so we use the UTC representation
+            // which actually represents the local time the user saw on the console
+            if (data.addedDate) {
+              setAddedDate(data.addedDate.toISOString().slice(0, 16));
+            }
+          } else {
+            setStats({ hasStats: false, playTime: 0, sessions: 0, addedTime: 0 });
+          }
+        } else {
+          // Server mode
+          const response = await fetch(`/api/library/entry/${cartId}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.exists) {
+              setStats({
+                hasStats: true,
+                playTime: data.playTime || 0,
+                sessions: data.sessions || 0,
+                addedTime: data.addedTime || 0,
+                addedDate: data.addedDate ? new Date(data.addedDate) : undefined,
+              });
+
+              const hours = Math.floor(data.playTime / 3600);
+              const minutes = Math.floor((data.playTime % 3600) / 60);
+              const seconds = data.playTime % 60;
+              setPlayTimeHours(hours);
+              setPlayTimeMinutes(minutes);
+              setPlayTimeSeconds(seconds);
+              setSessions(data.sessions || 0);
+
+              if (data.addedDate) {
+                setAddedDate(new Date(data.addedDate).toISOString().slice(0, 16));
+              }
+            } else {
+              setStats({ hasStats: false, playTime: 0, sessions: 0, addedTime: 0 });
+            }
+          }
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load stats');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStats();
+  }, [cartId, servicesContext]);
+
+  // Format play time for display
+  const formatPlayTime = (seconds: number): string => {
+    if (seconds === 0) return '0m';
+    if (seconds < 60) return `${seconds}s`;
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours === 0) return `${minutes}m`;
+    return `${hours}h ${minutes}m`;
+  };
+
+  // Handle form changes
+  const handlePlayTimeChange = (h: number, m: number, s: number) => {
+    setPlayTimeHours(Math.max(0, h));
+    setPlayTimeMinutes(Math.max(0, Math.min(59, m)));
+    setPlayTimeSeconds(Math.max(0, Math.min(59, s)));
+    setIsDirty(true);
+  };
+
+  const handleSessionsChange = (value: number) => {
+    setSessions(Math.max(0, value));
+    setIsDirty(true);
+  };
+
+  const handleDateChange = (value: string) => {
+    setAddedDate(value);
+    setIsDirty(true);
+  };
+
+  // Save changes
+  const handleSave = async () => {
+    if (!stats?.hasStats) return;
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const playTime = playTimeHours * 3600 + playTimeMinutes * 60 + playTimeSeconds;
+
+      // Convert date to library.db timestamp
+      let addedTime = stats.addedTime;
+      if (addedDate) {
+        const EPOCH_UNIX = 1740350607; // Feb 23, 2025 22:43:27 UTC
+        const dateObj = new Date(addedDate);
+        addedTime = Math.floor(dateObj.getTime() / 1000) - EPOCH_UNIX;
+      }
+
+      if (isStaticMode && servicesContext) {
+        const { libraryDb } = servicesContext.services;
+        await libraryDb.updateAndSaveEntry(parseInt(cartId, 16), {
+          playTime,
+          sessions,
+          addedTime,
+        });
+      } else {
+        const response = await fetch(`/api/library/entry/${cartId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ playTime, sessions, addedTime }),
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to save');
+        }
+      }
+
+      // Update local state
+      setStats(prev => prev ? { ...prev, playTime, sessions, addedTime } : null);
+      setIsDirty(false);
+      markLocalChanges();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Reset form to original values
+  const handleReset = () => {
+    if (!stats) return;
+
+    const hours = Math.floor(stats.playTime / 3600);
+    const minutes = Math.floor((stats.playTime % 3600) / 60);
+    const seconds = stats.playTime % 60;
+    setPlayTimeHours(hours);
+    setPlayTimeMinutes(minutes);
+    setPlayTimeSeconds(seconds);
+    setSessions(stats.sessions);
+
+    if (stats.addedDate) {
+      setAddedDate(stats.addedDate.toISOString().slice(0, 16));
+    }
+
+    setIsDirty(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="stats-tab-loading">
+        <div className="spinner" />
+        <p>Loading play statistics...</p>
+      </div>
+    );
+  }
+
+  if (!stats?.hasStats) {
+    return (
+      <div className="stats-tab-empty">
+        <h3>No Play Statistics</h3>
+        <p>
+          This cartridge doesn't have any play statistics recorded.
+          Play this game on your Analogue 3D to start tracking statistics.
+        </p>
+        <p className="text-muted">
+          Statistics are stored in <code>library.db</code> on your SD card.
+          Use the Sync button on the Stats page to download your library.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="stats-tab">
+      <div className="stats-summary-card">
+        <div className="stats-summary-item">
+          <span className="stats-summary-value">{formatPlayTime(stats.playTime)}</span>
+          <span className="stats-summary-label">Play Time</span>
+        </div>
+        <div className="stats-summary-item">
+          <span className="stats-summary-value">{stats.sessions}</span>
+          <span className="stats-summary-label">Sessions</span>
+        </div>
+        <div className="stats-summary-item">
+          <span className="stats-summary-value">
+            {stats.addedDate ? stats.addedDate.toLocaleDateString() : '-'}
+          </span>
+          <span className="stats-summary-label">Added</span>
+        </div>
+      </div>
+
+      <div className="stats-edit-form">
+        <h4>Edit Statistics</h4>
+
+        <div className="stats-field">
+          <label>Play Time</label>
+          <div className="stats-time-inputs">
+            <input
+              type="number"
+              min="0"
+              max="999"
+              value={playTimeHours}
+              onChange={(e) => handlePlayTimeChange(parseInt(e.target.value) || 0, playTimeMinutes, playTimeSeconds)}
+            />
+            <span>h</span>
+            <input
+              type="number"
+              min="0"
+              max="59"
+              value={playTimeMinutes}
+              onChange={(e) => handlePlayTimeChange(playTimeHours, parseInt(e.target.value) || 0, playTimeSeconds)}
+            />
+            <span>m</span>
+            <input
+              type="number"
+              min="0"
+              max="59"
+              value={playTimeSeconds}
+              onChange={(e) => handlePlayTimeChange(playTimeHours, playTimeMinutes, parseInt(e.target.value) || 0)}
+            />
+            <span>s</span>
+          </div>
+        </div>
+
+        <div className="stats-field">
+          <label>Sessions</label>
+          <input
+            type="number"
+            min="0"
+            value={sessions}
+            onChange={(e) => handleSessionsChange(parseInt(e.target.value) || 0)}
+            className="stats-sessions-input"
+          />
+        </div>
+
+        <div className="stats-field">
+          <label>Date & Time Added</label>
+          <input
+            type="datetime-local"
+            value={addedDate}
+            onChange={(e) => handleDateChange(e.target.value)}
+            className="stats-datetime-input"
+          />
+        </div>
+
+        {error && <p className="stats-error">{error}</p>}
+
+        <div className="stats-actions">
+          <button
+            className="btn-secondary"
+            onClick={handleReset}
+            disabled={!isDirty || saving}
+          >
+            Reset
+          </button>
+          <button
+            className="btn-primary"
+            onClick={handleSave}
+            disabled={!isDirty || saving}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+
+      <div className="info-box">
+        <h4 className="text-label">About Statistics</h4>
+        <p>
+          Play statistics are tracked by the Analogue 3D and stored in <code>library.db</code> on your SD card.
+          Changes made here will be saved to your local copy. Use Sync to push changes to your SD card.
         </p>
       </div>
     </div>

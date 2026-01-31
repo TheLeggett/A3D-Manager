@@ -221,25 +221,82 @@ interface CleanModeSettings {
 ### library.db (Game Library Database)
 
 **Format**: Proprietary Analogue binary format
-**Size**: ~16KB
-**Purpose**: Index of all games the system knows about
+**Size**: Variable (~16KB minimum, grows with entries)
+**Location**: `/Library/N64/library.db`
+**Purpose**: Index of all games and their play statistics
+
+#### Overview
+
+The library.db file tracks which games have been played on the Analogue 3D and stores play statistics for each game including:
+- **Added Time**: When the game was first played/added to the library
+- **Play Time**: Total cumulative play time in seconds
+- **Sessions**: Number of times the game has been launched
 
 #### Structure
 
 ```
-Offset    Size    Description
-0x00      1       Magic byte (0x07)
-0x01      11      Identifier "Analogue-Co" (null-padded to 32 bytes)
-0x20      32      File type "Analogue-3D.library" (null-padded)
-0x40      4       Version (0x00010000 = v1.0)
-0x44-0xFF         Reserved (zeros)
-0x100     N×4     Array of 32-bit little-endian cartridge IDs
-...               Remaining bytes are 0xFF (empty slots)
+Offset      Size      Description
+────────────────────────────────────────────────────────────────
+0x00        1         Magic byte (0x07)
+0x01        31        Identifier "Analogue-Co" (null-padded to 32 bytes)
+0x20        32        File type "Analogue-3D.library" (null-padded)
+0x40        4         Version (0x00010000 = v1.0)
+0x44        4         Unknown (observed: 0x00010000)
+0x48-0xFF             Reserved (zeros)
+
+0x100       16KB      Cart ID Table - Fixed array of 4096 32-bit little-endian cart IDs
+                      Empty slots contain 0xFFFFFFFF
+
+0x4100      N×12      Extended Data - Per-cart statistics (12 bytes each)
+                      Corresponds 1:1 with Cart ID Table entries
 ```
 
-The cartridge IDs at offset 0x100 are stored in **little-endian** format. For example:
+#### Cart ID Table (0x100 - 0x40FF)
+
+The cartridge IDs are stored in **little-endian** format:
 - Folder `ac631da0` → stored as `a0 1d 63 ac`
 - Folder `e5240d18` → stored as `18 0d 24 e5`
+- Empty slot → stored as `ff ff ff ff`
+
+#### Extended Data Section (0x4100+)
+
+Each cart has 12 bytes of extended data at offset `0x4100 + (index × 12)`:
+
+| Offset | Size | Type | Description |
+|--------|------|------|-------------|
+| +0 | 4 | uint32_le | `addedTime` - Seconds since epoch when game was first played |
+| +4 | 4 | uint32_le | `playTime` - Total play time in seconds |
+| +8 | 4 | uint32_le | `sessions` - Number of play sessions |
+
+#### Timestamp Epoch
+
+The `addedTime` field uses a custom epoch, not Unix time:
+
+| Property | Value |
+|----------|-------|
+| Epoch Date | February 23, 2025 22:43:27 UTC |
+| Unix Equivalent | 1740350607 |
+
+To convert `addedTime` to a standard Unix timestamp:
+```
+unixTimestamp = addedTime + 1740350607
+```
+
+#### Example
+
+For a game at index 5 in the Cart ID Table:
+- Cart ID location: `0x100 + (5 × 4) = 0x114`
+- Extended data location: `0x4100 + (5 × 12) = 0x413C`
+
+If the extended data bytes at 0x413C are:
+```
+80 1A 3E 00  |  45 01 00 00  |  03 00 00 00
+```
+
+This decodes as:
+- `addedTime`: 0x003E1A80 = 4,070,016 seconds since epoch → March 29, 2025
+- `playTime`: 0x00000145 = 325 seconds (5 minutes 25 seconds)
+- `sessions`: 0x00000003 = 3 play sessions
 
 ### labels.db (Master Label/Artwork Database)
 

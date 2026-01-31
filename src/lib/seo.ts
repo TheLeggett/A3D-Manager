@@ -30,6 +30,7 @@ export function usePageTitle(title?: string, includeBaseName = true) {
  */
 export const SEO_TITLES = {
   cartridges: 'Cartridges',
+  stats: 'Play Statistics',
   settings: 'Settings',
   help: 'Help & Support',
 } as const;

@@ -2,8 +2,9 @@ import { useState, useCallback, useContext } from 'react';
 import { useSDCard, isStaticMode } from '../App';
 import { ServicesContext } from '../contexts/ServicesContext';
 import { ConnectionIndicator } from './ConnectionIndicator';
-import { LabelSyncIndicator } from './LabelSyncIndicator';
+import { CombinedSyncIndicator } from './CombinedSyncIndicator';
 import { LabelSyncModal } from './LabelSyncModal';
+import { LibrarySyncModal } from './LibrarySyncModal';
 import './SDCardSelector.css';
 
 export function SDCardSelector() {
@@ -23,6 +24,7 @@ export function SDCardSelector() {
     : legacyContext.selectedSDCard?.name;
 
   const [showSyncModal, setShowSyncModal] = useState(false);
+  const [showLibrarySyncModal, setShowLibrarySyncModal] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
 
   // Handle clicking on the SD card status to select/change SD card
@@ -89,10 +91,17 @@ export function SDCardSelector() {
           </button>
         )}
       </div>
-      <LabelSyncIndicator onSyncClick={() => setShowSyncModal(true)} />
+      <CombinedSyncIndicator
+        onLabelSyncClick={() => setShowSyncModal(true)}
+        onLibrarySyncClick={() => setShowLibrarySyncModal(true)}
+      />
       <LabelSyncModal
         isOpen={showSyncModal}
         onClose={() => setShowSyncModal(false)}
+      />
+      <LibrarySyncModal
+        isOpen={showLibrarySyncModal}
+        onClose={() => setShowLibrarySyncModal(false)}
       />
     </div>
   );

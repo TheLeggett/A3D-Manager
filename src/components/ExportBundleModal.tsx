@@ -19,7 +19,9 @@ export function ExportBundleModal({
 }: ExportBundleModalProps) {
   const servicesContext = useContext(ServicesContext);
   const [includeLabels, setIncludeLabels] = useState(true);
+  const [includeLibrary, setIncludeLibrary] = useState(true);
   const [includeOwnership, setIncludeOwnership] = useState(true);
+  const [includeUserCarts, setIncludeUserCarts] = useState(true);
   const [includeSettings, setIncludeSettings] = useState(true);
   const [includeGamePaks, setIncludeGamePaks] = useState(true);
   const [includeGamePakBackups, setIncludeGamePakBackups] = useState(true);
@@ -32,7 +34,9 @@ export function ExportBundleModal({
   useEffect(() => {
     if (isOpen) {
       setIncludeLabels(true);
+      setIncludeLibrary(true);
       setIncludeOwnership(true);
+      setIncludeUserCarts(true);
       setIncludeSettings(true);
       setIncludeGamePaks(true);
       setIncludeGamePakBackups(true);
@@ -47,7 +51,9 @@ export function ExportBundleModal({
 
       const exportOptions = {
         includeLabels,
+        includeLibrary,
         includeOwnership,
+        includeUserCarts,
         includeSettings,
         includeGamePaks,
         includeGamePakBackups,
@@ -122,7 +128,7 @@ export function ExportBundleModal({
           <Button
             variant="primary"
             onClick={handleExport}
-            disabled={exporting || (!includeLabels && !includeOwnership && !includeSettings && !includeGamePaks && !includeGamePakBackups)}
+            disabled={exporting || (!includeLabels && !includeLibrary && !includeOwnership && !includeUserCarts && !includeSettings && !includeGamePaks && !includeGamePakBackups)}
             loading={exporting}
           >
             Export
@@ -153,6 +159,24 @@ export function ExportBundleModal({
               {isSelectionExport
                 ? 'Label artwork for selected cartridges'
                 : 'All cartridge label artwork (labels.db)'
+              }
+            </span>
+          </div>
+        </label>
+
+        <label className={`export-option ${isSelectionExport ? 'disabled' : ''}`}>
+          <input
+            type="checkbox"
+            checked={includeLibrary && !isSelectionExport}
+            onChange={(e) => setIncludeLibrary(e.target.checked)}
+            disabled={exporting || isSelectionExport}
+          />
+          <div className="option-content">
+            <span className="option-label">Library</span>
+            <span className="option-desc">
+              {isSelectionExport
+                ? 'Not available for selection exports'
+                : 'Play statistics (library.db)'
               }
             </span>
           </div>
@@ -225,6 +249,24 @@ export function ExportBundleModal({
               {isSelectionExport
                 ? 'Mark selected cartridges as owned on import'
                 : 'Your list of owned cartridges'
+              }
+            </span>
+          </div>
+        </label>
+
+        <label className="export-option">
+          <input
+            type="checkbox"
+            checked={includeUserCarts}
+            onChange={(e) => setIncludeUserCarts(e.target.checked)}
+            disabled={exporting}
+          />
+          <div className="option-content">
+            <span className="option-label">Custom Cart Names</span>
+            <span className="option-desc">
+              {isSelectionExport
+                ? 'Custom names for selected cartridges'
+                : 'Names assigned to unrecognized cartridges'
               }
             </span>
           </div>

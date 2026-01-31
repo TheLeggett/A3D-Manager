@@ -61,6 +61,18 @@ Full control over controller pak (Game Pak) save data:
 
 ![Edit Cartridge - Game Paks](src/assets/screenshots/Edit%20Cartridge%20-%20Game%20Paks.png)
 
+### Play Statistics
+
+View and manage your play time data from the Analogue 3D:
+
+- **Stats Page** with sortable list of all played games
+- **Play time tracking** showing total hours and minutes per game
+- **Session count** for number of times each game was launched
+- **Added date** showing when each game was first played
+- **Sync with SD card** to backup or restore your library.db
+- **Editable stats** to correct or customize your play data
+- **Per-game stats** visible in the cartridge detail panel
+
 ### Label Artwork
 
 Customize the label artwork displayed on the Analogue 3D home screen:
@@ -88,6 +100,7 @@ Flexible backup and sharing options:
 
 - **Bundle Export** (.a3d format) with selective data:
   - Labels (artwork)
+  - Play statistics (library.db)
   - Per-game settings
   - Game Pak saves
   - Game Pak backups
@@ -151,6 +164,16 @@ npm run dev
 ```
 
 The app will open at `http://localhost:5173` with the backend API running on port 3001. Your SD card will be detected automatically and you can eject/re-insert it freely while the app runs.
+
+### Static Mode (Browser-Only)
+
+For a fully browser-based experience without a backend server (uses File System Access API):
+
+```bash
+npm run dev:static
+```
+
+This mode uses IndexedDB for local storage and the File System Access API to read/write your SD card directly from the browser. Best for Chromium-based browsers (Chrome, Edge, Arc).
 
 ### Docker Installation
 

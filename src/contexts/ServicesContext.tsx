@@ -7,6 +7,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import * as labelsDbService from '../services/labels/LabelsDbService';
+import * as libraryDbService from '../services/library/LibraryDbService';
 import * as sdCardService from '../services/sd-card/SdCardService';
 import * as settingsService from '../services/settings/SettingsService';
 import * as gamePakService from '../services/game-pak/GamePakService';
@@ -35,6 +36,7 @@ export interface ServicesContextType {
   // Service exports (for direct access)
   services: {
     labelsDb: typeof labelsDbService;
+    libraryDb: typeof libraryDbService;
     sdCard: typeof sdCardService;
     settings: typeof settingsService;
     gamePak: typeof gamePakService;
@@ -187,6 +189,7 @@ export function ServicesProvider({ children }: ServicesProviderProps) {
   // Services object (stable reference)
   const services = {
     labelsDb: labelsDbService,
+    libraryDb: libraryDbService,
     sdCard: sdCardService,
     settings: settingsService,
     gamePak: gamePakService,
@@ -277,4 +280,15 @@ export function useImageProcessor() {
 export function useStorage() {
   const { services } = useServices();
   return services.storage;
+}
+
+/**
+ * Hook to access library database service
+ */
+export function useLibraryDb() {
+  const { services, sdCard } = useServices();
+  return {
+    ...services.libraryDb,
+    sdCard,
+  };
 }

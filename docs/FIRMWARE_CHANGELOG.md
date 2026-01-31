@@ -34,10 +34,22 @@ Release Date: January 2026
 
 | File | Version | Notes |
 |------|---------|-------|
-| library.db | v1.0 (0x00010000) | Initial release format |
-| labels.db | v2.0 (0x00020000) | Initial release format |
+| library.db | v1.0 (0x00010000) | Game library with play statistics (addedTime, playTime, sessions) |
+| labels.db | v2.0 (0x00020000) | Cartridge label artwork database |
 | controller_pak.img | - | 32KB raw N64 Controller Pak dump |
 | settings.json | - | JSON with 8 hardware settings |
+
+### library.db Play Statistics
+
+The library.db extended data section (offset 0x4100) was present from the initial release and tracks per-game statistics:
+
+| Field | Description |
+|-------|-------------|
+| addedTime | Timestamp when game was first played (custom epoch: Feb 23, 2025 22:43:27 UTC) |
+| playTime | Total cumulative play time in seconds |
+| sessions | Number of times the game has been launched |
+
+See [ANALOGUE_3D_SD_CARD_FORMAT.md](./ANALOGUE_3D_SD_CARD_FORMAT.md) for complete format specification.
 
 ### Original Hardware Settings
 

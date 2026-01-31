@@ -23,6 +23,12 @@ export function Navbar() {
           Cartridges
         </Link>
         <Link
+          to="/stats"
+          className={`nav-tab text-pixel ${location.pathname === '/stats' ? 'active' : ''}`}
+        >
+          Stats
+        </Link>
+        <Link
           to="/settings"
           className={`nav-tab text-pixel ${location.pathname === '/settings' ? 'active' : ''}`}
         >

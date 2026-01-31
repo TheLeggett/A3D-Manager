@@ -37,13 +37,13 @@ export function CartridgeSprite({
   loading = false,
   className = '',
 }: CartridgeSpriteProps) {
-  const [imgSrc, setImgSrc] = useState(artworkUrl);
+  const [imgSrc, setImgSrc] = useState(artworkUrl || PLACEHOLDER_URL);
   const overlayImage = color === 'black' ? '/n64-cart-black.png' : '/n64-cart-dark.png';
   const artworkSize = ARTWORK_SIZES[size];
 
   // Update imgSrc when artworkUrl prop changes
   useEffect(() => {
-    setImgSrc(artworkUrl);
+    setImgSrc(artworkUrl || PLACEHOLDER_URL);
   }, [artworkUrl]);
 
   const handleError = () => {

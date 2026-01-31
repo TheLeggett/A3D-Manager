@@ -14,6 +14,11 @@
  */
 
 import { parseLabelsDb, verifyHeader, DATA_START, IMAGE_SLOT_SIZE } from '../labels/LabelsDbService';
+import {
+  parseLibraryDb as parseLibraryDbFromService,
+  verifyHeader as verifyLibraryHeader,
+  LIBRARY_DB_SD_PATH,
+} from '../library/LibraryDbService';
 
 // =============================================================================
 // Types
@@ -381,6 +386,204 @@ export async function deleteLabelsDbFromSD(sdCard: BrowserSDCard): Promise<boole
     }
 
     await imagesDir.removeEntry('labels.db');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// =============================================================================
+// Library.db Operations
+// =============================================================================
+
+/**
+ * Get the path to library.db on the SD card
+ */
+export function getLibraryDbPath(): string {
+  return LIBRARY_DB_SD_PATH;
+}
+
+/**
+ * Check if library.db exists on the SD card
+ */
+export async function hasLibraryDbOnSD(sdCard: BrowserSDCard): Promise<boolean> {
+  return fileExists(sdCard.handle, getLibraryDbPath());
+}
+
+/**
+ * Check if library.db exists given a directory handle
+ */
+export async function hasLibraryDb(handle: FileSystemDirectoryHandle): Promise<boolean> {
+  return fileExists(handle, getLibraryDbPath());
+}
+
+/**
+ * Get library.db info from SD card without loading full data
+ */
+export async function getLibraryDbInfo(sdCard: BrowserSDCard): Promise<{
+  exists: boolean;
+  size?: number;
+  entryCount?: number;
+  lastModified?: Date;
+} | null> {
+  const fileHandle = await getFile(sdCard.handle, getLibraryDbPath());
+  if (!fileHandle) {
+    return { exists: false };
+  }
+
+  const file = await fileHandle.getFile();
+  const size = file.size;
+  const lastModified = new Date(file.lastModified);
+
+  // Read the file to get entry count
+  try {
+    const data = await file.arrayBuffer();
+    const library = parseLibraryDbFromService(data);
+    return {
+      exists: true,
+      size,
+      entryCount: library.entryCount,
+      lastModified,
+    };
+  } catch {
+    // If parsing fails, return basic info
+    return {
+      exists: true,
+      size,
+      lastModified,
+    };
+  }
+}
+
+/**
+ * Read library.db from SD card with optional progress callback
+ */
+export async function readLibraryDbFromSD(
+  sdCard: BrowserSDCard,
+  onProgress?: ProgressCallback
+): Promise<ArrayBuffer | null> {
+  const fileHandle = await getFile(sdCard.handle, getLibraryDbPath());
+  if (!fileHandle) {
+    return null;
+  }
+
+  const file = await fileHandle.getFile();
+  const totalBytes = file.size;
+
+  // If no progress callback, just read the whole file
+  if (!onProgress) {
+    return file.arrayBuffer();
+  }
+
+  // Read with progress using stream API
+  const reader = file.stream().getReader();
+  const chunks: Uint8Array[] = [];
+  let bytesRead = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      chunks.push(value);
+      bytesRead += value.byteLength;
+
+      onProgress({
+        bytesWritten: bytesRead,
+        totalBytes,
+        percentage: Math.round((bytesRead / totalBytes) * 100),
+      });
+    }
+
+    // Combine all chunks into a single ArrayBuffer
+    const result = new Uint8Array(bytesRead);
+    let offset = 0;
+    for (const chunk of chunks) {
+      result.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+
+    return result.buffer;
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+/**
+ * Write library.db to SD card
+ */
+export async function writeLibraryDbToSD(
+  sdCard: BrowserSDCard,
+  data: ArrayBuffer,
+  onProgress?: ProgressCallback
+): Promise<void> {
+  // Validate the data
+  const headerCheck = verifyLibraryHeader(data);
+  if (!headerCheck.valid) {
+    throw new Error(`Invalid library.db data: ${headerCheck.error}`);
+  }
+
+  // Ensure directory structure exists
+  const n64Dir = await getSubdirectory(sdCard.handle, 'Library/N64', true);
+  if (!n64Dir) {
+    throw new Error('Could not create N64 directory on SD card');
+  }
+
+  // Get or create the file
+  const fileHandle = await n64Dir.getFileHandle('library.db', { create: true });
+
+  // Write the data
+  const writable = await fileHandle.createWritable();
+
+  try {
+    // For progress tracking, we write in chunks
+    const chunkSize = 64 * 1024; // 64KB chunks
+    const totalBytes = data.byteLength;
+    let bytesWritten = 0;
+
+    const bytes = new Uint8Array(data);
+
+    while (bytesWritten < totalBytes) {
+      const end = Math.min(bytesWritten + chunkSize, totalBytes);
+      const chunk = bytes.slice(bytesWritten, end);
+      await writable.write(chunk);
+      bytesWritten = end;
+
+      if (onProgress) {
+        onProgress({
+          bytesWritten,
+          totalBytes,
+          percentage: Math.round((bytesWritten / totalBytes) * 100),
+        });
+      }
+    }
+
+    await writable.close();
+  } catch (err) {
+    // Make sure to close the writable on error
+    try {
+      await writable.abort();
+    } catch {
+      // Ignore abort errors
+    }
+    throw err;
+  }
+}
+
+/**
+ * Delete library.db from SD card
+ */
+export async function deleteLibraryDbFromSD(sdCard: BrowserSDCard): Promise<boolean> {
+  try {
+    const n64Dir = await getSubdirectory(sdCard.handle, 'Library/N64');
+    if (!n64Dir) {
+      return false;
+    }
+
+    await n64Dir.removeEntry('library.db');
     return true;
   } catch {
     return false;

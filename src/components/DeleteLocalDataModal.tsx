@@ -3,7 +3,7 @@ import { Modal, Button } from './ui';
 import { isStaticMode } from '../App';
 import { ServicesContext } from '../contexts/ServicesContext';
 
-export type LocalDataType = 'labels' | 'owned-carts' | 'user-carts' | 'game-data' | 'all';
+export type LocalDataType = 'labels' | 'library' | 'owned-carts' | 'user-carts' | 'game-data' | 'all';
 
 interface DeleteLocalDataModalProps {
   isOpen: boolean;
@@ -23,6 +23,12 @@ const DATA_TYPE_INFO: Record<LocalDataType, {
     description: 'This will delete your local labels.db file containing all cartridge artwork.',
     warning: 'You will need to re-import a labels.db file to see cartridge artwork again.',
     endpoint: '/api/local-data/labels',
+  },
+  library: {
+    title: 'Delete Local Library Database',
+    description: 'This will delete your local library.db file containing play statistics for all games.',
+    warning: 'You can sync your library.db from your SD card again at any time.',
+    endpoint: '/api/local-data/library',
   },
   'owned-carts': {
     title: 'Delete Owned Cartridges List',
@@ -80,6 +86,9 @@ export function DeleteLocalDataModal({ isOpen, onClose, onDeleted, dataType }: D
         switch (dataType) {
           case 'labels':
             await labelsDb.deleteLabelsDb();
+            break;
+          case 'library':
+            await servicesContext.services.libraryDb.deleteLocalLibraryDb();
             break;
           case 'owned-carts':
             await storage.clearOwnedCarts();

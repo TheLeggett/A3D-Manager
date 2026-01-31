@@ -27,7 +27,10 @@ export interface BundleManifest {
   appVersion: string;
   contents: {
     hasLabelsDb: boolean;
+    hasLibraryDb: boolean;
     hasOwnedCarts: boolean;
+    hasUserCarts?: boolean;
+    userCartsCount?: number;
     settingsCount: number;
     gamePaksCount: number;
     gamePakBackupsCount: number;
@@ -39,10 +42,15 @@ export interface BundleManifest {
 export interface BundleContents {
   manifest: BundleManifest;
   labelsDb?: ArrayBuffer;
+  libraryDb?: ArrayBuffer;
   labels: Map<string, ArrayBuffer>; // cartId -> PNG data
   ownedCarts?: {
     version: number;
     cartridges: Array<{ cartId: string; addedAt: string; source: string }>;
+  };
+  userCarts?: {
+    version: number;
+    carts: Array<{ cartId: string; name: string; addedAt: string }>;
   };
   settings: Map<string, unknown>; // cartId -> settings object
   gamePaks: Map<string, ArrayBuffer>; // cartId -> controller pak data
@@ -66,7 +74,9 @@ export type MergeStrategy = 'skip' | 'overwrite' | 'keep-both';
 
 export interface ImportOptions {
   importLabels: boolean;
+  importLibrary: boolean;
   importOwnership: boolean;
+  importUserCarts: boolean;
   importSettings: boolean;
   importGamePaks: boolean;
   importGamePakBackups: boolean;
@@ -76,8 +86,10 @@ export interface ImportOptions {
 export interface ImportResult {
   success: boolean;
   labelsImported: boolean;
+  libraryImported: boolean;
   individualLabelsImported: { added: number; updated: number; skipped: number };
   ownershipMerged: { added: number; skipped: number };
+  userCartsImported: { added: number; skipped: number; overwritten: number };
   settingsImported: { added: number; skipped: number; overwritten: number };
   gamePaksImported: { added: number; skipped: number; overwritten: number };
   gamePakBackupsImported: { added: number; skipped: number; merged: number };
@@ -93,7 +105,9 @@ export interface ImportResult {
  */
 export async function createBundle(options: {
   includeLabels?: boolean;
+  includeLibrary?: boolean;
   includeOwnership?: boolean;
+  includeUserCarts?: boolean;
   includeSettings?: boolean;
   includeGamePaks?: boolean;
   includeGamePakBackups?: boolean;
@@ -101,7 +115,9 @@ export async function createBundle(options: {
 }): Promise<Blob> {
   const {
     includeLabels = true,
+    includeLibrary = true,
     includeOwnership = true,
+    includeUserCarts = true,
     includeSettings = true,
     includeGamePaks = true,
     includeGamePakBackups = true,
@@ -171,6 +187,16 @@ export async function createBundle(options: {
     }
   }
 
+  // Collect library.db (play statistics)
+  let hasLibraryDb = false;
+  if (includeLibrary && !isSelectionExport) {
+    const libraryData = await storage.getLibraryDb();
+    if (libraryData) {
+      zip.file('library.db', libraryData);
+      hasLibraryDb = true;
+    }
+  }
+
   // Collect ownership data
   let hasOwnedCarts = false;
   if (includeOwnership) {
@@ -196,6 +222,37 @@ export async function createBundle(options: {
         };
         zip.file('owned-carts.json', JSON.stringify(ownedData, null, 2));
         hasOwnedCarts = true;
+      }
+    }
+  }
+
+  // Collect user carts (custom names)
+  let hasUserCarts = false;
+  let userCartsCount = 0;
+  if (includeUserCarts) {
+    const userCarts = await storage.getUserCarts();
+
+    if (userCarts.length > 0) {
+      let filteredCarts = userCarts;
+
+      if (isSelectionExport) {
+        // Filter to only include selected cart IDs
+        const cartIdSet = new Set(cartIds);
+        filteredCarts = userCarts.filter(c => cartIdSet.has(c.cartId.toLowerCase()));
+      }
+
+      if (filteredCarts.length > 0) {
+        const userData = {
+          version: 1,
+          carts: filteredCarts.map(c => ({
+            cartId: c.cartId,
+            name: c.name,
+            addedAt: c.addedAt,
+          })),
+        };
+        zip.file('user-carts.json', JSON.stringify(userData, null, 2));
+        hasUserCarts = true;
+        userCartsCount = filteredCarts.length;
       }
     }
   }
@@ -251,7 +308,10 @@ export async function createBundle(options: {
     appVersion: '1.0.0',
     contents: {
       hasLabelsDb,
+      hasLibraryDb,
       hasOwnedCarts,
+      hasUserCarts,
+      userCartsCount,
       settingsCount,
       gamePaksCount,
       gamePakBackupsCount,
@@ -276,6 +336,7 @@ export async function createBundle(options: {
 export async function createSelectionBundle(cartIds: string[]): Promise<Blob> {
   return createBundle({
     includeLabels: true,
+    includeLibrary: false, // Library is per-console, not per-game
     includeOwnership: true,
     includeSettings: true,
     includeGamePaks: true,
@@ -296,7 +357,9 @@ export async function parseBundle(data: ArrayBuffer | Blob): Promise<BundleConte
 
   let manifest: BundleManifest | null = null;
   let labelsDbData: ArrayBuffer | undefined;
+  let libraryDbData: ArrayBuffer | undefined;
   let ownedCarts: BundleContents['ownedCarts'] | undefined;
+  let userCarts: BundleContents['userCarts'] | undefined;
   const labels = new Map<string, ArrayBuffer>();
   const settings = new Map<string, unknown>();
   const gamePaks = new Map<string, ArrayBuffer>();
@@ -339,12 +402,17 @@ export async function parseBundle(data: ArrayBuffer | Blob): Promise<BundleConte
       manifest = JSON.parse(content) as BundleManifest;
     } else if (path === 'labels.db') {
       labelsDbData = await file.async('arraybuffer');
+    } else if (path === 'library.db') {
+      libraryDbData = await file.async('arraybuffer');
     } else if (path.startsWith('labels/') && path.endsWith('.png')) {
       const cartId = path.slice(7, -4).toLowerCase(); // Remove 'labels/' and '.png'
       labels.set(cartId, await file.async('arraybuffer'));
     } else if (path === 'owned-carts.json') {
       const content = await file.async('string');
       ownedCarts = JSON.parse(content);
+    } else if (path === 'user-carts.json') {
+      const content = await file.async('string');
+      userCarts = JSON.parse(content);
     } else if (path.startsWith('settings/') && path.endsWith('/settings.json')) {
       const parts = path.split('/');
       const cartId = parts[1].toLowerCase();
@@ -383,8 +451,10 @@ export async function parseBundle(data: ArrayBuffer | Blob): Promise<BundleConte
   return {
     manifest,
     labelsDb: labelsDbData,
+    libraryDb: libraryDbData,
     labels,
     ownedCarts,
+    userCarts,
     settings,
     gamePaks,
     gamePakBackups,
@@ -420,8 +490,10 @@ export async function importBundle(
   const result: ImportResult = {
     success: false,
     labelsImported: false,
+    libraryImported: false,
     individualLabelsImported: { added: 0, updated: 0, skipped: 0 },
     ownershipMerged: { added: 0, skipped: 0 },
+    userCartsImported: { added: 0, skipped: 0, overwritten: 0 },
     settingsImported: { added: 0, skipped: 0, overwritten: 0 },
     gamePaksImported: { added: 0, skipped: 0, overwritten: 0 },
     gamePakBackupsImported: { added: 0, skipped: 0, merged: 0 },
@@ -444,6 +516,27 @@ export async function importBundle(
         // keep-both - just overwrite for now
         await labelsDb.importLabelsDbFromBuffer(bundle.labelsDb);
         result.labelsImported = true;
+      }
+    }
+
+    // Import library.db (play statistics)
+    if (options.importLibrary && bundle.libraryDb) {
+      const hasLocal = await storage.hasLibraryDb();
+
+      if (!hasLocal || options.mergeStrategy === 'overwrite') {
+        // Parse to get entry count
+        const { parseLibraryDb } = await import('../library/LibraryDbService');
+        const parsed = parseLibraryDb(bundle.libraryDb);
+        await storage.setLibraryDb(bundle.libraryDb, parsed.entryCount);
+        result.libraryImported = true;
+      } else if (options.mergeStrategy === 'skip') {
+        // Skip - library already exists
+      } else {
+        // keep-both - just overwrite for now
+        const { parseLibraryDb } = await import('../library/LibraryDbService');
+        const parsed = parseLibraryDb(bundle.libraryDb);
+        await storage.setLibraryDb(bundle.libraryDb, parsed.entryCount);
+        result.libraryImported = true;
       }
     }
 
@@ -490,6 +583,27 @@ export async function importBundle(
         } else {
           await storage.markCartOwned(normalizedId, cart.source as 'manual' | 'sd-card');
           result.ownershipMerged.added++;
+        }
+      }
+    }
+
+    // Import user carts (custom names)
+    if (options.importUserCarts && bundle.userCarts) {
+      const existingCarts = await storage.getUserCarts();
+      const existingIds = new Set(existingCarts.map(c => c.cartId.toLowerCase()));
+
+      for (const cart of bundle.userCarts.carts) {
+        const normalizedId = cart.cartId.toLowerCase();
+        const exists = existingIds.has(normalizedId);
+
+        if (!exists) {
+          await storage.setUserCart(normalizedId, cart.name);
+          result.userCartsImported.added++;
+        } else if (options.mergeStrategy === 'overwrite') {
+          await storage.setUserCart(normalizedId, cart.name);
+          result.userCartsImported.overwritten++;
+        } else {
+          result.userCartsImported.skipped++;
         }
       }
     }
