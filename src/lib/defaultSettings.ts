@@ -51,6 +51,7 @@ export interface HardwareSettings {
   region: Region;
   disableDeblur: boolean;
   enable32BitColor: boolean;
+  forceProgressiveOutput: boolean;
   disableTextureFiltering: boolean;
   disableAntialiasing: boolean;
   forceOriginalHardware: boolean;
@@ -100,6 +101,7 @@ export function createDefaultSettings(title: string = 'Unknown Cartridge'): Cart
       region: 'Auto',
       disableDeblur: false,
       enable32BitColor: true,
+      forceProgressiveOutput: false,
       disableTextureFiltering: false,
       disableAntialiasing: false,
       forceOriginalHardware: false,

@@ -106,6 +106,7 @@ interface CartridgeSettings {
     region: 'Auto' | 'NTSC' | 'PAL';
     disableDeblur: boolean;
     enable32BitColor: boolean;
+    forceProgressiveOutput: boolean;  // NEW in 3D OS 1.2.0
     disableTextureFiltering: boolean;
     disableAntialiasing: boolean;
     forceOriginalHardware: boolean;
@@ -180,6 +181,7 @@ interface CleanModeSettings {
 | `region` | string | `Auto`, `NTSC`, `PAL` | Force region mode |
 | `disableDeblur` | boolean | | Disable VI deblur filter |
 | `enable32BitColor` | boolean | | Enable 32-bit color mode |
+| `forceProgressiveOutput` | boolean | | Force progressive video output mode |
 | `disableTextureFiltering` | boolean | | Disable texture filtering |
 | `disableAntialiasing` | boolean | | Disable antialiasing |
 | `forceOriginalHardware` | boolean | | Force original N64 hardware behavior |
@@ -291,3 +293,4 @@ See **[LABELS_DB_SPECIFICATION.md](./LABELS_DB_SPECIFICATION.md)** for technical
 - All files use `rwx------` (700) permissions
 - macOS may create `._` metadata files (e.g., `._labels.db`) - these are safe to ignore
 - The `Settings/Global/` directory may be empty or contain global device settings
+- For changes across firmware versions, see **[FIRMWARE_CHANGELOG.md](./FIRMWARE_CHANGELOG.md)**
