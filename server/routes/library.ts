@@ -219,10 +219,10 @@ router.put('/entry/:cartId', async (req: Request, res: Response) => {
       });
     }
 
-    const { addedTime, playTime, addedDate, sdCardPath } = req.body;
+    const { addedTime, playTime, addedDate, sessions, sdCardPath } = req.body;
 
     // Build updates object
-    const updates: { addedTime?: number; playTime?: number } = {};
+    const updates: { addedTime?: number; playTime?: number; sessions?: number } = {};
 
     if (addedTime !== undefined) {
       if (typeof addedTime !== 'number' || addedTime < 0) {
@@ -247,9 +247,16 @@ router.put('/entry/:cartId', async (req: Request, res: Response) => {
       updates.playTime = playTime;
     }
 
+    if (sessions !== undefined) {
+      if (typeof sessions !== 'number' || sessions < 0) {
+        return res.status(400).json({ error: 'Invalid sessions value' });
+      }
+      updates.sessions = sessions;
+    }
+
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({
-        error: 'No valid updates provided. Include addedTime, addedDate, or playTime.',
+        error: 'No valid updates provided. Include addedTime, addedDate, playTime, or sessions.',
       });
     }
 
@@ -305,7 +312,7 @@ router.post('/entry/:cartId', async (req: Request, res: Response) => {
       data = createEmptyLibraryDb();
     }
 
-    const { addedTime, playTime, sdCardPath } = req.body;
+    const { addedTime, playTime, sessions, sdCardPath } = req.body;
 
     // Validate addedTime
     if (addedTime === undefined) {
@@ -321,10 +328,17 @@ router.post('/entry/:cartId', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid playTime value' });
     }
 
+    // Validate sessions (default to 0)
+    const finalSessions = sessions !== undefined ? sessions : 0;
+    if (typeof finalSessions !== 'number' || finalSessions < 0) {
+      return res.status(400).json({ error: 'Invalid sessions value' });
+    }
+
     // Add the entry
     const updatedData = addEntry(data, validation.cartId, {
       addedTime,
       playTime: finalPlayTime,
+      sessions: finalSessions,
     });
     writeLocalLibraryDb(updatedData);
 

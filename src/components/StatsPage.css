@@ -466,6 +466,11 @@
 
 .stats-table th:nth-child(4),
 .stats-table td:nth-child(4) {
+  width: 80px; /* Sessions */
+}
+
+.stats-table th:nth-child(5),
+.stats-table td:nth-child(5) {
   width: 130px; /* Added (with year) */
 }
 

@@ -332,7 +332,7 @@ export function getEntryByCartId(
 export function updateEntry(
   data: Buffer,
   cartId: number,
-  updates: { addedTime?: number; playTime?: number }
+  updates: { addedTime?: number; playTime?: number; sessions?: number }
 ): Buffer {
   const verification = verifyHeader(data);
   if (!verification.valid) {
@@ -371,7 +371,9 @@ export function updateEntry(
     newData.writeUInt32LE(updates.playTime, dataOffset + 4);
   }
 
-  // Note: Bytes 8-11 are sessions (managed by Analogue 3D, not modified here)
+  if (updates.sessions !== undefined) {
+    newData.writeUInt32LE(updates.sessions, dataOffset + 8);
+  }
 
   return newData;
 }
@@ -413,7 +415,7 @@ export function createEmptyLibraryDb(): Buffer {
 export function addEntry(
   data: Buffer,
   cartId: number,
-  stats: { addedTime: number; playTime: number }
+  stats: { addedTime: number; playTime: number; sessions?: number }
 ): Buffer {
   const verification = verifyHeader(data);
   if (!verification.valid) {
@@ -450,7 +452,7 @@ export function addEntry(
   const dataOffset = LIBRARY_DB_DATA_START + emptySlotIndex * LIBRARY_DB_ENTRY_SIZE;
   newData.writeUInt32LE(stats.addedTime, dataOffset);
   newData.writeUInt32LE(stats.playTime, dataOffset + 4);
-  newData.writeUInt32LE(0, dataOffset + 8); // Reserved bytes, always 0
+  newData.writeUInt32LE(stats.sessions ?? 0, dataOffset + 8);
 
   return newData;
 }

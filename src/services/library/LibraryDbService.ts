@@ -361,7 +361,7 @@ export function createEmptyLibraryDb(): ArrayBuffer {
 export function addEntry(
   data: ArrayBuffer,
   cartId: number,
-  stats: { addedTime: number; playTime: number }
+  stats: { addedTime: number; playTime: number; sessions?: number }
 ): ArrayBuffer {
   const verification = verifyHeader(data);
   if (!verification.valid) {
@@ -401,7 +401,7 @@ export function addEntry(
   const dataOffset = LIBRARY_DB_DATA_START + emptySlotIndex * LIBRARY_DB_ENTRY_SIZE;
   newView.setUint32(dataOffset, stats.addedTime, true);
   newView.setUint32(dataOffset + 4, stats.playTime, true);
-  newView.setUint32(dataOffset + 8, 0, true); // Sessions - initialize to 0 for new entries
+  newView.setUint32(dataOffset + 8, stats.sessions ?? 0, true);
 
   return newData;
 }
@@ -417,7 +417,7 @@ export function addEntry(
 export function updateEntry(
   data: ArrayBuffer,
   cartId: number,
-  updates: { addedTime?: number; playTime?: number }
+  updates: { addedTime?: number; playTime?: number; sessions?: number }
 ): ArrayBuffer {
   const verification = verifyHeader(data);
   if (!verification.valid) {
@@ -457,7 +457,9 @@ export function updateEntry(
     newView.setUint32(dataOffset + 4, updates.playTime, true);
   }
 
-  // Note: Bytes 8-11 are sessions (managed by Analogue 3D, not modified here)
+  if (updates.sessions !== undefined) {
+    newView.setUint32(dataOffset + 8, updates.sessions, true);
+  }
 
   return newData;
 }
@@ -541,7 +543,7 @@ export async function touchLocalLibraryDb(): Promise<void> {
  */
 export async function updateAndSaveEntry(
   cartId: number,
-  updates: { addedTime?: number; playTime?: number }
+  updates: { addedTime?: number; playTime?: number; sessions?: number }
 ): Promise<void> {
   const data = await getLibraryDb();
   if (!data) {
@@ -591,7 +593,7 @@ export interface SyncResult {
  */
 export async function updateAndSaveEntryWithSync(
   cartId: number,
-  updates: { addedTime?: number; playTime?: number },
+  updates: { addedTime?: number; playTime?: number; sessions?: number },
   sdCard?: BrowserSDCard
 ): Promise<SyncResult> {
   // 1. Update local IndexedDB
@@ -625,7 +627,7 @@ export async function updateAndSaveEntryWithSync(
  */
 export async function addAndSaveEntryWithSync(
   cartId: number,
-  stats: { addedTime: number; playTime: number },
+  stats: { addedTime: number; playTime: number; sessions?: number },
   sdCard?: BrowserSDCard
 ): Promise<SyncResult> {
   // 1. Add to local IndexedDB

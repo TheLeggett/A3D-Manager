@@ -2706,6 +2706,7 @@ interface LibraryStats {
   playTime: number;
   addedTime: number;
   addedDate?: Date;
+  sessions: number;
 }
 
 function StatsTab({ cartId, servicesContext }: StatsTabProps) {
@@ -2722,6 +2723,7 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
   const [playTimeMinutes, setPlayTimeMinutes] = useState(0);
   const [playTimeSeconds, setPlayTimeSeconds] = useState(0);
   const [addedDate, setAddedDate] = useState('');
+  const [sessions, setSessions] = useState(0);
 
   // Track if form has been modified
   const [isDirty, setIsDirty] = useState(false);
@@ -2743,6 +2745,7 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
               playTime: cartStats.playTime || 0,
               addedTime: cartStats.addedTime || 0,
               addedDate: cartStats.addedDate,
+              sessions: cartStats.sessions || 0,
             };
             setStats(data);
 
@@ -2753,39 +2756,42 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
             setPlayTimeHours(hours);
             setPlayTimeMinutes(minutes);
             setPlayTimeSeconds(seconds);
+            setSessions(data.sessions);
 
             // Format datetime for input (datetime-local expects YYYY-MM-DDTHH:mm in local time)
             if (data.addedDate) {
               setAddedDate(formatDatetimeLocal(data.addedDate));
             }
           } else {
-            setStats({ hasStats: false, playTime: 0, addedTime: 0 });
+            setStats({ hasStats: false, playTime: 0, addedTime: 0, sessions: 0 });
           }
         } else {
           // Server mode
           const response = await fetch(`/api/library/entry/${cartId}`);
           if (response.ok) {
             const data = await response.json();
-            if (data.exists) {
+            if (data.exists && data.entry) {
               setStats({
                 hasStats: true,
-                playTime: data.playTime || 0,
-                addedTime: data.addedTime || 0,
-                addedDate: data.addedDate ? new Date(data.addedDate) : undefined,
+                playTime: data.entry.playTime || 0,
+                addedTime: data.entry.addedTime || 0,
+                addedDate: data.entry.addedDate ? new Date(data.entry.addedDate) : undefined,
+                sessions: data.entry.sessions || 0,
               });
 
-              const hours = Math.floor(data.playTime / 3600);
-              const minutes = Math.floor((data.playTime % 3600) / 60);
-              const seconds = data.playTime % 60;
+              const hours = Math.floor(data.entry.playTime / 3600);
+              const minutes = Math.floor((data.entry.playTime % 3600) / 60);
+              const seconds = data.entry.playTime % 60;
               setPlayTimeHours(hours);
               setPlayTimeMinutes(minutes);
               setPlayTimeSeconds(seconds);
+              setSessions(data.entry.sessions || 0);
 
-              if (data.addedDate) {
-                setAddedDate(formatDatetimeLocal(new Date(data.addedDate)));
+              if (data.entry.addedDate) {
+                setAddedDate(formatDatetimeLocal(new Date(data.entry.addedDate)));
               }
             } else {
-              setStats({ hasStats: false, playTime: 0, addedTime: 0 });
+              setStats({ hasStats: false, playTime: 0, addedTime: 0, sessions: 0 });
             }
           }
         }
@@ -2851,16 +2857,17 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
         // Use sync-aware function - always writes to both local AND SD card when connected
         const result = await libraryDb.updateAndSaveEntryWithSync(
           parseInt(cartId, 16),
-          { playTime, addedTime },
+          { playTime, addedTime, sessions },
           browserSDCard ?? undefined
         );
 
         sdSynced = result.sdUpdated;
       } else {
         // Server mode - include sdCardPath if connected for auto-sync
-        const requestBody: { playTime: number; addedTime: number; sdCardPath?: string } = {
+        const requestBody: { playTime: number; addedTime: number; sessions: number; sdCardPath?: string } = {
           playTime,
           addedTime,
+          sessions,
         };
         if (selectedSDCard?.path) {
           requestBody.sdCardPath = selectedSDCard.path;
@@ -2882,7 +2889,7 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
       }
 
       // Update local state
-      setStats(prev => prev ? { ...prev, playTime, addedTime } : null);
+      setStats(prev => prev ? { ...prev, playTime, addedTime, sessions } : null);
       setIsDirty(false);
 
       // Update sync status based on whether we synced to SD
@@ -2912,6 +2919,7 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
     setPlayTimeHours(hours);
     setPlayTimeMinutes(minutes);
     setPlayTimeSeconds(seconds);
+    setSessions(stats.sessions);
 
     if (stats.addedDate) {
       setAddedDate(formatDatetimeLocal(stats.addedDate));
@@ -2976,12 +2984,14 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
         playTime: 0,
         addedTime,
         addedDate: now,
+        sessions: 0,
       });
 
       // Initialize form state
       setPlayTimeHours(0);
       setPlayTimeMinutes(0);
       setPlayTimeSeconds(0);
+      setSessions(0);
       setAddedDate(formatDatetimeLocal(now));
       setIsDirty(false);
 
@@ -3042,6 +3052,10 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
           <span className="stats-summary-label">Play Time</span>
         </div>
         <div className="stats-summary-item">
+          <span className="stats-summary-value">{stats.sessions}</span>
+          <span className="stats-summary-label">Sessions</span>
+        </div>
+        <div className="stats-summary-item">
           <span className="stats-summary-value">
             {stats.addedDate ? stats.addedDate.toLocaleDateString() : '-'}
           </span>
@@ -3080,6 +3094,20 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
             />
             <span>s</span>
           </div>
+        </div>
+
+        <div className="stats-field">
+          <label>Sessions (Play Count)</label>
+          <input
+            type="number"
+            min="0"
+            value={sessions}
+            onChange={(e) => {
+              setSessions(Math.max(0, parseInt(e.target.value) || 0));
+              setIsDirty(true);
+            }}
+            className="stats-sessions-input"
+          />
         </div>
 
         <div className="stats-field">
