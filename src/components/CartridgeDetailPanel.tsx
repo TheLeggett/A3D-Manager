@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useContext } from 'react';
-import { useImageCache, useSettingsClipboard, isStaticMode } from '../App';
+import { useImageCache, useSettingsClipboard, isStaticMode, useSDCard } from '../App';
 import { ServicesContext, type ServicesContextType } from '../contexts/ServicesContext';
 import { IconButton, OptionSelector, ToggleSwitch } from './controls';
 import { Tooltip } from './ui/Tooltip';
@@ -2709,7 +2709,8 @@ interface LibraryStats {
 }
 
 function StatsTab({ cartId, servicesContext }: StatsTabProps) {
-  const { markLocalChanges, triggerLibraryRefresh } = useLibrarySync();
+  const { markLocalChanges, triggerLibraryRefresh, checkSyncStatus } = useLibrarySync();
+  const { selectedSDCard } = useSDCard();
   const [stats, setStats] = useState<LibraryStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -2841,28 +2842,58 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
         addedTime = Math.floor(dateObj.getTime() / 1000 / 60);
       }
 
+      let sdSynced = false;
+
       if (isStaticMode && servicesContext) {
         const { libraryDb } = servicesContext.services;
-        await libraryDb.updateAndSaveEntry(parseInt(cartId, 16), {
+        const browserSDCard = servicesContext.sdCard;
+
+        // Use sync-aware function - always writes to both local AND SD card when connected
+        const result = await libraryDb.updateAndSaveEntryWithSync(
+          parseInt(cartId, 16),
+          { playTime, addedTime },
+          browserSDCard ?? undefined
+        );
+
+        sdSynced = result.sdUpdated;
+      } else {
+        // Server mode - include sdCardPath if connected for auto-sync
+        const requestBody: { playTime: number; addedTime: number; sdCardPath?: string } = {
           playTime,
           addedTime,
-        });
-      } else {
+        };
+        if (selectedSDCard?.path) {
+          requestBody.sdCardPath = selectedSDCard.path;
+        }
+
         const response = await fetch(`/api/library/entry/${cartId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ playTime, addedTime }),
+          body: JSON.stringify(requestBody),
         });
         if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || 'Failed to save');
+          const responseData = await response.json();
+          throw new Error(responseData.error || 'Failed to save');
         }
+
+        // Check if server synced to SD
+        const responseData = await response.json();
+        sdSynced = responseData.sdSynced === true;
       }
 
       // Update local state
       setStats(prev => prev ? { ...prev, playTime, addedTime } : null);
       setIsDirty(false);
-      markLocalChanges();
+
+      // Update sync status based on whether we synced to SD
+      if (sdSynced) {
+        // SD was updated, refresh sync status to show "synced"
+        checkSyncStatus();
+      } else {
+        // SD was not updated, mark as having local changes
+        markLocalChanges();
+      }
+
       triggerLibraryRefresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
@@ -2899,22 +2930,43 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
       // addedTime is Unix timestamp / 60 (minutes since Unix epoch)
       const addedTime = Math.floor(Date.now() / 1000 / 60);
 
+      let sdSynced = false;
+
       if (isStaticMode && servicesContext) {
         const { libraryDb } = servicesContext.services;
-        await libraryDb.addAndSaveEntry(parseInt(cartId, 16), {
+        const browserSDCard = servicesContext.sdCard;
+
+        // Use sync-aware function - always writes to both local AND SD card when connected
+        const result = await libraryDb.addAndSaveEntryWithSync(
+          parseInt(cartId, 16),
+          { addedTime, playTime: 0 },
+          browserSDCard ?? undefined
+        );
+
+        sdSynced = result.sdUpdated;
+      } else {
+        // Server mode - include sdCardPath if connected for auto-sync
+        const requestBody: { addedTime: number; playTime: number; sdCardPath?: string } = {
           addedTime,
           playTime: 0,
-        });
-      } else {
+        };
+        if (selectedSDCard?.path) {
+          requestBody.sdCardPath = selectedSDCard.path;
+        }
+
         const response = await fetch(`/api/library/entry/${cartId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ addedTime, playTime: 0 }),
+          body: JSON.stringify(requestBody),
         });
         if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || 'Failed to create entry');
+          const responseData = await response.json();
+          throw new Error(responseData.error || 'Failed to create entry');
         }
+
+        // Check if server synced to SD
+        const responseData = await response.json();
+        sdSynced = responseData.sdSynced === true;
       }
 
       // Reload stats to show the newly created entry
@@ -2933,7 +2985,15 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
       setAddedDate(formatDatetimeLocal(now));
       setIsDirty(false);
 
-      markLocalChanges();
+      // Update sync status based on whether we synced to SD
+      if (sdSynced) {
+        // SD was updated, refresh sync status to show "synced"
+        checkSyncStatus();
+      } else {
+        // SD was not updated, mark as having local changes
+        markLocalChanges();
+      }
+
       triggerLibraryRefresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create entry');

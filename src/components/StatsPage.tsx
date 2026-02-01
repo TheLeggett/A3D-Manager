@@ -56,7 +56,7 @@ interface StatsPageState {
 export function StatsPage() {
   usePageTitle(SEO_TITLES.stats || 'Play Stats | A3D Manager');
   const servicesContext = useContext(ServicesContext);
-  const { libraryRefreshKey, markLocalChanges } = useLibrarySync();
+  const { libraryRefreshKey, markLocalChanges, checkSyncStatus } = useLibrarySync();
 
   const [state, setState] = useState<StatsPageState>({
     sdEntries: [],
@@ -350,11 +350,25 @@ export function StatsPage() {
 
     try {
       const { libraryDb } = servicesContext.services;
-      await libraryDb.updateAndSaveEntry(parseInt(entry.cartIdHex, 16), {
-        playTime: entry.sd.playTime,
-        addedTime: entry.sd.addedTime,
-      });
-      markLocalChanges();
+      const browserSDCard = servicesContext.sdCard;
+
+      // Use sync-aware function - writes to both local AND SD card when connected
+      const result = await libraryDb.updateAndSaveEntryWithSync(
+        parseInt(entry.cartIdHex, 16),
+        {
+          playTime: entry.sd.playTime,
+          addedTime: entry.sd.addedTime,
+        },
+        browserSDCard ?? undefined
+      );
+
+      // Update sync status based on whether we synced to SD
+      if (result.sdUpdated) {
+        checkSyncStatus();
+      } else {
+        markLocalChanges();
+      }
+
       fetchEntries();
     } catch (err) {
       console.error('Failed to update local entry:', err);

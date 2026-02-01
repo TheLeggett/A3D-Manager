@@ -18,10 +18,13 @@ import {
   verifyHeader,
   getEntryByCartId,
   updateEntry,
+  addEntry,
+  createEmptyLibraryDb,
   hexToCartId,
   formatPlayTime,
   timestampToDate,
   dateToTimestamp,
+  writeSDLibraryDb,
   LIBRARY_DB_FILE_SIZE,
 } from '../lib/library-db-core';
 
@@ -216,7 +219,7 @@ router.put('/entry/:cartId', async (req: Request, res: Response) => {
       });
     }
 
-    const { addedTime, playTime, addedDate } = req.body;
+    const { addedTime, playTime, addedDate, sdCardPath } = req.body;
 
     // Build updates object
     const updates: { addedTime?: number; playTime?: number } = {};
@@ -254,6 +257,18 @@ router.put('/entry/:cartId', async (req: Request, res: Response) => {
     const updatedData = updateEntry(data, validation.cartId, updates);
     writeLocalLibraryDb(updatedData);
 
+    // Auto-sync to SD card if path provided
+    let sdSynced = false;
+    if (sdCardPath && typeof sdCardPath === 'string') {
+      try {
+        writeSDLibraryDb(sdCardPath, updatedData);
+        sdSynced = true;
+      } catch (err) {
+        // Log but don't fail the request - local update succeeded
+        console.error('Auto-sync to SD failed:', err);
+      }
+    }
+
     // Return the updated entry
     const updatedEntry = getEntryByCartId(updatedData, validation.cartId);
     const enrichedEntry = enrichEntry(updatedEntry);
@@ -261,11 +276,83 @@ router.put('/entry/:cartId', async (req: Request, res: Response) => {
     return res.json({
       success: true,
       entry: enrichedEntry,
+      sdSynced,
     });
   } catch (error) {
     console.error('Error updating library entry:', error);
     return res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to update library entry',
+    });
+  }
+});
+
+/**
+ * POST /api/library/entry/:cartId
+ * Create a new entry with stats
+ */
+router.post('/entry/:cartId', async (req: Request, res: Response) => {
+  try {
+    const { cartId: cartIdParam } = req.params;
+    const validation = validateCartIdParam(cartIdParam);
+
+    if (!validation.valid || validation.cartId === undefined) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    // Get existing library.db or create a new one
+    let data = readLocalLibraryDb();
+    if (!data) {
+      data = createEmptyLibraryDb();
+    }
+
+    const { addedTime, playTime, sdCardPath } = req.body;
+
+    // Validate addedTime
+    if (addedTime === undefined) {
+      return res.status(400).json({ error: 'addedTime is required' });
+    }
+    if (typeof addedTime !== 'number' || addedTime < 0) {
+      return res.status(400).json({ error: 'Invalid addedTime value' });
+    }
+
+    // Validate playTime (default to 0)
+    const finalPlayTime = playTime !== undefined ? playTime : 0;
+    if (typeof finalPlayTime !== 'number' || finalPlayTime < 0) {
+      return res.status(400).json({ error: 'Invalid playTime value' });
+    }
+
+    // Add the entry
+    const updatedData = addEntry(data, validation.cartId, {
+      addedTime,
+      playTime: finalPlayTime,
+    });
+    writeLocalLibraryDb(updatedData);
+
+    // Auto-sync to SD card if path provided
+    let sdSynced = false;
+    if (sdCardPath && typeof sdCardPath === 'string') {
+      try {
+        writeSDLibraryDb(sdCardPath, updatedData);
+        sdSynced = true;
+      } catch (err) {
+        // Log but don't fail the request - local update succeeded
+        console.error('Auto-sync to SD failed:', err);
+      }
+    }
+
+    // Return the new entry
+    const newEntry = getEntryByCartId(updatedData, validation.cartId);
+    const enrichedEntry = enrichEntry(newEntry);
+
+    return res.status(201).json({
+      success: true,
+      entry: enrichedEntry,
+      sdSynced,
+    });
+  } catch (error) {
+    console.error('Error creating library entry:', error);
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to create library entry',
     });
   }
 });

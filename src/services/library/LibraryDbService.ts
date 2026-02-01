@@ -29,6 +29,8 @@ import {
   deleteLibraryDb,
   getLibraryDbMeta,
 } from '../storage/IndexedDbStorage';
+import { writeLibraryDbToSD } from '../sd-card/SdCardService';
+import type { BrowserSDCard } from '../sd-card/SdCardService';
 import type {
   LibraryEntry,
   LibraryDatabase,
@@ -566,6 +568,87 @@ export async function addAndSaveEntry(
   const updatedData = addEntry(data, cartId, stats);
   const library = parseLibraryDb(updatedData);
   await setLibraryDb(updatedData, library.entryCount);
+}
+
+// =============================================================================
+// Sync-aware Operations (auto-sync to SD card when connected)
+// =============================================================================
+
+/**
+ * Result of a sync-aware operation
+ */
+export interface SyncResult {
+  localUpdated: boolean;
+  sdUpdated: boolean;
+  sdError?: string;
+}
+
+/**
+ * Update a single entry and sync to SD card if provided.
+ * Individual edits always write to both local AND SD card when connected.
+ */
+export async function updateAndSaveEntryWithSync(
+  cartId: number,
+  updates: { addedTime?: number; playTime?: number },
+  sdCard?: BrowserSDCard
+): Promise<SyncResult> {
+  // 1. Update local IndexedDB
+  await updateAndSaveEntry(cartId, updates);
+
+  // 2. If SD card provided, also write to SD
+  if (sdCard) {
+    try {
+      const updatedData = await getLocalLibraryDb();
+      if (updatedData) {
+        await writeLibraryDbToSD(sdCard, updatedData);
+        return { localUpdated: true, sdUpdated: true };
+      }
+    } catch (err) {
+      // Log but don't fail - local update succeeded
+      console.error('Auto-sync to SD failed:', err);
+      return {
+        localUpdated: true,
+        sdUpdated: false,
+        sdError: err instanceof Error ? err.message : 'Failed to sync to SD card',
+      };
+    }
+  }
+
+  return { localUpdated: true, sdUpdated: false };
+}
+
+/**
+ * Add a new entry and sync to SD card if provided.
+ * Individual additions always write to both local AND SD card when connected.
+ */
+export async function addAndSaveEntryWithSync(
+  cartId: number,
+  stats: { addedTime: number; playTime: number },
+  sdCard?: BrowserSDCard
+): Promise<SyncResult> {
+  // 1. Add to local IndexedDB
+  await addAndSaveEntry(cartId, stats);
+
+  // 2. If SD card provided, also write to SD
+  if (sdCard) {
+    try {
+      const updatedData = await getLocalLibraryDb();
+      if (updatedData) {
+        await writeLibraryDbToSD(sdCard, updatedData);
+        return { localUpdated: true, sdUpdated: true };
+      }
+    } catch (err) {
+      // Log but don't fail - local update succeeded
+      console.error('Auto-sync to SD failed:', err);
+      return {
+        localUpdated: true,
+        sdUpdated: false,
+        sdError: err instanceof Error ? err.message : 'Failed to sync to SD card',
+      };
+    }
+  }
+
+  return { localUpdated: true, sdUpdated: false };
 }
 
 // =============================================================================

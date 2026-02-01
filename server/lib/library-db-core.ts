@@ -372,6 +372,85 @@ export function updateEntry(
   return newData;
 }
 
+/**
+ * Create a new empty library.db with proper headers
+ */
+export function createEmptyLibraryDb(): Buffer {
+  const data = Buffer.alloc(LIBRARY_DB_FILE_SIZE);
+
+  // Write magic byte
+  data.writeUInt8(LIBRARY_DB_MAGIC_BYTE, 0);
+
+  // Write identifier 1: "Analogue-Co" at offset 0x01
+  data.write(LIBRARY_DB_IDENTIFIER_1, 0x01, 'utf8');
+
+  // Write identifier 2: "Analogue-3D.library" at offset 0x20
+  data.write(LIBRARY_DB_IDENTIFIER_2, 0x20, 'utf8');
+
+  // Write version at offset 0x40 (little-endian)
+  data.writeUInt32LE(LIBRARY_DB_VERSION, 0x40);
+
+  // Fill ID table with empty slot markers (0xFFFFFFFF)
+  for (let i = 0; i < LIBRARY_DB_MAX_ENTRIES; i++) {
+    const idOffset = LIBRARY_DB_ID_TABLE_START + i * LIBRARY_DB_ID_SIZE;
+    data.writeUInt32LE(LIBRARY_DB_EMPTY_SLOT, idOffset);
+  }
+
+  // Extended data section is already zeros from Buffer.alloc
+
+  return data;
+}
+
+/**
+ * Add a new entry to a library.db buffer
+ * Returns a new buffer with the entry added
+ * Throws if the entry already exists or library is full
+ */
+export function addEntry(
+  data: Buffer,
+  cartId: number,
+  stats: { addedTime: number; playTime: number }
+): Buffer {
+  const verification = verifyHeader(data);
+  if (!verification.valid) {
+    throw new Error(`Invalid library.db: ${verification.error}`);
+  }
+
+  // Check if entry already exists and find first empty slot
+  let emptySlotIndex = -1;
+  for (let i = 0; i < LIBRARY_DB_MAX_ENTRIES; i++) {
+    const idOffset = LIBRARY_DB_ID_TABLE_START + i * LIBRARY_DB_ID_SIZE;
+    const id = data.readUInt32LE(idOffset);
+
+    if (id === cartId) {
+      throw new Error(`Cart ID ${cartIdToHex(cartId)} already exists in library.db`);
+    }
+
+    if (id === LIBRARY_DB_EMPTY_SLOT && emptySlotIndex === -1) {
+      emptySlotIndex = i;
+    }
+  }
+
+  if (emptySlotIndex === -1) {
+    throw new Error('Library is full (4096 entries maximum)');
+  }
+
+  // Create a copy of the buffer
+  const newData = Buffer.from(data);
+
+  // Write cart ID to ID table
+  const idOffset = LIBRARY_DB_ID_TABLE_START + emptySlotIndex * LIBRARY_DB_ID_SIZE;
+  newData.writeUInt32LE(cartId, idOffset);
+
+  // Write extended data
+  const dataOffset = LIBRARY_DB_DATA_START + emptySlotIndex * LIBRARY_DB_ENTRY_SIZE;
+  newData.writeUInt32LE(stats.addedTime, dataOffset);
+  newData.writeUInt32LE(stats.playTime, dataOffset + 4);
+  newData.writeUInt32LE(0, dataOffset + 8); // Reserved bytes, always 0
+
+  return newData;
+}
+
 // =============================================================================
 // File System Operations
 // =============================================================================
