@@ -19,7 +19,7 @@
  * 0x4100    N×12     Extended data (per cart slot):
  *                    - Bytes 0-3: addedTime (Unix timestamp ÷ 60, i.e., minutes since Jan 1, 1970)
  *                    - Bytes 4-7: playTime (seconds)
- *                    - Bytes 8-11: Reserved (always 0)
+ *                    - Bytes 8-11: sessions (number of times game was launched)
  */
 
 import * as fs from 'fs';
@@ -95,6 +95,8 @@ export interface LibraryEntry {
   addedTime: number;
   /** Total play time in seconds */
   playTime: number;
+  /** Number of times the game was launched (sessions/play count) */
+  sessions: number;
 }
 
 /**
@@ -260,7 +262,7 @@ export function parseLibraryDb(data: Buffer): LibraryDatabase {
     const dataOffset = LIBRARY_DB_DATA_START + i * LIBRARY_DB_ENTRY_SIZE;
     const addedTime = data.readUInt32LE(dataOffset);
     const playTime = data.readUInt32LE(dataOffset + 4);
-    // Bytes 8-11 are reserved (always 0)
+    const sessions = data.readUInt32LE(dataOffset + 8);
 
     const entry: LibraryEntry = {
       cartId,
@@ -268,6 +270,7 @@ export function parseLibraryDb(data: Buffer): LibraryDatabase {
       index: i,
       addedTime,
       playTime,
+      sessions,
     };
 
     entries.push(entry);
@@ -302,7 +305,7 @@ export function getEntryByCartId(
       const dataOffset = LIBRARY_DB_DATA_START + i * LIBRARY_DB_ENTRY_SIZE;
       const addedTime = data.readUInt32LE(dataOffset);
       const playTime = data.readUInt32LE(dataOffset + 4);
-      // Bytes 8-11 are reserved (always 0)
+      const sessions = data.readUInt32LE(dataOffset + 8);
 
       return {
         cartId,
@@ -310,6 +313,7 @@ export function getEntryByCartId(
         index: i,
         addedTime,
         playTime,
+        sessions,
       };
     }
   }
@@ -367,7 +371,7 @@ export function updateEntry(
     newData.writeUInt32LE(updates.playTime, dataOffset + 4);
   }
 
-  // Note: Bytes 8-11 are reserved and should not be modified
+  // Note: Bytes 8-11 are sessions (managed by Analogue 3D, not modified here)
 
   return newData;
 }

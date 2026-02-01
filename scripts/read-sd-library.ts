@@ -5,7 +5,7 @@
  * library.db Format:
  * - Bytes 0-3: addedTime (Unix timestamp ÷ 60, i.e., minutes since Jan 1, 1970)
  * - Bytes 4-7: playTime (seconds)
- * - Bytes 8-11: Reserved (always 0)
+ * - Bytes 8-11: sessions (number of times game was launched)
  *
  * Usage: npx tsx scripts/read-sd-library.ts
  */
@@ -152,7 +152,7 @@ function main() {
     console.log('Parsed Values:');
     console.log(`  addedTime: ${entry.addedTime} (0x${entry.addedTime.toString(16).padStart(8, '0')})`);
     console.log(`  playTime:  ${entry.playTime} seconds (${Math.floor(entry.playTime / 3600)}h ${Math.floor((entry.playTime % 3600) / 60)}m ${entry.playTime % 60}s)`);
-    console.log(`  reserved:  ${entry.reserved} (should be 0)`);
+    console.log(`  sessions:  ${entry.reserved} (launch count)`);
     console.log('');
 
     // addedTime is Unix timestamp / 60 (minutes since Unix epoch)
@@ -172,7 +172,7 @@ function main() {
   console.log('library.db extended data format (12 bytes per entry):');
   console.log('  Bytes 0-3: addedTime = Unix timestamp ÷ 60 (minutes since Jan 1, 1970)');
   console.log('  Bytes 4-7: playTime in seconds');
-  console.log('  Bytes 8-11: Reserved (always 0)');
+  console.log('  Bytes 8-11: sessions (launch count)');
   console.log('');
   console.log('To convert addedTime to Date:');
   console.log('  new Date(addedTime * 60 * 1000)');

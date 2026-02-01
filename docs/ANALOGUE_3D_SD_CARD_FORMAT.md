@@ -228,8 +228,9 @@ interface CleanModeSettings {
 #### Overview
 
 The library.db file tracks which games have been played on the Analogue 3D and stores play statistics for each game including:
-- **Added Time**: When the game was first played/added to the library
+- **Added Time**: When the game was first added to the library
 - **Play Time**: Total cumulative play time in seconds
+- **Sessions**: Number of times the game has been launched
 
 #### Structure
 
@@ -265,7 +266,7 @@ Each cart has 12 bytes of extended data at offset `0x4100 + (index × 12)`:
 |--------|------|------|-------------|
 | +0 | 4 | uint32_le | `addedTime` - Minutes since Unix epoch (Jan 1, 1970) |
 | +4 | 4 | uint32_le | `playTime` - Total play time in seconds |
-| +8 | 4 | uint32_le | Reserved (always 0) |
+| +8 | 4 | uint32_le | `sessions` - Number of times the game has been launched |
 
 #### Timestamp Format
 
@@ -299,7 +300,7 @@ a0 e7 b5 01  |  45 01 00 00  |  00 00 00 00
 This decodes as:
 - `addedTime`: 0x01B5E7A0 = 28,829,600 minutes since epoch → Jan 31, 2025 8:33 AM
 - `playTime`: 0x00000145 = 325 seconds (5 minutes 25 seconds)
-- Reserved: 0x00000000 (always 0)
+- `sessions`: 0x00000000 = 0 (game added to library but never launched)
 
 ### labels.db (Master Label/Artwork Database)
 
