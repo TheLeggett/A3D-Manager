@@ -19,7 +19,7 @@
  * 0x4100    N×12     Extended data (per cart slot):
  *                    - Bytes 0-3: addedTime (Unix timestamp ÷ 60, i.e., minutes since Jan 1, 1970)
  *                    - Bytes 4-7: playTime (seconds)
- *                    - Bytes 8-11: Reserved (always 0)
+ *                    - Bytes 8-11: sessions (number of times game was launched)
  */
 
 import {
@@ -241,7 +241,7 @@ export function parseLibraryDb(data: ArrayBuffer): LibraryDatabase {
     const dataOffset = LIBRARY_DB_DATA_START + i * LIBRARY_DB_ENTRY_SIZE;
     const addedTime = view.getUint32(dataOffset, true);
     const playTime = view.getUint32(dataOffset + 4, true);
-    // Bytes 8-11 are reserved (always 0)
+    const sessions = view.getUint32(dataOffset + 8, true);
 
     const entry: LibraryEntry = {
       cartId,
@@ -249,6 +249,7 @@ export function parseLibraryDb(data: ArrayBuffer): LibraryDatabase {
       index: i,
       addedTime,
       playTime,
+      sessions,
     };
 
     entries.push(entry);
@@ -285,7 +286,7 @@ export function getEntryByCartId(
       const dataOffset = LIBRARY_DB_DATA_START + i * LIBRARY_DB_ENTRY_SIZE;
       const addedTime = view.getUint32(dataOffset, true);
       const playTime = view.getUint32(dataOffset + 4, true);
-      // Bytes 8-11 are reserved (always 0)
+      const sessions = view.getUint32(dataOffset + 8, true);
 
       return {
         cartId,
@@ -293,6 +294,7 @@ export function getEntryByCartId(
         index: i,
         addedTime,
         playTime,
+        sessions,
       };
     }
   }
@@ -399,7 +401,7 @@ export function addEntry(
   const dataOffset = LIBRARY_DB_DATA_START + emptySlotIndex * LIBRARY_DB_ENTRY_SIZE;
   newView.setUint32(dataOffset, stats.addedTime, true);
   newView.setUint32(dataOffset + 4, stats.playTime, true);
-  newView.setUint32(dataOffset + 8, 0, true); // Reserved bytes, always 0
+  newView.setUint32(dataOffset + 8, 0, true); // Sessions - initialize to 0 for new entries
 
   return newData;
 }
@@ -455,7 +457,7 @@ export function updateEntry(
     newView.setUint32(dataOffset + 4, updates.playTime, true);
   }
 
-  // Note: Bytes 8-11 are reserved and should not be modified
+  // Note: Bytes 8-11 are sessions (managed by Analogue 3D, not modified here)
 
   return newData;
 }
@@ -677,6 +679,7 @@ export async function getCartridgeStats(cartIdHex: string): Promise<CartridgeLib
     addedDate: timestampToDate(entry.addedTime),
     playTime: entry.playTime,
     playTimeFormatted: formatPlayTime(entry.playTime),
+    sessions: entry.sessions,
   };
 }
 

@@ -18,6 +18,8 @@ export interface LibraryEntry {
   addedTime: number;
   /** Total play time in seconds */
   playTime: number;
+  /** Number of times the game was launched (sessions/play count) */
+  sessions: number;
 }
 
 /**
@@ -99,6 +101,7 @@ export interface LibraryEntryUpdateRequest {
   addedTime?: number;
   addedDate?: string;
   playTime?: number;
+  sessions?: number;
 }
 
 /**
@@ -129,4 +132,6 @@ export interface CartridgeLibraryStats {
   addedDate?: Date;
   playTime?: number;
   playTimeFormatted?: string;
+  /** Number of times the game was launched (sessions/play count) */
+  sessions?: number;
 }

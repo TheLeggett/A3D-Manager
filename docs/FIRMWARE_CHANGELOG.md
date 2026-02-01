@@ -45,9 +45,9 @@ The library.db extended data section (offset 0x4100) was present from the initia
 
 | Field | Description |
 |-------|-------------|
-| addedTime | Timestamp when game was first played (minutes since Unix epoch, Jan 1 1970) |
+| addedTime | Timestamp when game was first added to library (minutes since Unix epoch, Jan 1 1970) |
 | playTime | Total cumulative play time in seconds |
-| reserved | Reserved field (always 0) |
+| sessions | Number of times the game has been launched |
 
 See [ANALOGUE_3D_SD_CARD_FORMAT.md](./ANALOGUE_3D_SD_CARD_FORMAT.md) for complete format specification.
 
