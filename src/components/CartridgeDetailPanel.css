@@ -1133,17 +1133,6 @@
   font-size: 0.85rem;
 }
 
-.stats-sessions-input {
-  width: 100%;
-  max-width: 200px;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-size: 0.9rem;
-}
-
 .stats-datetime-input {
   width: 100%;
   max-width: 280px;
@@ -1155,7 +1144,6 @@
   font-size: 0.9rem;
 }
 
-.stats-sessions-input:focus,
 .stats-datetime-input:focus {
   outline: none;
   border-color: var(--color-accent);

@@ -17,11 +17,9 @@
  * 0x100     N×4      Cart ID table (little-endian, 0xFFFFFFFF = empty)
  *
  * 0x4100    N×12     Extended data (per cart slot):
- *                    - Bytes 0-3: addedTime (seconds since custom epoch)
+ *                    - Bytes 0-3: addedTime (Unix timestamp ÷ 60, i.e., minutes since Jan 1, 1970)
  *                    - Bytes 4-7: playTime (seconds)
- *                    - Bytes 8-11: sessions (count)
- *
- * Custom Epoch: February 23, 2025 22:43:27 UTC (Unix timestamp 1740350607)
+ *                    - Bytes 8-11: Reserved (always 0)
  */
 
 import {
@@ -78,12 +76,9 @@ export const LIBRARY_DB_FILE_SIZE =
   LIBRARY_DB_DATA_START + LIBRARY_DB_MAX_ENTRIES * LIBRARY_DB_ENTRY_SIZE;
 
 /**
- * Unix timestamp for the custom epoch.
- * The Analogue 3D stores timestamps as naive local time (no timezone awareness).
- * The epoch appears to be Feb 23, 2025 21:43:27 EST based on observed data.
- * Adjusted by -1 hour from the originally assumed epoch.
+ * The Analogue 3D stores addedTime as Unix timestamp ÷ 60 (minutes since Jan 1, 1970).
+ * There is no custom epoch - times are stored in minutes since Unix epoch.
  */
-export const LIBRARY_DB_EPOCH_UNIX = 1740350607;
 
 /** Path to library.db on SD card relative to root */
 export const LIBRARY_DB_SD_PATH = 'Library/N64/library.db';
@@ -129,17 +124,17 @@ export function formatPlayTime(seconds: number): string {
 }
 
 /**
- * Convert a library.db timestamp (seconds since custom epoch) to a Date
+ * Convert a library.db addedTime (minutes since Unix epoch) to a Date
  */
-export function timestampToDate(ts: number): Date {
-  return new Date((ts + LIBRARY_DB_EPOCH_UNIX) * 1000);
+export function timestampToDate(addedTime: number): Date {
+  return new Date(addedTime * 60 * 1000);
 }
 
 /**
- * Convert a Date to a library.db timestamp (seconds since custom epoch)
+ * Convert a Date to a library.db addedTime (minutes since Unix epoch)
  */
 export function dateToTimestamp(date: Date): number {
-  return Math.floor(date.getTime() / 1000) - LIBRARY_DB_EPOCH_UNIX;
+  return Math.floor(date.getTime() / 1000 / 60);
 }
 
 /**
@@ -244,7 +239,7 @@ export function parseLibraryDb(data: ArrayBuffer): LibraryDatabase {
     const dataOffset = LIBRARY_DB_DATA_START + i * LIBRARY_DB_ENTRY_SIZE;
     const addedTime = view.getUint32(dataOffset, true);
     const playTime = view.getUint32(dataOffset + 4, true);
-    const sessions = view.getUint32(dataOffset + 8, true);
+    // Bytes 8-11 are reserved (always 0)
 
     const entry: LibraryEntry = {
       cartId,
@@ -252,7 +247,6 @@ export function parseLibraryDb(data: ArrayBuffer): LibraryDatabase {
       index: i,
       addedTime,
       playTime,
-      sessions,
     };
 
     entries.push(entry);
@@ -289,7 +283,7 @@ export function getEntryByCartId(
       const dataOffset = LIBRARY_DB_DATA_START + i * LIBRARY_DB_ENTRY_SIZE;
       const addedTime = view.getUint32(dataOffset, true);
       const playTime = view.getUint32(dataOffset + 4, true);
-      const sessions = view.getUint32(dataOffset + 8, true);
+      // Bytes 8-11 are reserved (always 0)
 
       return {
         cartId,
@@ -297,7 +291,6 @@ export function getEntryByCartId(
         index: i,
         addedTime,
         playTime,
-        sessions,
       };
     }
   }
@@ -318,6 +311,98 @@ export function enrichEntry(entry: LibraryEntry, name?: string): EnrichedLibrary
 }
 
 // =============================================================================
+// Creation
+// =============================================================================
+
+/**
+ * Create a new empty library.db with proper headers
+ */
+export function createEmptyLibraryDb(): ArrayBuffer {
+  const data = new ArrayBuffer(LIBRARY_DB_FILE_SIZE);
+  const view = new DataView(data);
+  const bytes = new Uint8Array(data);
+
+  // Write magic byte
+  view.setUint8(0, LIBRARY_DB_MAGIC_BYTE);
+
+  // Write identifier 1: "Analogue-Co" at offset 0x01
+  for (let i = 0; i < LIBRARY_DB_IDENTIFIER_1.length; i++) {
+    bytes[0x01 + i] = LIBRARY_DB_IDENTIFIER_1.charCodeAt(i);
+  }
+
+  // Write identifier 2: "Analogue-3D.library" at offset 0x20
+  for (let i = 0; i < LIBRARY_DB_IDENTIFIER_2.length; i++) {
+    bytes[0x20 + i] = LIBRARY_DB_IDENTIFIER_2.charCodeAt(i);
+  }
+
+  // Write version at offset 0x40 (little-endian)
+  view.setUint32(0x40, LIBRARY_DB_VERSION, true);
+
+  // Fill ID table with empty slot markers (0xFFFFFFFF)
+  for (let i = 0; i < LIBRARY_DB_MAX_ENTRIES; i++) {
+    const idOffset = LIBRARY_DB_ID_TABLE_START + i * LIBRARY_DB_ID_SIZE;
+    view.setUint32(idOffset, LIBRARY_DB_EMPTY_SLOT, true);
+  }
+
+  // Extended data section is already zeros from ArrayBuffer initialization
+
+  return data;
+}
+
+/**
+ * Add a new entry to a library.db ArrayBuffer
+ * Returns a new ArrayBuffer with the entry added
+ * Throws if the entry already exists or library is full
+ */
+export function addEntry(
+  data: ArrayBuffer,
+  cartId: number,
+  stats: { addedTime: number; playTime: number }
+): ArrayBuffer {
+  const verification = verifyHeader(data);
+  if (!verification.valid) {
+    throw new Error(`Invalid library.db: ${verification.error}`);
+  }
+
+  const view = new DataView(data);
+
+  // Check if entry already exists and find first empty slot
+  let emptySlotIndex = -1;
+  for (let i = 0; i < LIBRARY_DB_MAX_ENTRIES; i++) {
+    const idOffset = LIBRARY_DB_ID_TABLE_START + i * LIBRARY_DB_ID_SIZE;
+    const id = view.getUint32(idOffset, true);
+
+    if (id === cartId) {
+      throw new Error(`Cart ID ${cartIdToHex(cartId)} already exists in library.db`);
+    }
+
+    if (id === LIBRARY_DB_EMPTY_SLOT && emptySlotIndex === -1) {
+      emptySlotIndex = i;
+    }
+  }
+
+  if (emptySlotIndex === -1) {
+    throw new Error('Library is full (4096 entries maximum)');
+  }
+
+  // Create a copy of the buffer
+  const newData = data.slice(0);
+  const newView = new DataView(newData);
+
+  // Write cart ID to ID table
+  const idOffset = LIBRARY_DB_ID_TABLE_START + emptySlotIndex * LIBRARY_DB_ID_SIZE;
+  newView.setUint32(idOffset, cartId, true);
+
+  // Write extended data
+  const dataOffset = LIBRARY_DB_DATA_START + emptySlotIndex * LIBRARY_DB_ENTRY_SIZE;
+  newView.setUint32(dataOffset, stats.addedTime, true);
+  newView.setUint32(dataOffset + 4, stats.playTime, true);
+  newView.setUint32(dataOffset + 8, 0, true); // Reserved bytes, always 0
+
+  return newData;
+}
+
+// =============================================================================
 // Modification
 // =============================================================================
 
@@ -328,7 +413,7 @@ export function enrichEntry(entry: LibraryEntry, name?: string): EnrichedLibrary
 export function updateEntry(
   data: ArrayBuffer,
   cartId: number,
-  updates: { addedTime?: number; playTime?: number; sessions?: number }
+  updates: { addedTime?: number; playTime?: number }
 ): ArrayBuffer {
   const verification = verifyHeader(data);
   if (!verification.valid) {
@@ -368,9 +453,7 @@ export function updateEntry(
     newView.setUint32(dataOffset + 4, updates.playTime, true);
   }
 
-  if (updates.sessions !== undefined) {
-    newView.setUint32(dataOffset + 8, updates.sessions, true);
-  }
+  // Note: Bytes 8-11 are reserved and should not be modified
 
   return newData;
 }
@@ -454,7 +537,7 @@ export async function touchLocalLibraryDb(): Promise<void> {
  */
 export async function updateAndSaveEntry(
   cartId: number,
-  updates: { addedTime?: number; playTime?: number; sessions?: number }
+  updates: { addedTime?: number; playTime?: number }
 ): Promise<void> {
   const data = await getLibraryDb();
   if (!data) {
@@ -462,6 +545,25 @@ export async function updateAndSaveEntry(
   }
 
   const updatedData = updateEntry(data, cartId, updates);
+  const library = parseLibraryDb(updatedData);
+  await setLibraryDb(updatedData, library.entryCount);
+}
+
+/**
+ * Add a new entry to local storage, creating library.db if it doesn't exist
+ */
+export async function addAndSaveEntry(
+  cartId: number,
+  stats: { addedTime: number; playTime: number }
+): Promise<void> {
+  let data = await getLibraryDb();
+
+  // Create empty library.db if it doesn't exist
+  if (!data) {
+    data = createEmptyLibraryDb();
+  }
+
+  const updatedData = addEntry(data, cartId, stats);
   const library = parseLibraryDb(updatedData);
   await setLibraryDb(updatedData, library.entryCount);
 }
@@ -492,7 +594,6 @@ export async function getCartridgeStats(cartIdHex: string): Promise<CartridgeLib
     addedDate: timestampToDate(entry.addedTime),
     playTime: entry.playTime,
     playTimeFormatted: formatPlayTime(entry.playTime),
-    sessions: entry.sessions,
   };
 }
 

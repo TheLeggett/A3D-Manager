@@ -13,7 +13,6 @@ import { useLibrarySync } from './LibrarySyncIndicator';
 import { ToggleSwitch } from './controls/ToggleSwitch';
 import { Button } from './ui';
 import { usePageTitle, SEO_TITLES } from '../lib/seo';
-import { LIBRARY_DB_EPOCH_UNIX } from '../services/library/LibraryDbService';
 import type { LibraryEntry } from '../types/library';
 import './SettingsPage.css';
 
@@ -605,7 +604,7 @@ export function SettingsPage() {
                     {libraryDbSource === 'sd' ? 'SD Card' : 'Local'} library.db - {libraryDbEntries.length} entries
                   </h4>
                   <p className="setting-meta">
-                    Epoch Unix: {LIBRARY_DB_EPOCH_UNIX} (Feb 23, 2025 22:43:27 UTC)
+                    Format: addedTime = Unix timestamp ÷ 60 (minutes since Jan 1, 1970)
                   </p>
                   <div className="library-db-table-container">
                     <table className="library-db-table">
@@ -616,12 +615,11 @@ export function SettingsPage() {
                           <th>addedTime (raw)</th>
                           <th>Converted Date (UTC)</th>
                           <th>playTime (s)</th>
-                          <th>sessions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {libraryDbEntries.map((entry, idx) => {
-                          const unixTimestamp = entry.addedTime + LIBRARY_DB_EPOCH_UNIX;
+                          const unixTimestamp = entry.addedTime * 60;
                           const dateUtc = new Date(unixTimestamp * 1000);
                           return (
                             <tr key={entry.cartIdHex}>
@@ -632,7 +630,6 @@ export function SettingsPage() {
                                 {dateUtc.toISOString()}
                               </td>
                               <td className="text-mono">{entry.playTime}</td>
-                              <td className="text-mono">{entry.sessions}</td>
                             </tr>
                           );
                         })}

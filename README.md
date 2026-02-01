@@ -67,7 +67,6 @@ View and manage your play time data from the Analogue 3D:
 
 - **Stats Page** with sortable list of all played games
 - **Play time tracking** showing total hours and minutes per game
-- **Session count** for number of times each game was launched
 - **Added date** showing when each game was first played
 - **Sync with SD card** to backup or restore your library.db
 - **Editable stats** to correct or customize your play data

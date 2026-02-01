@@ -335,7 +335,6 @@ function entriesEqual(a: LibraryEntry, b: LibraryEntry): boolean {
   return (
     a.cartId === b.cartId &&
     a.addedTime === b.addedTime &&
-    a.playTime === b.playTime &&
-    a.sessions === b.sessions
+    a.playTime === b.playTime
   );
 }

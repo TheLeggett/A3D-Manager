@@ -28,6 +28,19 @@ import {
 } from '../lib/defaultSettings';
 import './CartridgeDetailPanel.css';
 
+/**
+ * Format a Date to local datetime-local input format (YYYY-MM-DDTHH:mm)
+ * This ensures the input shows local time, not UTC.
+ */
+function formatDatetimeLocal(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 interface CartridgeDetailPanelProps {
   cartId: string;
   gameName?: string;
@@ -2691,23 +2704,22 @@ interface StatsTabProps {
 interface LibraryStats {
   hasStats: boolean;
   playTime: number;
-  sessions: number;
   addedTime: number;
   addedDate?: Date;
 }
 
 function StatsTab({ cartId, servicesContext }: StatsTabProps) {
-  const { markLocalChanges } = useLibrarySync();
+  const { markLocalChanges, triggerLibraryRefresh } = useLibrarySync();
   const [stats, setStats] = useState<LibraryStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   // Editable form state
   const [playTimeHours, setPlayTimeHours] = useState(0);
   const [playTimeMinutes, setPlayTimeMinutes] = useState(0);
   const [playTimeSeconds, setPlayTimeSeconds] = useState(0);
-  const [sessions, setSessions] = useState(0);
   const [addedDate, setAddedDate] = useState('');
 
   // Track if form has been modified
@@ -2728,7 +2740,6 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
             const data: LibraryStats = {
               hasStats: true,
               playTime: cartStats.playTime || 0,
-              sessions: cartStats.sessions || 0,
               addedTime: cartStats.addedTime || 0,
               addedDate: cartStats.addedDate,
             };
@@ -2741,16 +2752,13 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
             setPlayTimeHours(hours);
             setPlayTimeMinutes(minutes);
             setPlayTimeSeconds(seconds);
-            setSessions(data.sessions);
 
-            // Format datetime for input (datetime-local expects YYYY-MM-DDTHH:mm)
-            // Note: The Analogue stores naive local time, so we use the UTC representation
-            // which actually represents the local time the user saw on the console
+            // Format datetime for input (datetime-local expects YYYY-MM-DDTHH:mm in local time)
             if (data.addedDate) {
-              setAddedDate(data.addedDate.toISOString().slice(0, 16));
+              setAddedDate(formatDatetimeLocal(data.addedDate));
             }
           } else {
-            setStats({ hasStats: false, playTime: 0, sessions: 0, addedTime: 0 });
+            setStats({ hasStats: false, playTime: 0, addedTime: 0 });
           }
         } else {
           // Server mode
@@ -2761,7 +2769,6 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
               setStats({
                 hasStats: true,
                 playTime: data.playTime || 0,
-                sessions: data.sessions || 0,
                 addedTime: data.addedTime || 0,
                 addedDate: data.addedDate ? new Date(data.addedDate) : undefined,
               });
@@ -2772,13 +2779,12 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
               setPlayTimeHours(hours);
               setPlayTimeMinutes(minutes);
               setPlayTimeSeconds(seconds);
-              setSessions(data.sessions || 0);
 
               if (data.addedDate) {
-                setAddedDate(new Date(data.addedDate).toISOString().slice(0, 16));
+                setAddedDate(formatDatetimeLocal(new Date(data.addedDate)));
               }
             } else {
-              setStats({ hasStats: false, playTime: 0, sessions: 0, addedTime: 0 });
+              setStats({ hasStats: false, playTime: 0, addedTime: 0 });
             }
           }
         }
@@ -2810,11 +2816,6 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
     setIsDirty(true);
   };
 
-  const handleSessionsChange = (value: number) => {
-    setSessions(Math.max(0, value));
-    setIsDirty(true);
-  };
-
   const handleDateChange = (value: string) => {
     setAddedDate(value);
     setIsDirty(true);
@@ -2831,25 +2832,26 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
       const playTime = playTimeHours * 3600 + playTimeMinutes * 60 + playTimeSeconds;
 
       // Convert date to library.db timestamp
+      // The datetime-local input gives us a string like "2026-01-31T14:24" in local time.
+      // Parse it as local time (no 'Z' suffix) so the Analogue displays the same time.
       let addedTime = stats.addedTime;
       if (addedDate) {
-        const EPOCH_UNIX = 1740350607; // Feb 23, 2025 22:43:27 UTC
+        // Parse as local time - addedTime is Unix timestamp / 60 (minutes since Unix epoch)
         const dateObj = new Date(addedDate);
-        addedTime = Math.floor(dateObj.getTime() / 1000) - EPOCH_UNIX;
+        addedTime = Math.floor(dateObj.getTime() / 1000 / 60);
       }
 
       if (isStaticMode && servicesContext) {
         const { libraryDb } = servicesContext.services;
         await libraryDb.updateAndSaveEntry(parseInt(cartId, 16), {
           playTime,
-          sessions,
           addedTime,
         });
       } else {
         const response = await fetch(`/api/library/entry/${cartId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ playTime, sessions, addedTime }),
+          body: JSON.stringify({ playTime, addedTime }),
         });
         if (!response.ok) {
           const data = await response.json();
@@ -2858,9 +2860,10 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
       }
 
       // Update local state
-      setStats(prev => prev ? { ...prev, playTime, sessions, addedTime } : null);
+      setStats(prev => prev ? { ...prev, playTime, addedTime } : null);
       setIsDirty(false);
       markLocalChanges();
+      triggerLibraryRefresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
@@ -2878,13 +2881,65 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
     setPlayTimeHours(hours);
     setPlayTimeMinutes(minutes);
     setPlayTimeSeconds(seconds);
-    setSessions(stats.sessions);
 
     if (stats.addedDate) {
-      setAddedDate(stats.addedDate.toISOString().slice(0, 16));
+      setAddedDate(formatDatetimeLocal(stats.addedDate));
     }
 
     setIsDirty(false);
+  };
+
+  // Create a new entry for this cartridge
+  const handleCreate = async () => {
+    setCreating(true);
+    setError(null);
+
+    try {
+      // Use current time as the "added" date
+      // addedTime is Unix timestamp / 60 (minutes since Unix epoch)
+      const addedTime = Math.floor(Date.now() / 1000 / 60);
+
+      if (isStaticMode && servicesContext) {
+        const { libraryDb } = servicesContext.services;
+        await libraryDb.addAndSaveEntry(parseInt(cartId, 16), {
+          addedTime,
+          playTime: 0,
+        });
+      } else {
+        const response = await fetch(`/api/library/entry/${cartId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ addedTime, playTime: 0 }),
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to create entry');
+        }
+      }
+
+      // Reload stats to show the newly created entry
+      const now = new Date();
+      setStats({
+        hasStats: true,
+        playTime: 0,
+        addedTime,
+        addedDate: now,
+      });
+
+      // Initialize form state
+      setPlayTimeHours(0);
+      setPlayTimeMinutes(0);
+      setPlayTimeSeconds(0);
+      setAddedDate(formatDatetimeLocal(now));
+      setIsDirty(false);
+
+      markLocalChanges();
+      triggerLibraryRefresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create entry');
+    } finally {
+      setCreating(false);
+    }
   };
 
   if (loading) {
@@ -2900,13 +2955,20 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
     return (
       <div className="stats-tab-empty">
         <h3>No Play Statistics</h3>
+        {error && <p className="stats-error">{error}</p>}
         <p>
           This cartridge doesn't have any play statistics recorded.
-          Play this game on your Analogue 3D to start tracking statistics.
         </p>
-        <p className="text-muted">
+        <button
+          className="btn-primary"
+          onClick={handleCreate}
+          disabled={creating}
+        >
+          {creating ? 'Creating...' : 'Create Stats Entry'}
+        </button>
+        <p className="text-muted" style={{ marginTop: '16px' }}>
           Statistics are stored in <code>library.db</code> on your SD card.
-          Use the Sync button on the Stats page to download your library.
+          Use the Sync button on the Stats page to push changes to your SD card.
         </p>
       </div>
     );
@@ -2918,10 +2980,6 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
         <div className="stats-summary-item">
           <span className="stats-summary-value">{formatPlayTime(stats.playTime)}</span>
           <span className="stats-summary-label">Play Time</span>
-        </div>
-        <div className="stats-summary-item">
-          <span className="stats-summary-value">{stats.sessions}</span>
-          <span className="stats-summary-label">Sessions</span>
         </div>
         <div className="stats-summary-item">
           <span className="stats-summary-value">
@@ -2962,17 +3020,6 @@ function StatsTab({ cartId, servicesContext }: StatsTabProps) {
             />
             <span>s</span>
           </div>
-        </div>
-
-        <div className="stats-field">
-          <label>Sessions</label>
-          <input
-            type="number"
-            min="0"
-            value={sessions}
-            onChange={(e) => handleSessionsChange(parseInt(e.target.value) || 0)}
-            className="stats-sessions-input"
-          />
         </div>
 
         <div className="stats-field">

@@ -216,10 +216,10 @@ router.put('/entry/:cartId', async (req: Request, res: Response) => {
       });
     }
 
-    const { addedTime, playTime, sessions, addedDate } = req.body;
+    const { addedTime, playTime, addedDate } = req.body;
 
     // Build updates object
-    const updates: { addedTime?: number; playTime?: number; sessions?: number } = {};
+    const updates: { addedTime?: number; playTime?: number } = {};
 
     if (addedTime !== undefined) {
       if (typeof addedTime !== 'number' || addedTime < 0) {
@@ -244,16 +244,9 @@ router.put('/entry/:cartId', async (req: Request, res: Response) => {
       updates.playTime = playTime;
     }
 
-    if (sessions !== undefined) {
-      if (typeof sessions !== 'number' || sessions < 0 || !Number.isInteger(sessions)) {
-        return res.status(400).json({ error: 'Invalid sessions value' });
-      }
-      updates.sessions = sessions;
-    }
-
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({
-        error: 'No valid updates provided. Include addedTime, addedDate, playTime, or sessions.',
+        error: 'No valid updates provided. Include addedTime, addedDate, or playTime.',
       });
     }
 

@@ -14,12 +14,10 @@ export interface LibraryEntry {
   cartIdHex: string;
   /** Index in the library (0-4095) */
   index: number;
-  /** Time added (seconds since custom epoch) */
+  /** Time added (Unix timestamp ÷ 60, i.e., minutes since Jan 1, 1970) */
   addedTime: number;
   /** Total play time in seconds */
   playTime: number;
-  /** Number of play sessions */
-  sessions: number;
 }
 
 /**
@@ -101,7 +99,6 @@ export interface LibraryEntryUpdateRequest {
   addedTime?: number;
   addedDate?: string;
   playTime?: number;
-  sessions?: number;
 }
 
 /**
@@ -132,5 +129,4 @@ export interface CartridgeLibraryStats {
   addedDate?: Date;
   playTime?: number;
   playTimeFormatted?: string;
-  sessions?: number;
 }

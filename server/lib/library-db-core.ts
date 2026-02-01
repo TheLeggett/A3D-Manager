@@ -2,7 +2,7 @@
  * library-db-core.ts
  *
  * Core parsing, reading, and writing for the Analogue 3D library.db file.
- * This file tracks play statistics (play time, sessions, added date) for cartridges.
+ * This file tracks play statistics (play time, added date) for cartridges.
  *
  * library.db Format (3D OS 1.2.0):
  * ───────────────────────────────────────────────────
@@ -17,11 +17,9 @@
  * 0x100     N×4      Cart ID table (little-endian, 0xFFFFFFFF = empty)
  *
  * 0x4100    N×12     Extended data (per cart slot):
- *                    - Bytes 0-3: addedTime (seconds since custom epoch)
+ *                    - Bytes 0-3: addedTime (Unix timestamp ÷ 60, i.e., minutes since Jan 1, 1970)
  *                    - Bytes 4-7: playTime (seconds)
- *                    - Bytes 8-11: sessions (count)
- *
- * Custom Epoch: February 23, 2025 22:43:27 UTC (Unix timestamp 1740350607)
+ *                    - Bytes 8-11: Reserved (always 0)
  */
 
 import * as fs from 'fs';
@@ -65,8 +63,10 @@ export const LIBRARY_DB_EMPTY_SLOT = 0xffffffff;
 export const LIBRARY_DB_FILE_SIZE =
   LIBRARY_DB_DATA_START + LIBRARY_DB_MAX_ENTRIES * LIBRARY_DB_ENTRY_SIZE;
 
-/** Unix timestamp for the custom epoch (Feb 23, 2025 22:43:27 UTC) */
-export const LIBRARY_DB_EPOCH_UNIX = 1740350607;
+/**
+ * The Analogue 3D stores addedTime as Unix timestamp ÷ 60 (minutes since Jan 1, 1970).
+ * There is no custom epoch - times are stored in minutes since Unix epoch.
+ */
 
 /** Path to library.db on SD card relative to root */
 export const LIBRARY_DB_SD_PATH = 'Library/N64/library.db';
@@ -91,12 +91,10 @@ export interface LibraryEntry {
   cartIdHex: string;
   /** Index in the library (0-4095) */
   index: number;
-  /** Time added (seconds since custom epoch) */
+  /** Time added (Unix timestamp ÷ 60, i.e., minutes since Jan 1, 1970) */
   addedTime: number;
   /** Total play time in seconds */
   playTime: number;
-  /** Number of play sessions */
-  sessions: number;
 }
 
 /**
@@ -160,17 +158,17 @@ export function formatPlayTime(seconds: number): string {
 }
 
 /**
- * Convert a library.db timestamp (seconds since custom epoch) to a Date
+ * Convert a library.db addedTime (minutes since Unix epoch) to a Date
  */
-export function timestampToDate(ts: number): Date {
-  return new Date((ts + LIBRARY_DB_EPOCH_UNIX) * 1000);
+export function timestampToDate(addedTime: number): Date {
+  return new Date(addedTime * 60 * 1000);
 }
 
 /**
- * Convert a Date to a library.db timestamp (seconds since custom epoch)
+ * Convert a Date to a library.db addedTime (minutes since Unix epoch)
  */
 export function dateToTimestamp(date: Date): number {
-  return Math.floor(date.getTime() / 1000) - LIBRARY_DB_EPOCH_UNIX;
+  return Math.floor(date.getTime() / 1000 / 60);
 }
 
 // =============================================================================
@@ -262,7 +260,7 @@ export function parseLibraryDb(data: Buffer): LibraryDatabase {
     const dataOffset = LIBRARY_DB_DATA_START + i * LIBRARY_DB_ENTRY_SIZE;
     const addedTime = data.readUInt32LE(dataOffset);
     const playTime = data.readUInt32LE(dataOffset + 4);
-    const sessions = data.readUInt32LE(dataOffset + 8);
+    // Bytes 8-11 are reserved (always 0)
 
     const entry: LibraryEntry = {
       cartId,
@@ -270,7 +268,6 @@ export function parseLibraryDb(data: Buffer): LibraryDatabase {
       index: i,
       addedTime,
       playTime,
-      sessions,
     };
 
     entries.push(entry);
@@ -305,7 +302,7 @@ export function getEntryByCartId(
       const dataOffset = LIBRARY_DB_DATA_START + i * LIBRARY_DB_ENTRY_SIZE;
       const addedTime = data.readUInt32LE(dataOffset);
       const playTime = data.readUInt32LE(dataOffset + 4);
-      const sessions = data.readUInt32LE(dataOffset + 8);
+      // Bytes 8-11 are reserved (always 0)
 
       return {
         cartId,
@@ -313,7 +310,6 @@ export function getEntryByCartId(
         index: i,
         addedTime,
         playTime,
-        sessions,
       };
     }
   }
@@ -332,7 +328,7 @@ export function getEntryByCartId(
 export function updateEntry(
   data: Buffer,
   cartId: number,
-  updates: { addedTime?: number; playTime?: number; sessions?: number }
+  updates: { addedTime?: number; playTime?: number }
 ): Buffer {
   const verification = verifyHeader(data);
   if (!verification.valid) {
@@ -371,9 +367,7 @@ export function updateEntry(
     newData.writeUInt32LE(updates.playTime, dataOffset + 4);
   }
 
-  if (updates.sessions !== undefined) {
-    newData.writeUInt32LE(updates.sessions, dataOffset + 8);
-  }
+  // Note: Bytes 8-11 are reserved and should not be modified
 
   return newData;
 }

@@ -10,7 +10,7 @@ import { usePageTitle, SEO_TITLES } from '../lib/seo';
 import type { EnrichedLibraryEntry } from '../types/library';
 import './StatsPage.css';
 
-type SortField = 'playTime' | 'sessions' | 'addedDate' | 'name' | 'status';
+type SortField = 'playTime' | 'addedDate' | 'name' | 'status';
 type SortDirection = 'asc' | 'desc';
 type FilterMode = 'all' | 'played' | 'unplayed' | 'conflicts';
 
@@ -22,17 +22,17 @@ interface UnifiedEntry {
   sd?: {
     playTime: number;
     playTimeFormatted: string;
-    sessions: number;
     addedTime: number;
     addedDate?: string;
+    index?: number;
   };
   // Local values
   local?: {
     playTime: number;
     playTimeFormatted: string;
-    sessions: number;
     addedTime: number;
     addedDate?: string;
+    index?: number;
   };
   // Status flags
   onlyOnSD: boolean;
@@ -41,7 +41,6 @@ interface UnifiedEntry {
   // For display - use SD values if available, otherwise local
   displayPlayTime: number;
   displayPlayTimeFormatted: string;
-  displaySessions: number;
   displayAddedDate?: string;
 }
 
@@ -79,7 +78,8 @@ export function StatsPage() {
 
   // Fetch entries from both SD and local
   const fetchEntries = useCallback(async () => {
-    setState(s => ({ ...s, loading: true, error: null }));
+    // Only show loading spinner on initial load, not on refresh
+    setState(s => ({ ...s, loading: s.sdEntries.length === 0 && s.localEntries.length === 0, error: null }));
 
     try {
       let sdEntries: EnrichedLibraryEntry[] = [];
@@ -228,7 +228,6 @@ export function StatsPage() {
       if (sdEntry && localEntry) {
         hasConflict =
           sdEntry.playTime !== localEntry.playTime ||
-          sdEntry.sessions !== localEntry.sessions ||
           sdEntry.addedTime !== localEntry.addedTime;
       }
 
@@ -241,23 +240,22 @@ export function StatsPage() {
         sd: sdEntry ? {
           playTime: sdEntry.playTime,
           playTimeFormatted: sdEntry.playTimeFormatted || '0m',
-          sessions: sdEntry.sessions,
           addedTime: sdEntry.addedTime,
           addedDate: sdEntry.addedDate,
+          index: sdEntry.index,
         } : undefined,
         local: localEntry ? {
           playTime: localEntry.playTime,
           playTimeFormatted: localEntry.playTimeFormatted || '0m',
-          sessions: localEntry.sessions,
           addedTime: localEntry.addedTime,
           addedDate: localEntry.addedDate,
+          index: localEntry.index,
         } : undefined,
         onlyOnSD,
         onlyOnLocal,
         hasConflict,
         displayPlayTime: primary.playTime,
         displayPlayTimeFormatted: primary.playTimeFormatted || '0m',
-        displaySessions: primary.sessions,
         displayAddedDate: primary.addedDate,
       });
     }
@@ -268,12 +266,11 @@ export function StatsPage() {
   // Calculate stats
   const stats = useMemo(() => {
     const totalGames = unifiedEntries.length;
-    const played = unifiedEntries.filter(e => e.displayPlayTime > 0 || e.displaySessions > 0).length;
+    const played = unifiedEntries.filter(e => e.displayPlayTime > 0).length;
     const totalPlayTime = unifiedEntries.reduce((sum, e) => sum + e.displayPlayTime, 0);
-    const totalSessions = unifiedEntries.reduce((sum, e) => sum + e.displaySessions, 0);
     const conflicts = unifiedEntries.filter(e => e.hasConflict || e.onlyOnSD || e.onlyOnLocal).length;
 
-    return { totalGames, played, totalPlayTime, totalSessions, conflicts };
+    return { totalGames, played, totalPlayTime, conflicts };
   }, [unifiedEntries]);
 
   // Sort and filter
@@ -283,10 +280,10 @@ export function StatsPage() {
     // Apply filter
     switch (filterMode) {
       case 'played':
-        filtered = filtered.filter(e => e.displayPlayTime > 0 || e.displaySessions > 0);
+        filtered = filtered.filter(e => e.displayPlayTime > 0);
         break;
       case 'unplayed':
-        filtered = filtered.filter(e => e.displayPlayTime === 0 && e.displaySessions === 0);
+        filtered = filtered.filter(e => e.displayPlayTime === 0);
         break;
       case 'conflicts':
         filtered = filtered.filter(e => e.hasConflict || e.onlyOnSD || e.onlyOnLocal);
@@ -300,9 +297,6 @@ export function StatsPage() {
       switch (sortField) {
         case 'playTime':
           comparison = a.displayPlayTime - b.displayPlayTime;
-          break;
-        case 'sessions':
-          comparison = a.displaySessions - b.displaySessions;
           break;
         case 'addedDate':
           comparison = (a.sd?.addedTime || a.local?.addedTime || 0) - (b.sd?.addedTime || b.local?.addedTime || 0);
@@ -358,7 +352,6 @@ export function StatsPage() {
       const { libraryDb } = servicesContext.services;
       await libraryDb.updateAndSaveEntry(parseInt(entry.cartIdHex, 16), {
         playTime: entry.sd.playTime,
-        sessions: entry.sd.sessions,
         addedTime: entry.sd.addedTime,
       });
       markLocalChanges();
@@ -475,10 +468,6 @@ export function StatsPage() {
               <span className="summary-value">{formatPlayTime(stats.totalPlayTime)}</span>
               <span className="summary-label">Total Time</span>
             </div>
-            <div className="summary-stat">
-              <span className="summary-value">{stats.totalSessions}</span>
-              <span className="summary-label">Sessions</span>
-            </div>
           </div>
 
           {/* Controls */}
@@ -534,15 +523,6 @@ export function StatsPage() {
                   >
                     Play Time
                     {sortField === 'playTime' && (
-                      <span className="sort-indicator">{sortDirection === 'asc' ? ' ▲' : ' ▼'}</span>
-                    )}
-                  </th>
-                  <th
-                    className={`sortable text-right ${sortField === 'sessions' ? 'sorted' : ''}`}
-                    onClick={() => handleSort('sessions')}
-                  >
-                    Sessions
-                    {sortField === 'sessions' && (
                       <span className="sort-indicator">{sortDirection === 'asc' ? ' ▲' : ' ▼'}</span>
                     )}
                   </th>
@@ -636,9 +616,10 @@ function StatsTableRow({
   onUseLocalValue,
 }: StatsTableRowProps) {
   const [expanded, setExpanded] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
 
   const showConflictIndicator = entry.hasConflict || entry.onlyOnSD || entry.onlyOnLocal;
-  const isUnplayed = entry.displayPlayTime === 0 && entry.displaySessions === 0;
+  const isUnplayed = entry.displayPlayTime === 0;
 
   // Determine status badge
   let statusBadge = null;
@@ -688,13 +669,32 @@ function StatsTableRow({
           </button>
         </td>
         <td className="game-name">
-          <button
-            className="game-name-btn"
-            onClick={() => onSelectCartridge(entry.cartIdHex, entry.name)}
-          >
-            <span className="name">{entry.name || 'Unknown Game'}</span>
-            <span className="cart-id">{entry.cartIdHex}</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              className="game-name-btn"
+              onClick={() => onSelectCartridge(entry.cartIdHex, entry.name)}
+            >
+              <span className="name">{entry.name || 'Unknown Game'}</span>
+              <span className="cart-id">{entry.cartIdHex}</span>
+            </button>
+            <button
+              className="debug-toggle-btn"
+              onClick={() => setShowDebug(!showDebug)}
+              title="Show debug info"
+              style={{
+                padding: '2px 6px',
+                fontSize: '9px',
+                background: showDebug ? 'var(--accent)' : 'var(--surface-alt)',
+                border: '1px solid var(--border)',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                color: showDebug ? 'white' : 'var(--text-secondary)',
+                flexShrink: 0,
+              }}
+            >
+              DBG
+            </button>
+          </div>
         </td>
         <td className="text-right">
           {entry.hasConflict ? (
@@ -706,26 +706,69 @@ function StatsTableRow({
             entry.displayPlayTimeFormatted
           )}
         </td>
-        <td className="text-right">
-          {entry.hasConflict ? (
-            <span className="conflict-values" onClick={() => setExpanded(!expanded)}>
-              {entry.displaySessions}
-              <span className="conflict-indicator" title="Click to see differences">⚡</span>
-            </span>
-          ) : (
-            entry.displaySessions
-          )}
-        </td>
         <td>{formatDate(entry.displayAddedDate)}</td>
         {hasBothSources && (
           <td className="status-col">{statusBadge}</td>
         )}
       </tr>
 
+      {/* Debug info row - shows for any entry when DBG is clicked */}
+      {showDebug && !entry.hasConflict && (
+        <tr className="debug-info-row">
+          <td colSpan={hasBothSources ? 5 : 4}>
+            <div style={{ padding: '12px', background: 'var(--surface-alt)', borderRadius: '4px', fontFamily: 'monospace', fontSize: '11px' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Debug Info (copy this for troubleshooting):</div>
+              <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+{`Cart ID: ${entry.cartIdHex}
+Cart ID (decimal): ${parseInt(entry.cartIdHex, 16)}
+Name: ${entry.name || 'Unknown'}
+
+=== SD Card Raw Values ===
+Entry Index: ${entry.sd?.index ?? 'N/A'}
+Byte Offset (ID table): ${entry.sd?.index !== undefined ? '0x' + (0x100 + entry.sd.index * 4).toString(16) : 'N/A'}
+Byte Offset (extended data): ${entry.sd?.index !== undefined ? '0x' + (0x4100 + entry.sd.index * 12).toString(16) : 'N/A'}
+addedTime (raw): ${entry.sd?.addedTime ?? 'N/A'}
+addedTime (hex): ${entry.sd?.addedTime !== undefined ? '0x' + entry.sd.addedTime.toString(16).padStart(8, '0') : 'N/A'}
+addedTime (little-endian bytes): ${entry.sd?.addedTime !== undefined ? (() => {
+  const v = entry.sd.addedTime;
+  return [v & 0xff, (v >> 8) & 0xff, (v >> 16) & 0xff, (v >> 24) & 0xff].map(b => b.toString(16).padStart(2, '0')).join(' ');
+})() : 'N/A'}
+addedDate (converted): ${entry.sd?.addedDate || 'N/A'}
+playTime (seconds): ${entry.sd?.playTime ?? 'N/A'}
+
+=== Local Raw Values ===
+Entry Index: ${entry.local?.index ?? 'N/A'}
+Byte Offset (ID table): ${entry.local?.index !== undefined ? '0x' + (0x100 + entry.local.index * 4).toString(16) : 'N/A'}
+Byte Offset (extended data): ${entry.local?.index !== undefined ? '0x' + (0x4100 + entry.local.index * 12).toString(16) : 'N/A'}
+addedTime (raw): ${entry.local?.addedTime ?? 'N/A'}
+addedTime (hex): ${entry.local?.addedTime !== undefined ? '0x' + entry.local.addedTime.toString(16).padStart(8, '0') : 'N/A'}
+addedTime (little-endian bytes): ${entry.local?.addedTime !== undefined ? (() => {
+  const v = entry.local.addedTime;
+  return [v & 0xff, (v >> 8) & 0xff, (v >> 16) & 0xff, (v >> 24) & 0xff].map(b => b.toString(16).padStart(2, '0')).join(' ');
+})() : 'N/A'}
+addedDate (converted): ${entry.local?.addedDate || 'N/A'}
+playTime (seconds): ${entry.local?.playTime ?? 'N/A'}
+
+=== Format Info ===
+addedTime = Unix timestamp / 60 (minutes since Jan 1, 1970)
+Current Date as addedTime: ${Math.floor(Date.now() / 1000 / 60)}
+To calculate: addedTime = Math.floor(Unix_timestamp / 60)`}
+              </pre>
+              <button
+                onClick={() => setShowDebug(false)}
+                style={{ marginTop: '8px', padding: '4px 8px', fontSize: '11px' }}
+              >
+                Close Debug
+              </button>
+            </div>
+          </td>
+        </tr>
+      )}
+
       {/* Expanded conflict details row */}
       {expanded && entry.hasConflict && (
         <tr className="conflict-details-row">
-          <td colSpan={hasBothSources ? 6 : 5}>
+          <td colSpan={hasBothSources ? 5 : 4}>
             <div className="conflict-details">
               <div className="conflict-comparison">
                 <div className="conflict-source">
@@ -735,12 +778,6 @@ function StatsTableRow({
                       <span className="label">Play Time:</span>
                       <span className={`value ${entry.sd?.playTime !== entry.local?.playTime ? 'differs' : ''}`}>
                         {entry.sd?.playTimeFormatted || '0m'}
-                      </span>
-                    </div>
-                    <div className="conflict-value">
-                      <span className="label">Sessions:</span>
-                      <span className={`value ${entry.sd?.sessions !== entry.local?.sessions ? 'differs' : ''}`}>
-                        {entry.sd?.sessions || 0}
                       </span>
                     </div>
                     <div className="conflict-value">
@@ -769,12 +806,6 @@ function StatsTableRow({
                       </span>
                     </div>
                     <div className="conflict-value">
-                      <span className="label">Sessions:</span>
-                      <span className={`value ${entry.sd?.sessions !== entry.local?.sessions ? 'differs' : ''}`}>
-                        {entry.local?.sessions || 0}
-                      </span>
-                    </div>
-                    <div className="conflict-value">
                       <span className="label">Added:</span>
                       <span className={`value ${entry.sd?.addedTime !== entry.local?.addedTime ? 'differs' : ''}`}>
                         {formatDate(entry.local?.addedDate)}
@@ -790,6 +821,27 @@ function StatsTableRow({
               <button className="btn-ghost btn-collapse" onClick={() => setExpanded(false)}>
                 Collapse
               </button>
+
+              {/* Debug info - raw values for troubleshooting */}
+              <div className="debug-info" style={{ marginTop: '16px', padding: '12px', background: 'var(--surface-alt)', borderRadius: '4px', fontFamily: 'monospace', fontSize: '11px' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Debug Info (copy this for troubleshooting):</div>
+                <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+{`Cart ID: ${entry.cartIdHex}
+Name: ${entry.name || 'Unknown'}
+
+=== SD Card Raw Values ===
+addedTime (raw): ${entry.sd?.addedTime ?? 'N/A'}
+addedTime (hex): ${entry.sd?.addedTime !== undefined ? '0x' + entry.sd.addedTime.toString(16).padStart(8, '0') : 'N/A'}
+addedDate (converted): ${entry.sd?.addedDate || 'N/A'}
+playTime (seconds): ${entry.sd?.playTime ?? 'N/A'}
+
+=== Local Raw Values ===
+addedTime (raw): ${entry.local?.addedTime ?? 'N/A'}
+addedTime (hex): ${entry.local?.addedTime !== undefined ? '0x' + entry.local.addedTime.toString(16).padStart(8, '0') : 'N/A'}
+addedDate (converted): ${entry.local?.addedDate || 'N/A'}
+playTime (seconds): ${entry.local?.playTime ?? 'N/A'}`}
+                </pre>
+              </div>
             </div>
           </td>
         </tr>

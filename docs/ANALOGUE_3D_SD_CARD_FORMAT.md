@@ -230,7 +230,6 @@ interface CleanModeSettings {
 The library.db file tracks which games have been played on the Analogue 3D and stores play statistics for each game including:
 - **Added Time**: When the game was first played/added to the library
 - **Play Time**: Total cumulative play time in seconds
-- **Sessions**: Number of times the game has been launched
 
 #### Structure
 
@@ -264,23 +263,27 @@ Each cart has 12 bytes of extended data at offset `0x4100 + (index × 12)`:
 
 | Offset | Size | Type | Description |
 |--------|------|------|-------------|
-| +0 | 4 | uint32_le | `addedTime` - Seconds since epoch when game was first played |
+| +0 | 4 | uint32_le | `addedTime` - Minutes since Unix epoch (Jan 1, 1970) |
 | +4 | 4 | uint32_le | `playTime` - Total play time in seconds |
-| +8 | 4 | uint32_le | `sessions` - Number of play sessions |
+| +8 | 4 | uint32_le | Reserved (always 0) |
 
-#### Timestamp Epoch
+#### Timestamp Format
 
-The `addedTime` field uses a custom epoch, not Unix time:
+The `addedTime` field stores time as **minutes since the Unix epoch** (January 1, 1970 00:00:00 UTC), not seconds.
 
-| Property | Value |
-|----------|-------|
-| Epoch Date | February 23, 2025 22:43:27 UTC |
-| Unix Equivalent | 1740350607 |
-
-To convert `addedTime` to a standard Unix timestamp:
+**Converting addedTime to Date:**
+```javascript
+// addedTime × 60 × 1000 = milliseconds since Unix epoch
+const date = new Date(addedTime * 60 * 1000);
 ```
-unixTimestamp = addedTime + 1740350607
+
+**Converting Date to addedTime:**
+```javascript
+// Date in milliseconds ÷ 1000 ÷ 60 = minutes since Unix epoch
+const addedTime = Math.floor(date.getTime() / 1000 / 60);
 ```
+
+**Note:** The Analogue 3D stores and displays times in local time. When setting dates programmatically, use local time values to match what the console displays.
 
 #### Example
 
@@ -290,13 +293,13 @@ For a game at index 5 in the Cart ID Table:
 
 If the extended data bytes at 0x413C are:
 ```
-80 1A 3E 00  |  45 01 00 00  |  03 00 00 00
+a0 e7 b5 01  |  45 01 00 00  |  00 00 00 00
 ```
 
 This decodes as:
-- `addedTime`: 0x003E1A80 = 4,070,016 seconds since epoch → March 29, 2025
+- `addedTime`: 0x01B5E7A0 = 28,829,600 minutes since epoch → Jan 31, 2025 8:33 AM
 - `playTime`: 0x00000145 = 325 seconds (5 minutes 25 seconds)
-- `sessions`: 0x00000003 = 3 play sessions
+- Reserved: 0x00000000 (always 0)
 
 ### labels.db (Master Label/Artwork Database)
 
