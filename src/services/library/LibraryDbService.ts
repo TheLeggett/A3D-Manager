@@ -417,7 +417,7 @@ export function addEntry(
 export function updateEntry(
   data: ArrayBuffer,
   cartId: number,
-  updates: { addedTime?: number; playTime?: number; sessions?: number }
+  updates: { addedTime?: number; playTime?: number }
 ): ArrayBuffer {
   const verification = verifyHeader(data);
   if (!verification.valid) {
@@ -457,9 +457,7 @@ export function updateEntry(
     newView.setUint32(dataOffset + 4, updates.playTime, true);
   }
 
-  if (updates.sessions !== undefined) {
-    newView.setUint32(dataOffset + 8, updates.sessions, true);
-  }
+  // Note: Bytes 8-11 are sessions (managed by Analogue 3D, not modified here)
 
   return newData;
 }
@@ -543,7 +541,7 @@ export async function touchLocalLibraryDb(): Promise<void> {
  */
 export async function updateAndSaveEntry(
   cartId: number,
-  updates: { addedTime?: number; playTime?: number; sessions?: number }
+  updates: { addedTime?: number; playTime?: number }
 ): Promise<void> {
   const data = await getLibraryDb();
   if (!data) {
@@ -560,7 +558,7 @@ export async function updateAndSaveEntry(
  */
 export async function addAndSaveEntry(
   cartId: number,
-  stats: { addedTime: number; playTime: number; sessions?: number }
+  stats: { addedTime: number; playTime: number }
 ): Promise<void> {
   let data = await getLibraryDb();
 
@@ -593,7 +591,7 @@ export interface SyncResult {
  */
 export async function updateAndSaveEntryWithSync(
   cartId: number,
-  updates: { addedTime?: number; playTime?: number; sessions?: number },
+  updates: { addedTime?: number; playTime?: number },
   sdCard?: BrowserSDCard
 ): Promise<SyncResult> {
   // 1. Update local IndexedDB
