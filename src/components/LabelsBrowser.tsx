@@ -85,6 +85,10 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
   const [languageFilter, setLanguageFilter] = useState<string>(searchParams.get('language') || '');
   const [videoModeFilter, setVideoModeFilter] = useState<string>(searchParams.get('videoMode') || '');
   const [ownedFilter, setOwnedFilter] = useState<boolean>(searchParams.get('owned') === 'true');
+  const [pageSize, setPageSize] = useState(() => {
+    const saved = localStorage.getItem('labelsPageSize');
+    return saved ? parseInt(saved, 10) : 48;
+  });
 
   // Modal states
   const [showImportModal, setShowImportModal] = useState(false);
@@ -100,7 +104,6 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
   // Unowned cartridges indicator
   const [unownedOnSDCount, setUnownedOnSDCount] = useState(0);
 
-  const pageSize = 48;
   const hasActiveFilters = regionFilter || languageFilter || videoModeFilter || searchQuery || ownedFilter;
   const hasClearableFilters = regionFilter || languageFilter || videoModeFilter || searchQuery;
 
@@ -157,6 +160,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
       videoMode?: string;
       search?: string;
       owned?: boolean;
+      pageSize?: number;
     }
   ) => {
     try {
@@ -164,7 +168,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
       setError(null);
 
       const params = new URLSearchParams();
-      params.set('pageSize', pageSize.toString());
+      params.set('pageSize', (options?.pageSize ?? pageSize).toString());
 
       // Add filter parameters
       const region = options?.region ?? regionFilter;
@@ -202,7 +206,7 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
     } finally {
       setLoading(false);
     }
-  }, [regionFilter, languageFilter, videoModeFilter, searchQuery, ownedFilter]);
+  }, [regionFilter, languageFilter, videoModeFilter, searchQuery, ownedFilter, pageSize]);
 
   // Check for unowned cartridges on SD card
   const checkUnownedOnSD = useCallback(async () => {
@@ -251,6 +255,14 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
   const handlePageChange = (newPage: number) => {
     updateURL(newPage, { search: searchQuery, region: regionFilter, language: languageFilter, videoMode: videoModeFilter, owned: ownedFilter });
     fetchPage(newPage);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    localStorage.setItem('labelsPageSize', newPageSize.toString());
+    setPageSize(newPageSize);
+    // Reset to first page when page size changes
+    updateURL(0, { search: searchQuery, region: regionFilter, language: languageFilter, videoMode: videoModeFilter, owned: ownedFilter });
+    fetchPage(0, { pageSize: newPageSize });
   };
 
   const handleFilterChange = (
@@ -416,6 +428,23 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
                   Owned
                 </button>
               </div>
+            </div>
+
+            <div className="filter-group">
+              <label htmlFor="pageSize" className="text-label">Items</label>
+              <select
+                id="pageSize"
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
+                disabled={loading}
+                className="page-size-select"
+              >
+                {[25, 50, 100, 250, 1000].map(size => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="filter-group filter-group-search">
@@ -607,7 +636,9 @@ export function LabelsBrowser({ onSelectLabel, refreshKey, sdCardPath }: LabelsB
               <Pagination
                 page={page}
                 totalPages={totalPages}
+                pageSize={pageSize}
                 onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
                 disabled={loading}
               />
             </>

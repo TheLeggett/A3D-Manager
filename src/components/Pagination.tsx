@@ -3,11 +3,13 @@ import './Pagination.css';
 interface PaginationProps {
   page: number;
   totalPages: number;
+  pageSize: number;
   onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
   disabled?: boolean;
 }
 
-export function Pagination({ page, totalPages, onPageChange, disabled }: PaginationProps) {
+export function Pagination({ page, totalPages, pageSize, onPageChange, onPageSizeChange, disabled }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   return (

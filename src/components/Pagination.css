@@ -7,6 +7,38 @@
   padding: 1rem;
 }
 
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.pagination-controls label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.page-size-select {
+  padding: 0.25rem 0.5rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  cursor: pointer;
+  min-width: 30px;
+}
+
+.page-size-select:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
 .pagination button {
   padding: 0.5rem 1rem;
   background: transparent;

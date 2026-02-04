@@ -42,3 +42,7 @@ labels.db
 
 # Test output directories
 tests/*/output/
+
+# Windows links
+*.lnk
+*.url

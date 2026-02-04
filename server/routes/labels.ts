@@ -648,9 +648,10 @@ router.get('/page/:page', async (req, res) => {
     const filteredEntries = applyFilters(mergedEntries, { region, language, videoMode, search, ownedIds: filterOwnedIds });
 
     const totalEntries = filteredEntries.length;
-    const totalPages = Math.ceil(totalEntries / pageSize);
-    const start = page * pageSize;
-    const end = Math.min(start + pageSize, totalEntries);
+    const effectivePageSize = pageSize === 0 ? totalEntries : pageSize;
+    const totalPages = Math.ceil(totalEntries / effectivePageSize);
+    const start = page * effectivePageSize;
+    const end = Math.min(start + effectivePageSize, totalEntries);
     const entries = filteredEntries.slice(start, end);
 
     res.json({
@@ -658,7 +659,7 @@ router.get('/page/:page', async (req, res) => {
       hasLabels: !!labelsEntries,
       hasOwnedCarts: allOwnedIds.length > 0,
       page,
-      pageSize,
+      pageSize: effectivePageSize,
       totalPages,
       totalEntries,
       totalUnfiltered: mergedEntries.length,
